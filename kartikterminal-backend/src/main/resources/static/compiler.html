@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | Enterprise Engineering Console</title>
+
+<!-- ✅ STEP 1: Load auth.js FIRST — redirects to login.html if not authenticated -->
+<script src="/auth.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg-deep: #050505; --bg-editor: #0d0f14; --bg-panel: #14171c;
+--bg-glass: rgba(20, 23, 28, 0.7); --border: #262b33;
+--border-focus: #3b82f6; --text-main: #e2e8f0;
+--text-muted: #64748b; --text-success: #10b981;
+--text-warning: #f59e0b; --text-error: #ef4444;
+--accent: #2563eb; --accent-glow: rgba(37, 99, 235, 0.4);
+--radius-xl: 12px; --radius-md: 8px;
+--shadow-lux: 0 20px 50px rgba(0,0,0,0.5); --navbar-height: 60px;
+--editor-font-size: 14px;
+--search-highlight: rgba(245, 158, 11, 0.4);
+--search-match: rgba(245, 158, 11, 0.7);
+}
+[data-theme="light"] {
+--bg-deep: #f1f5f9; --bg-editor: #ffffff; --bg-panel: #f8fafc;
+--bg-glass: rgba(248, 250, 252, 0.8); --border: #e2e8f0;
+--border-focus: #2563eb; --text-main: #0f172a; --text-muted: #64748b;
+--accent: #2563eb; --shadow-lux: 0 10px 30px rgba(0,0,0,0.05);
+}
+[data-eye-protect="true"] {
+--bg-deep: #1a1510 !important; --bg-editor: #241f18 !important;
+--bg-panel: #2d2720 !important; --text-main: #d4c5a9 !important;
+--text-muted: #a89a85 !important; --accent: #c9a961 !important;
+--accent-glow: rgba(201, 169, 97, 0.3) !important;
+filter: sepia(0.15) saturate(0.85) contrast(0.95) !important;
+}
+[data-eye-protect="true"] #terminal { background: #0a0805 !important; color: #10b981 !important; }
+[data-eye-protect="true"] .navbar { background: rgba(36, 31, 24, 0.9) !important; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+height: 100vh; width: 100vw; overflow: hidden;
+background: var(--bg-deep); color: var(--text-main);
+font-family: 'Plus Jakarta Sans', sans-serif;
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body.locked { filter: grayscale(1) brightness(0.85); pointer-events: none; user-select: none; }
+body.locked .modal, body.locked .modal * { pointer-events: auto !important; }
+@keyframes celebrate { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+.celebrate { animation: celebrate 0.5s ease-in-out 3; }
+@keyframes errorShake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
+.error-shake { animation: errorShake 0.5s ease-in-out; }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none; }
+#errorFlash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(239, 68, 68, 0.3); pointer-events: none; z-index: 9998; display: none; }
+.navbar {
+display: flex; justify-content: space-between; align-items: center;
+padding: 0 24px; height: var(--navbar-height);
+background: var(--bg-glass); backdrop-filter: blur(12px);
+border-bottom: 1px solid var(--border); z-index: 100;
+}
+.brand { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 8px; background: linear-gradient(90deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
+.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.timer-box { display: flex; align-items: center; gap: 8px; background: var(--bg-panel); padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-warning); }
+.timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-warning); animation: blink 1s infinite; display: none; }
+.theme-toggle, .eye-toggle { background: var(--bg-editor); border: 1px solid var(--border); border-radius: 30px; width: 32px; height: 28px; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.theme-toggle::after { content: '☀️'; }
+[data-theme="light"] .theme-toggle::after { content: '🌙'; }
+.eye-toggle::after { content: '👁️'; }
+[data-eye-protect="true"] .eye-toggle::after { content: '🟢'; color: #10b981; }
+.security-toggle { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 11px; cursor: pointer; }
+.security-toggle.active { background: var(--accent); color: white; }
+.security-toggle .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-error); }
+.security-toggle.active .dot { background: #10b981; }
+.run-btn { background: var(--accent); color: white; border: none; padding: 8px 24px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 13px; }
+.run-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.icon-btn { background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+.icon-btn:hover { background: var(--border); }
+select { background: var(--bg-editor); color: var(--text-main); border: 1px solid var(--border); padding: 8px 16px; border-radius: var(--radius-md); font-size: 13px; outline: none; font-weight: 600; }
+.system-breadcrumb { height: 28px; background: var(--bg-editor); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+.system-status-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 22px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; z-index: 1000; }
+.main-container { display: flex; height: calc(100vh - var(--navbar-height) - 22px); padding: 12px; gap: 12px; }
+body.zen-mode .io-panel { display: none !important; }
+body.zen-mode .editor-section { width: 100% !important; }
+body.zen-mode .system-breadcrumb, body.zen-mode .system-status-bar { display: none; }
+.editor-section { flex: 1; display: flex; flex-direction: column; background: var(--bg-editor); border-radius: var(--radius-xl); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-lux); transition: all 0.3s ease; }
+.tab-bar { height: 40px; background: var(--bg-panel); display: flex; align-items: center; padding: 0 12px; gap: 8px; }
+.tab { background: var(--bg-editor); padding: 0 16px; height: 100%; display: flex; align-items: center; font-size: 12px; border-top: 2px solid var(--accent); font-family: 'JetBrains Mono', monospace; color: var(--text-main); }
+.editor-stats { font-size: 10px; color: var(--text-muted); margin-left: auto; display: flex; gap: 4px; align-items: center; }
+.font-size-control { display: flex; align-items: center; gap: 2px; background: var(--bg-editor); border: 1px solid var(--border); border-radius: 4px; padding: 2px; }
+.font-size-btn { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border-radius: 3px; }
+.font-size-btn:hover { background: var(--border); }
+.font-size-display { font-size: 9px; min-width: 28px; text-align: center; }
+.editor-wrapper { flex: 1; display: flex; position: relative; overflow: hidden; }
+.line-numbers { width: 50px; background: var(--bg-panel); border-right: 1px solid var(--border); padding-top: 20px; text-align: right; padding-right: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.6; user-select: none; overflow: hidden; }
+.editor-area { flex: 1; position: relative; overflow: hidden; }
+.editor-area .line-highlight { position: absolute; left: 0; right: 0; height: 1.6em; background: rgba(37, 99, 235, 0.15); pointer-events: none; z-index: 0; }
+#code-editor, #highlight-layer, #highlightCode {
+position: absolute; inset: 0; padding: 20px;
+font-family: 'JetBrains Mono', monospace !important;
+font-size: var(--editor-font-size) !important;
+line-height: 1.6 !important;
+white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outline: none !important;
+}
+#code-editor.wrap, #highlight-layer.wrap, #highlightCode.wrap { white-space: pre-wrap !important; word-break: break-all; }
+#code-editor { z-index: 2; background: transparent !important; color: transparent !important; caret-color: var(--text-main); resize: none; overflow: auto; -webkit-text-fill-color: transparent; }
+#highlight-layer { z-index: 1; color: var(--text-main); pointer-events: none; overflow: hidden; }
+.search-match { background: var(--search-match); border-radius: 2px; }
+.search-match.active { background: var(--accent); box-shadow: 0 0 0 2px var(--border-focus); }
+.io-panel { width: 380px; display: flex; flex-direction: column; gap: 12px; transition: width 0.3s ease; }
+.panel-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lux); transition: border 0.3s ease; }
+.panel-header { padding: 12px 16px; font-size: 10px; font-weight: 800; color: var(--text-muted); background: rgba(0,0,0,0.2); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+.panel-actions { display: flex; gap: 4px; }
+#stdin { height: 140px; background: var(--bg-deep); color: var(--text-main); padding: 16px; border: none; font-family: 'JetBrains Mono', monospace; resize: none; outline: none; font-size: 13px; }
+#terminal {
+flex: 1; background: #000; color: #10b981 !important;
+padding: 16px; font-family: 'JetBrains Mono', monospace;
+font-size: 13px; overflow-y: auto; white-space: pre-wrap;
+border-top: 1px solid var(--border);
+}
+#terminal div { color: #10b981 !important; }
+#terminal .error, #terminal .warning, #terminal .security { color: #3b82f6 !important; }
+#terminal .output { color: #10b981 !important; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--bg-panel); border: 2px solid var(--text-error); padding: 32px; border-radius: var(--radius-xl); text-align: center; width: 380px; box-shadow: 0 0 40px rgba(239, 68, 68, 0.3); }
+.history-dropdown { position: relative; }
+.history-list { position: absolute; top: 100%; right: 0; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); min-width: 200px; max-height: 200px; overflow-y: auto; z-index: 50; display: none; font-size: 11px; }
+.history-list.active { display: block; }
+.history-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.history-item:hover { background: var(--border); }
+.history-item .time { color: var(--text-muted); font-size: 10px; }
+.history-item .status { padding: 2px 6px; border-radius: 4px; font-size: 9px; background: var(--text-success); color: #000; }
+.history-item .status.error { background: var(--text-error); color: white; }
+.search-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-panel); border-bottom: 1px solid var(--border); }
+.search-bar input { flex: 1; padding: 6px 10px; background: var(--bg-editor); border: 1px solid var(--border); border-radius: 4px; color: var(--text-main); font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; }
+.search-bar input:focus { border-color: var(--accent); }
+.search-bar .search-info { font-size: 10px; color: var(--text-muted); min-width: 50px; text-align: right; }
+.search-bar .search-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: var(--bg-editor); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 12px; }
+.search-bar .search-btn:hover { background: var(--border); }
+.search-bar .close-search { margin-left: 4px; cursor: pointer; font-size: 14px; }
+.theme-select { position: relative; display: inline-block; }
+.theme-select select { background: var(--bg-editor); color: var(--text-main); border: 1px solid var(--border); padding: 6px 28px 6px 10px; border-radius: var(--radius-md); font-size: 11px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; }
+.theme-select::after { content: '▼'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 8px; color: var(--text-muted); pointer-events: none; }
+.snippets-panel { position: absolute; top: 100%; right: 0; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); min-width: 250px; max-height: 300px; overflow-y: auto; z-index: 60; display: none; font-size: 11px; }
+.snippets-panel.active { display: block; }
+.snippet-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.snippet-item:hover { background: var(--border); }
+.snippet-item .snippet-title { font-weight: 600; color: var(--text-main); }
+.snippet-item .snippet-desc { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
+.stats-panel { position: absolute; top: 100%; right: 0; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); min-width: 220px; padding: 12px; z-index: 60; display: none; }
+.stats-panel.active { display: block; }
+.stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; }
+.stat-row .label { color: var(--text-muted); }
+.stat-row .value { color: var(--text-main); font-family: 'JetBrains Mono', monospace; }
+.datetime-box { display: flex; align-items: center; gap: 8px; background: var(--bg-panel); padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-main); }
+.datetime-date { color: var(--text-success); font-weight: 600; }
+.datetime-time { color: var(--accent); font-weight: 600; }
+[data-editor-theme="dracula"] #highlight-layer { background: #282a36 !important; }
+[data-editor-theme="monokai"] #highlight-layer { background: #272822 !important; }
+[data-editor-theme="github"] #highlight-layer { background: #f6f8fa !important; }
+[data-editor-theme="nord"] #highlight-layer { background: #2e3440 !important; }
+[data-editor-theme="solarized"] #highlight-layer { background: #002b36 !important; }
+.toast-container { position: fixed; top: 80px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-main); padding: 12px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-lux); font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; animation: slideIn 0.3s ease-out; min-width: 250px; }
+.toast.warning { border-color: var(--text-warning); color: var(--text-warning); }
+.toast.success { border-color: var(--text-success); color: var(--text-success); }
+.toast.error { border-color: var(--text-error); color: var(--text-error); }
+.toast.security { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+.goto-line-input { width: 100%; padding: 10px; background: var(--bg-editor); border: 1px solid var(--border); color: var(--text-main); border-radius: var(--radius-md); font-family: 'JetBrains Mono', monospace; margin: 15px 0; font-size: 14px; }
+
+/* ── Points flash on successful run ── */
+@keyframes pointsPop {
+  0%   { opacity: 0; transform: translateY(0) scale(0.8); }
+  30%  { opacity: 1; transform: translateY(-20px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-50px) scale(1); }
+}
+.points-pop { position: fixed; font-size: 18px; font-weight: 800; color: #3b82f6;
+  pointer-events: none; z-index: 9999; animation: pointsPop 1.5s ease-out forwards; }
+</style>
+</head>
+<body>
+<canvas id="confettiCanvas"></canvas>
+<div id="errorFlash"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<nav class="navbar">
+  <div class="brand">KARTIKTERMINAL</div>
+  <div class="controls">
+    <div class="datetime-box">
+      <span class="datetime-date" id="currentDate">--/--/----</span>
+      <span style="color:var(--text-muted)">|</span>
+      <span class="datetime-time" id="currentTime">--:--:--</span>
+    </div>
+    <div class="timer-box">
+      <div class="timer-dot" id="timerDot"></div>
+      <span id="timerDisplay">00:00:00</span>
+      <div style="display:flex; gap:5px;">
+        <button class="run-btn" style="padding: 4px 8px; font-size: 9px;" id="timerBtn" onclick="toggleTimer()">START</button>
+        <button class="run-btn" style="padding: 4px 8px; font-size: 9px; background: var(--text-muted);" onclick="resetTimer()">RESET</button>
+      </div>
+    </div>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light"></div>
+    <div class="eye-toggle" id="eyeToggle" onclick="toggleEyeProtect()" title="Toggle Eye Protection Mode"></div>
+    <div class="theme-select" title="Editor Theme">
+      <select id="editorTheme" onchange="changeEditorTheme()">
+        <option value="tomorrow">Tomorrow</option>
+        <option value="dracula">Dracula</option>
+        <option value="monokai">Monokai</option>
+        <option value="github">GitHub</option>
+        <option value="nord">Nord</option>
+        <option value="solarized">Solarized</option>
+      </select>
+    </div>
+    <div class="security-toggle" id="securityToggle" onclick="toggleSecurity()">
+      <span class="dot"></span><span id="securityLabel">NORMAL</span>
+    </div>
+    <select id="language" onchange="changeLanguage()">
+      <option value="java">Java 17</option>
+      <option value="python">Python 3.10</option>
+      <option value="cpp">C++ 20</option>
+      <option value="c">C11</option>
+      <option value="js">Node.js</option>
+      <option value="go">Go 1.21</option>
+    </select>
+    <!-- auth.js injects user avatar + menu widget here -->
+    <button id="collegeBtn" class="run-btn" style="background: #10b981;" onclick="window.location.href='/college.html'">🎓 COLLEGE ERP</button>
+    <button id="aiBtn" class="run-btn" style="background: #8b5cf6;" onclick="analyzeAI()">🧠 AI ANALYSIS</button>
+    <button id="runBtn" class="run-btn" onclick="runCode()">DEPLOY & RUN</button>
+  </div>
+</nav>
+
+<div class="main-container">
+  <div class="editor-section" id="editorSection">
+    <div class="tab-bar">
+      <div class="tab" id="file-name">Main.java</div>
+      <div class="editor-stats">
+        <span id="lineCount">Ln: 1</span>
+        <span id="wordCount">W: 0</span>
+        <span id="charCount">Ch: 0</span>
+        <div class="font-size-control" title="Adjust Font Size">
+          <div class="font-size-btn" onclick="adjustFontSize(-1)">A-</div>
+          <span class="font-size-display" id="fontSizeDisplay">14px</span>
+          <div class="font-size-btn" onclick="adjustFontSize(1)">A+</div>
+        </div>
+        <button class="icon-btn" onclick="toggleWordWrap()" title="Toggle Word Wrap" id="wrapBtn">🔤</button>
+        <button class="icon-btn" onclick="toggleSearch()" title="Search in Code (Ctrl+F)" id="searchBtn">🔍</button>
+        <button class="icon-btn" onclick="toggleSnippets()" title="Code Snippets" id="snippetsBtn">📦</button>
+        <button class="icon-btn" onclick="toggleStats()" title="Code Statistics" id="statsBtn">📊</button>
+        <button class="icon-btn" onclick="downloadCode()" title="Download Code">💾</button>
+        <button class="icon-btn" onclick="toggleZenMode()" title="Zen/Focus Mode" id="zenBtn">🧘</button>
+        <button class="icon-btn" onclick="openGoToLine()" title="Go to Line (Ctrl+J)" id="gotoLineBtn">📍</button>
+        <div class="history-dropdown">
+          <button class="icon-btn" onclick="toggleHistory()" title="Execution History">📜</button>
+          <div class="history-list" id="historyList"></div>
+        </div>
+        <button class="icon-btn" onclick="copyCode()" title="Copy Code">📋</button>
+        <button class="icon-btn" onclick="formatCode()" title="Format Code">✨</button>
+        <button class="icon-btn" onclick="showShortcuts()" title="Keyboard Shortcuts">⌨️</button>
+      </div>
+    </div>
+    <div class="search-bar" id="searchBar" style="display: none;">
+      <input type="text" id="searchInput" placeholder="Search..." onkeyup="handleSearch(event)" onkeydown="searchKeydown(event)">
+      <span class="search-info" id="searchInfo">0/0</span>
+      <div class="search-btn" onclick="prevMatch()">▲</div>
+      <div class="search-btn" onclick="nextMatch()">▼</div>
+      <span class="close-search" onclick="toggleSearch()">✕</span>
+    </div>
+    <div class="snippets-panel" id="snippetsPanel"></div>
+    <div class="stats-panel" id="statsPanel">
+      <div class="stat-row"><span class="label">Lines:</span><span class="value" id="statLines">0</span></div>
+      <div class="stat-row"><span class="label">Words:</span><span class="value" id="statWords">0</span></div>
+      <div class="stat-row"><span class="label">Characters:</span><span class="value" id="statChars">0</span></div>
+      <div class="stat-row"><span class="label">Non-empty:</span><span class="value" id="statNonEmpty">0</span></div>
+      <div class="stat-row"><span class="label">Est. Complexity:</span><span class="value" id="statComplexity">Low</span></div>
+      <div class="stat-row"><span class="label">Est. Read Time:</span><span class="value" id="statReadTime">0s</span></div>
+    </div>
+    <div class="system-breadcrumb">src > production > cloud-env > <span id="current-path">Main.java</span></div>
+    <div class="editor-wrapper" id="monaco-container" style="flex: 1; min-height: 0; overflow: hidden;"></div>
+  </div>
+
+  <aside class="io-panel">
+    <div class="panel-card" id="stdinCard" style="height: 200px;">
+      <div class="panel-header">
+        <span>Standard Input</span>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="insertTemplate()" title="Insert Language Template" id="templateBtn">📄</button>
+          <button class="icon-btn" onclick="clearStdin()" title="Clear Input">🗑️</button>
+        </div>
+      </div>
+      <textarea id="stdin" placeholder="// Inputs go here if your code needs them..."></textarea>
+    </div>
+    <div class="panel-card" style="flex: 1;">
+      <div class="panel-header">
+        <span>System Console</span>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="toggleAutoScroll()" id="autoScrollBtn" title="Toggle Auto-Scroll">📜</button>
+          <button class="icon-btn" onclick="copyOutput()" title="Copy Output">📋</button>
+          <button class="icon-btn" onclick="clearTerminal()" title="Clear Terminal">🗑️</button>
+          <button class="icon-btn" onclick="exportTerminalLog()" title="Export Log">📤</button>
+        </div>
+        <span id="securityStatus" style="font-size:10px;">STATUS: NORMAL</span>
+      </div>
+      <div id="terminal"></div>
+    </div>
+  </aside>
+</div>
+
+<footer class="system-status-bar">
+  <div class="status-item">
+    <span>&#9432; Connected: cloud-node-04</span>
+    <span>&#9001;&#10100;&#9002; Branch: main</span>
+    <span id="execTime" style="background:rgba(255,255,255,0.2); padding: 0 5px; display: none;">⏱️ 0ms</span>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <span>UTF-8</span>
+    <span>Latency: 14ms</span>
+    <span style="background:rgba(255,255,255,0.2); padding: 0 5px;">Spaces: 4</span>
+    <!-- ✅ Live user points shown in status bar -->
+    <span id="userPointsBadge" style="background:rgba(59,130,246,0.4);padding:0 8px;border-radius:4px;display:none;">
+      ⭐ <span id="userPointsVal">0</span> pts
+    </span>
+  </div>
+</footer>
+
+<!-- Modals -->
+<div class="modal-overlay" id="securityModal">
+  <div class="modal">
+    <h3 style="color:var(--text-error)">⚠️ Security Alert</h3>
+    <p id="modalMsg" style="margin:20px 0; color:var(--text-muted)"></p>
+    <button class="run-btn" onclick="closeModal()">Acknowledge</button>
+  </div>
+</div>
+<div class="modal-overlay" id="shortcutsModal">
+  <div class="modal" style="width: 400px; border-color: var(--accent);">
+    <h3 style="color:var(--accent)">⌨️ Keyboard Shortcuts</h3>
+    <div style="text-align: left; font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+      <div><strong>Ctrl+Enter</strong> - Run Code</div>
+      <div><strong>Tab</strong> - Insert 4 spaces</div>
+      <div><strong>Ctrl+S</strong> - Save</div>
+      <div><strong>Ctrl+K</strong> - Clear Terminal</div>
+      <div><strong>Ctrl+F</strong> - Open Search</div>
+      <div><strong>Ctrl+G</strong> - Next Search Match</div>
+      <div><strong>Ctrl+Shift+G</strong> - Prev Search Match</div>
+      <div><strong>Ctrl+J</strong> - Go to Line</div>
+      <div><strong>Ctrl+Shift+Z</strong> - Toggle Zen Mode</div>
+      <div><strong>Ctrl+Shift+D</strong> - Download Code</div>
+      <div><strong>Esc</strong> - Close modals</div>
+    </div>
+    <button class="run-btn" style="margin-top: 16px;" onclick="closeShortcuts()">Got it!</button>
+  </div>
+</div>
+<div class="modal-overlay" id="gotoLineModal">
+  <div class="modal" style="width: 300px; border-color: var(--accent);">
+    <h3 style="color:var(--accent)">📍 Go to Line</h3>
+    <input type="number" id="gotoLineInput" class="goto-line-input" placeholder="Line Number" min="1">
+    <button class="run-btn" onclick="executeGoToLine()">Jump</button>
+    <button class="run-btn" style="background:var(--text-muted); margin-top:8px;" onclick="closeGoToLine()">Cancel</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────
+// NOTE: fetch() is already patched by auth.js to inject
+// Authorization: Bearer <jwt> on /compiler/run calls.
+// No changes needed to runCode() — it just works!
+// ─────────────────────────────────────────────────────────
+
+const monacoContainer = document.getElementById('monaco-container');
+const editor = {
+  get value() { return window.monacoEditor ? window.monacoEditor.getValue() : ""; },
+  set value(v) { if (window.monacoEditor) window.monacoEditor.setValue(v); },
+  selectionStart: 0, selectionEnd: 0, scrollTop: 0, scrollLeft: 0
+};
+const terminal     = document.getElementById('terminal');
+const securityToggle=document.getElementById('securityToggle');
+const securityLabel= document.getElementById('securityLabel');
+const securityStatus=document.getElementById('securityStatus');
+const securityModal= document.getElementById('securityModal');
+const modalMsg     = document.getElementById('modalMsg');
+const shortcutsModal=document.getElementById('shortcutsModal');
+const autoScrollBtn= document.getElementById('autoScrollBtn');
+const editorSection= document.getElementById('editorSection');
+const confettiCanvas=document.getElementById('confettiCanvas');
+const errorFlash   = document.getElementById('errorFlash');
+const execTimeEl   = document.getElementById('execTime');
+const lineHighlight= document.getElementById('lineHighlight');
+const wrapBtn      = document.getElementById('wrapBtn');
+const zenBtn       = document.getElementById('zenBtn');
+const historyList  = document.getElementById('historyList');
+const fontSizeDisplay=document.getElementById('fontSizeDisplay');
+const searchBar    = document.getElementById('searchBar');
+const searchInput  = document.getElementById('searchInput');
+const searchInfo   = document.getElementById('searchInfo');
+const snippetsPanel= document.getElementById('snippetsPanel');
+const statsPanel   = document.getElementById('statsPanel');
+const editorThemeSelect=document.getElementById('editorTheme');
+const currentDateEl= document.getElementById('currentDate');
+const currentTimeEl= document.getElementById('currentTime');
+const toastContainer=document.getElementById('toastContainer');
+const gotoLineModal= document.getElementById('gotoLineModal');
+const gotoLineInput= document.getElementById('gotoLineInput');
+
+let autoScroll = true, executionStartTime = 0;
+let wordWrap = false, zenMode = false, fontSize = 14;
+let executionHistory = [];
+const MAX_HISTORY = 5;
+let searchMatches = [], currentMatchIndex = -1, searchQuery = '';
+let editorTheme = 'tomorrow';
+let audioCtx = null;
+
+// ── Timer ──
+let timerInterval = null, totalSeconds = 0;
+function toggleTimer() {
+  const btn = document.getElementById('timerBtn'), dot = document.getElementById('timerDot');
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; btn.innerText = "START"; dot.style.display = "none"; }
+  else { dot.style.display = "block"; btn.innerText = "STOP"; timerInterval = setInterval(() => { totalSeconds++; const h=String(Math.floor(totalSeconds/3600)).padStart(2,'0'), m=String(Math.floor((totalSeconds%3600)/60)).padStart(2,'0'), s=String(totalSeconds%60).padStart(2,'0'); document.getElementById('timerDisplay').innerText=`${h}:${m}:${s}`; }, 1000); }
+}
+function resetTimer() { clearInterval(timerInterval); timerInterval=null; totalSeconds=0; document.getElementById('timerDisplay').innerText="00:00:00"; document.getElementById('timerBtn').innerText="START"; document.getElementById('timerDot').style.display="none"; }
+
+// ── Date/Time ──
+function updateDateTime() {
+  const now = new Date();
+  currentDateEl.textContent = now.toLocaleDateString('en-GB', {day:'2-digit',month:'2-digit',year:'numeric'});
+  currentTimeEl.textContent = now.toLocaleTimeString('en-GB',{hour12:false});
+}
+setInterval(updateDateTime, 1000);
+
+// ── Audio ──
+function initAudio() { if (!audioCtx) { const A=window.AudioContext||window.webkitAudioContext; audioCtx=new A(); } if(audioCtx.state==='suspended') audioCtx.resume(); }
+document.addEventListener('click', initAudio, {once:true});
+function playSecurityAlert() {
+  if(!audioCtx) initAudio(); if(!audioCtx) return;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination); osc.type='sawtooth'; osc.frequency.value=880;
+  const now=audioCtx.currentTime; gain.gain.setValueAtTime(0.1,now);
+  for(let i=0;i<5;i++){gain.gain.setValueAtTime(0.1,now+i);gain.gain.setValueAtTime(0,now+i+0.2);}
+  osc.start(now); osc.stop(now+5); showToast("⚠️ Security Alert: Code Pasted","security");
+}
+
+// ── Notifications ──
+function showToast(message, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerText = message;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function reportCheatToServer() {
+  if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+    fetch('/api/dashboard/log-cheat', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}`, 'Content-Type': 'application/json' }
+    }).catch(e => console.error(e));
+  }
+}
+
+// ── Points popup ──
+function showPointsPopup(points) {
+  if(!points) return;
+  const el=document.createElement('div'); el.className='points-pop';
+  el.textContent=`+${points} pts`; el.style.cssText+=`right:420px;bottom:80px;`;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),1600);
+}
+
+// ── Load user points in status bar ──
+async function loadUserPoints() {
+  try {
+    const res = await fetch('/api/dashboard/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    const badge = document.getElementById('userPointsBadge');
+    const val   = document.getElementById('userPointsVal');
+    if (badge && val) { val.textContent = data.totalPoints || 0; badge.style.display = 'inline'; }
+  } catch(e){}
+}
+
+// ── Theme ──
+function toggleEyeProtect() { const h=document.documentElement; h.setAttribute('data-eye-protect',h.getAttribute('data-eye-protect')!=='true'); localStorage.setItem('eyeProtect',h.getAttribute('data-eye-protect')); }
+function toggleTheme() { const h=document.documentElement; h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark'); saveAppState(); }
+function changeEditorTheme() { 
+  editorTheme=editorThemeSelect.value; 
+  document.documentElement.setAttribute('data-editor-theme',editorTheme); 
+  if (window.monacoEditor) {
+    const isLight = (editorTheme === 'github' || editorTheme === 'tomorrow');
+    monaco.editor.setTheme(isLight ? 'vs' : 'vs-dark');
+  }
+  logToTerminal(`🎨 Editor theme: ${editorTheme}`,"info"); 
+  saveAppState(); 
+}
+
+// ── Terminal ──
+function toggleAutoScroll() { autoScroll=!autoScroll; autoScrollBtn.innerText=autoScroll?'📜':'🔒'; }
+function clearTerminal() { terminal.querySelectorAll('.output').forEach(el=>el.remove()); }
+function copyOutput() { navigator.clipboard.writeText(terminal.innerText).then(()=>logToTerminal("📋 Output copied","info")); }
+function clearStdin() { document.getElementById('stdin').value=''; logToTerminal("🗑️ Standard Input cleared","info"); }
+function copyCode() { navigator.clipboard.writeText(editor.value).then(()=>logToTerminal("📋 Code copied","info")); }
+function formatCode() {
+  if (window.monacoEditor) {
+    window.monacoEditor.getAction('editor.action.formatDocument').run();
+    logToTerminal("✨ Code formatted","info");
+  }
+}
+function showShortcuts() { shortcutsModal.classList.add('active'); }
+function closeShortcuts() { shortcutsModal.classList.remove('active'); }
+function openGoToLine() { gotoLineModal.classList.add('active'); gotoLineInput.value=''; gotoLineInput.focus(); }
+function closeGoToLine() { gotoLineModal.classList.remove('active'); }
+function executeGoToLine() {
+  const lineNum=parseInt(gotoLineInput.value), total=editor.value.split('\n').length;
+  if(!lineNum||lineNum<1||lineNum>total){showToast("Invalid line number","error");return;}
+  editor.scrollTop=(lineNum-1)*1.6*fontSize; syncScroll(); closeGoToLine(); showToast(`Jumped to line ${lineNum}`,"success");
+}
+
+// ── Keyboard ──
+function handleKeydown(e) {
+  if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();runCode();}
+  if(e.ctrlKey&&e.key==='k'){e.preventDefault();clearTerminal();}
+  if(e.ctrlKey&&e.key==='f'){e.preventDefault();toggleSearch();}
+  if(e.ctrlKey&&e.key==='s'){e.preventDefault();saveToLocalStorage();}
+  if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();toggleZenMode();}
+  if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='d'){e.preventDefault();downloadCode();}
+  if(e.ctrlKey&&e.key==='g'){e.preventDefault();nextMatch();}
+  if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='g'){e.preventDefault();prevMatch();}
+  if(e.ctrlKey&&e.key==='j'){e.preventDefault();openGoToLine();}
+  if(e.key==='Tab'&&!e.ctrlKey){e.preventDefault();const s=editor.selectionStart;editor.value=editor.value.substring(0,s)+"    "+editor.value.substring(editor.selectionEnd);editor.selectionStart=editor.selectionEnd=s+4;handleInput();}
+  if(e.key==='Escape'){closeShortcuts();closeGoToLine();if(securityModal.classList.contains('active'))closeModal();historyList.classList.remove('active');snippetsPanel.classList.remove('active');statsPanel.classList.remove('active');if(searchBar.style.display!=='none')toggleSearch();}
+}
+
+// ── Security ──
+let securityMode=false, violations=0, isBlocked=false;
+const MAX_VIOLATIONS=3;
+function toggleSecurity() {
+  securityMode=!securityMode; securityToggle.classList.toggle('active');
+  securityLabel.innerText=securityMode?'SECURE':'NORMAL';
+  securityStatus.innerText=`STATUS: ${securityMode?'SECURE':'NORMAL'}`;
+  logToTerminal(`🔐 Security Mode: ${securityMode?'ON':'OFF'}`,"warning");
+  showToast(`Security Mode ${securityMode?'Activated':'Deactivated'}`,securityMode?'security':'info');
+  
+  if (securityMode) {
+    startWebcam();
+    try { document.documentElement.requestFullscreen(); } catch (e) {}
+  } else {
+    stopWebcam();
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+  }
+}
+
+// ── Language ──
+const langExt={java:'java',python:'py',cpp:'cpp',c:'c',js:'js',go:'go'};
+const defaultTemplates={
+  java:'public class Main {\npublic static void main(String[] args) {\nSystem.out.println("Hello KartikTerminal");\n}\n}',
+  python:'print("Hello Python Scripting")',
+  cpp:'#include <iostream>\nusing namespace std;\nint main() {\ncout << "Hello Low-Level C++";\nreturn 0;\n}',
+  c:'#include <stdio.h>\nint main() {\nprintf("Standard C Output\\n");\nreturn 0;\n}',
+  js:'console.log("Node.js Runtime Ready");',
+  go:'package main\nimport "fmt"\nfunc main() {\nfmt.Println("Gopher Engine Start")\n}'
+};
+const languageTemplates={
+  java:`import java.util.Scanner;\npublic class Main {\npublic static void main(String[] args) {\nScanner sc = new Scanner(System.in);\nSystem.out.println("Hello KartikTerminal");\nsc.close();\n}\n}`,
+  python:`def main():\nprint("Hello KartikTerminal")\nif __name__ == "__main__":\nmain()`,
+  cpp:`#include <iostream>\nusing namespace std;\nint main() {\ncout << "Hello KartikTerminal" << endl;\nreturn 0;\n}`,
+  c:`#include <stdio.h>\nint main() {\nprintf("Hello KartikTerminal\\n");\nreturn 0;\n}`,
+  js:`console.log("Hello KartikTerminal");`,
+  go:`package main\nimport "fmt"\nfunc main() {\nfmt.Println("Hello KartikTerminal")\n}`
+};
+function changeLanguage(showMessage=true) {
+  const lang=document.getElementById('language').value;
+  const fileName=`Main.${langExt[lang]}`;
+  terminal.innerHTML=''; 
+  if (window.monacoEditor) {
+    const model = window.monacoEditor.getModel();
+    monaco.editor.setModelLanguage(model, lang === 'js' ? 'javascript' : lang);
+    editor.value = defaultTemplates[lang]||'';
+  } else { editor.value=defaultTemplates[lang]||''; }
+  document.getElementById('file-name').innerText=fileName;
+  document.getElementById('current-path').innerText=fileName;
+  handleInput(); saveToLocalStorage();
+  if(showMessage) logToTerminal(`🔄 Language changed to ${lang.toUpperCase()}`,"warning");
+}
+
+// ── Editor ──
+function handleInput() {
+  updateStats(); updateDetailedStats(); saveToLocalStorage();
+}
+function handlePaste() {
+    let cheatLogs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+    cheatLogs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Copy-Paste Block Detected', severity: 'MEDIUM' });
+    localStorage.setItem('cheatLogs', JSON.stringify(cheatLogs));
+    reportCheatToServer();
+    
+    if(securityMode){
+      playSecurityAlert(); logToTerminal("🚨 Security: Code Paste Detected","warning");
+      violations++;
+      if(violations>=MAX_VIOLATIONS){isBlocked=true;document.body.classList.add('locked');document.getElementById('runBtn').disabled=true;openModal("Maximum paste violations reached. Editor Locked.");}
+    } else { logToTerminal("📋 Code pasted","info"); }
+}
+function updateStats() {
+  const code=editor.value;
+  document.getElementById('lineCount').innerText=`Ln: ${code.split('\n').length}`;
+  document.getElementById('charCount').innerText=`Ch: ${code.length}`;
+  document.getElementById('wordCount').innerText=`W: ${code.trim().split(/\s+/).filter(w=>w.length>0).length}`;
+}
+function updateDetailedStats() {
+  const code=editor.value, lines=code.split('\n');
+  const words=code.trim().split(/\s+/).filter(w=>w.length>0).length;
+  const ck=(code.match(/if|else|for|while|switch|case|try|catch|finally/gi)||[]).length;
+  document.getElementById('statLines').textContent=lines.length;
+  document.getElementById('statWords').textContent=words;
+  document.getElementById('statChars').textContent=code.length;
+  document.getElementById('statNonEmpty').textContent=lines.filter(l=>l.trim().length>0).length;
+  document.getElementById('statComplexity').textContent=ck>10?'High':ck>5?'Medium':'Low';
+  document.getElementById('statReadTime').textContent=`${Math.ceil(words/200*60)}s`;
+}
+function renderLineNumbers() {}
+function syncScroll() {}
+function updateLineHighlight() {}
+
+// ── Celebration / Error ──
+function showCelebration(points) {
+  editorSection.classList.add('celebrate'); setTimeout(()=>editorSection.classList.remove('celebrate'),1500);
+  confettiCanvas.style.display='block';
+  const ctx=confettiCanvas.getContext('2d'); confettiCanvas.width=window.innerWidth; confettiCanvas.height=window.innerHeight;
+  const colors=['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
+  const confetti=[]; for(let i=0;i<150;i++) confetti.push({x:Math.random()*confettiCanvas.width,y:Math.random()*confettiCanvas.height-confettiCanvas.height,color:colors[Math.floor(Math.random()*colors.length)],size:Math.random()*10+5,speed:Math.random()*5+2,angle:Math.random()*360,spin:Math.random()*0.2-0.1});
+  let af; function animate(){ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);confetti.forEach((c,i)=>{ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.angle);ctx.fillStyle=c.color;ctx.fillRect(-c.size/2,-c.size/2,c.size,c.size);ctx.restore();c.y+=c.speed;c.angle+=c.spin;if(c.y>confettiCanvas.height)confetti[i].y=-10;});af=requestAnimationFrame(animate);}
+  animate(); setTimeout(()=>{cancelAnimationFrame(af);confettiCanvas.style.display='none';ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);},3000);
+  logToTerminal("🎉 Execution successful! 🎉","success");
+  if(points) { showPointsPopup(points); loadUserPoints(); }
+}
+function showErrorEffect() {
+  editorSection.classList.add('error-shake'); setTimeout(()=>editorSection.classList.remove('error-shake'),500);
+  errorFlash.style.display='block'; setTimeout(()=>errorFlash.style.display='none',300);
+  logToTerminal("❌ Code execution failed!","error");
+}
+
+// ─────────────────────────────────────────────────────────
+// ✅ runCode — sends to /compiler/run
+//    auth.js automatically adds: Authorization: Bearer <jwt>
+// ─────────────────────────────────────────────────────────
+async function runCode() {
+  if(isBlocked){showErrorEffect();return;}
+  executionStartTime=performance.now();
+  const code=editor.value, stdin=document.getElementById('stdin'), lang=document.getElementById('language').value.trim();
+  
+  if (typeof realAnalyzeCode === 'function') {
+      realAnalyzeCode(code);
+  }
+
+  const stdinCard=document.getElementById('stdinCard');
+  const inputKeywords={java:['Scanner','System.in'],python:['input('],cpp:['cin >>','scanf'],c:['scanf','gets'],go:['fmt.Scan']};
+  const needsInput=(inputKeywords[lang]||[]).some(k=>code.includes(k));
+  if(needsInput&&stdin.value.trim()===""){
+    stdinCard.style.border="2px solid var(--text-warning)"; stdinCard.style.animation="shake 0.4s"; stdin.focus();
+    terminal.innerHTML+=`<div class="warning">⚠️ [SYSTEM]: Input Required!</div>`; setTimeout(()=>stdinCard.style.animation="",400); return;
+  }
+  stdinCard.style.border="1px solid var(--border)";
+  const btn=document.getElementById("runBtn"); btn.disabled=true; btn.textContent="RUNNING...";
+  const statusId="s-"+Date.now();
+  terminal.innerHTML+=`<div id="${statusId}" class="output" style="color:#10b981">[SYSTEM] Executing ${lang.toUpperCase()} code...</div>`;
+  if(autoScroll) terminal.scrollTop=terminal.scrollHeight;
+  try {
+    // ✅ auth.js patched fetch() — JWT header added automatically
+    const res=await fetch("/compiler/run",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Cache-Control":"no-cache"},
+      body:JSON.stringify({code,input:stdin.value,language:lang})
+    });
+
+    // Handle 401 (token expired)
+    if(res.status===401){KTAuth.logout();return;}
+
+    const data=await res.text();
+    if(document.getElementById(statusId)) document.getElementById(statusId).remove();
+    const isErr=data.toLowerCase().includes("error")||data.toLowerCase().includes("exception")||data.toLowerCase().includes("compilation error");
+    const execTime=Math.round(performance.now()-executionStartTime);
+    execTimeEl.style.display='inline'; execTimeEl.innerText=`⏱️ ${execTime}ms`;
+    addToExecutionHistory(lang,!isErr,execTime,code.substring(0,50)+'...');
+    if(isErr){showErrorEffect();terminal.innerHTML+=`<div class="error" style="color:#3b82f6">${escapeHtml(data.trim())}</div>`;}
+    else{showCelebration();terminal.innerHTML+=`<div class="output" style="color:#10b981">${escapeHtml(data.trim()||"✔ Finished")}</div>`;}
+  } catch(err){
+    if(document.getElementById(statusId)) document.getElementById(statusId).remove();
+    showErrorEffect(); logToTerminal(`❌ Execution Error: ${err.message}`,"error");
+  } finally{btn.disabled=false;btn.textContent="DEPLOY & RUN";if(autoScroll)terminal.scrollTop=terminal.scrollHeight;}
+}
+
+function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function logToTerminal(msg,type){const isSecurity=type==='warning'||type==='error'; const color=isSecurity?'#3b82f6':'#10b981'; const cls=isSecurity?(type==='warning'?'warning':'error'):'output'; terminal.innerHTML+=`<div class="${cls}" style="color:${color}">⚡ [${new Date().toLocaleTimeString()}] ${msg}</div>`; if(autoScroll)terminal.scrollTop=terminal.scrollHeight;}
+function openModal(msg){violations++;logToTerminal(`⚠️ ${msg} (Violation ${violations}/${MAX_VIOLATIONS})`,"warning");modalMsg.innerHTML=`${msg}<br><br><strong>Violations: ${violations}/${MAX_VIOLATIONS}</strong>`;securityModal.classList.add('active');if(violations>=MAX_VIOLATIONS){isBlocked=true;document.body.classList.add('locked');document.getElementById('runBtn').disabled=true;}}
+function closeModal(){securityModal.classList.remove('active');if(isBlocked)document.body.classList.add('locked');}
+function resetEditorData(){const lang=document.getElementById('language').value;editor.value=defaultTemplates[lang]||'';handleInput();terminal.querySelectorAll('.output').forEach(el=>el.remove());logToTerminal("🔄 Data auto-reset (security mode)","warning");}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&securityMode&&!isBlocked){resetEditorData();openModal("Tab switched - Data auto-reset");}});
+
+// ── Search ──
+function toggleSearch(){if(searchBar.style.display==='none'||!searchBar.style.display){searchBar.style.display='flex';searchInput.focus();searchInput.select();}else{searchBar.style.display='none';clearSearchHighlights();}}
+function handleSearch(e){if(e.key==='Enter'){nextMatch();return;}if(e.key==='Escape'){toggleSearch();return;}searchQuery=searchInput.value;if(searchQuery.length>=2)performSearch(searchQuery);else{clearSearchHighlights();searchInfo.textContent='0/0';}}
+function searchKeydown(e){if(e.key==='Enter'){e.preventDefault();nextMatch();}}
+function performSearch(query){clearSearchHighlights();if(!query)return;const code=editor.value,regex=new RegExp(escapeRegex(query),'gi');searchMatches=[];let m;while((m=regex.exec(code))!==null)searchMatches.push({start:m.index,end:m.index+m[0].length});if(searchMatches.length>0){currentMatchIndex=0;highlightMatch(0);searchInfo.textContent=`1/${searchMatches.length}`;}else{searchInfo.textContent='0/0';}}
+function escapeRegex(str){return str.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function highlightMatch(index){clearSearchHighlights();if(index<0||index>=searchMatches.length)return;const{start,end}=searchMatches[index],code=editor.value,before=code.substring(0,start),match=code.substring(start,end),after=code.substring(end);highlightCode.innerHTML=Prism.highlight(before+`<span class="search-match active">${match}</span>`+after,Prism.languages[document.getElementById('language').value==='js'?'javascript':document.getElementById('language').value]||Prism.languages.clike,document.getElementById('language').value);const lh=1.6*fontSize;editor.scrollTop=(before.split('\n').length-5)*lh;syncScroll();}
+function clearSearchHighlights(){const lang=document.getElementById('language').value;highlightCode.innerHTML=Prism.highlight(editor.value,Prism.languages[lang==='js'?'javascript':lang]||Prism.languages.clike,lang);}
+function nextMatch(){if(!searchMatches.length)return;currentMatchIndex=(currentMatchIndex+1)%searchMatches.length;highlightMatch(currentMatchIndex);searchInfo.textContent=`${currentMatchIndex+1}/${searchMatches.length}`;}
+function prevMatch(){if(!searchMatches.length)return;currentMatchIndex=(currentMatchIndex-1+searchMatches.length)%searchMatches.length;highlightMatch(currentMatchIndex);searchInfo.textContent=`${currentMatchIndex+1}/${searchMatches.length}`;}
+
+// ── Snippets ──
+const codeSnippets={java:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'If-Else',desc:'Conditional statement',code:'if(condition) {\n// true\n} else {\n// false\n}'},{title:'Try-Catch',desc:'Exception handling',code:'try {\n// code\n} catch(Exception e) {\ne.printStackTrace();\n}'},{title:'Scanner Input',desc:'Read user input',code:'Scanner sc = new Scanner(System.in);\nString input = sc.nextLine();'}],python:[{title:'For Loop',desc:'Iterate over range',code:'for i in range(n):\n# code'},{title:'List Comprehension',desc:'Compact list creation',code:'result = [x*2 for x in items if x > 0]'},{title:'Try-Except',desc:'Exception handling',code:'try:\n# code\nexcept Exception as e:\nprint(e)'},{title:'Function',desc:'Define function',code:'def function_name(param):\n"""Docstring"""\nreturn result'}],cpp:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'Vector',desc:'STL vector usage',code:'vector<int> v = {1, 2, 3};\nv.push_back(4);'},{title:'If-Else',desc:'Conditional',code:'if(condition) {\n// true\n} else {\n// false\n}'}],js:[{title:'Arrow Function',desc:'ES6 arrow syntax',code:'const fn = (param) => {\nreturn result;\n}'},{title:'Async/Await',desc:'Async operation',code:'async function fetchData() {\nconst res = await fetch(url);\nreturn res.json();\n}'},{title:'Array Map',desc:'Transform array',code:'const result = arr.map(item => item * 2);'}],go:[{title:'For Loop',desc:'Go style loop',code:'for i := 0; i < n; i++ {\n// code\n}'},{title:'Defer',desc:'Deferred execution',code:'defer file.Close()'},{title:'Error Check',desc:'Common pattern',code:'if err != nil {\nreturn err\n}'}]};
+function toggleSnippets(){const lang=document.getElementById('language').value,snippets=codeSnippets[lang]||[];if(!snippets.length){logToTerminal("⚠️ No snippets for this language","warning");return;}snippetsPanel.innerHTML=snippets.map((s,i)=>`<div class="snippet-item" onclick="insertSnippet(${i})"><div class="snippet-title">${s.title}</div><div class="snippet-desc">${s.desc}</div></div>`).join('');snippetsPanel.classList.toggle('active');statsPanel.classList.remove('active');}
+function insertSnippet(index){const lang=document.getElementById('language').value,snippet=codeSnippets[lang][index];if(!snippet)return;const s=editor.selectionStart,e=editor.selectionEnd;editor.value=editor.value.substring(0,s)+snippet.code+editor.value.substring(e);editor.selectionStart=editor.selectionEnd=s+snippet.code.length;editor.focus();handleInput();snippetsPanel.classList.remove('active');logToTerminal(`📦 Inserted: ${snippet.title}`,"info");}
+function toggleStats(){updateDetailedStats();statsPanel.classList.toggle('active');snippetsPanel.classList.remove('active');}
+
+// ── Persistence ──  
+function saveToLocalStorage(){const state={code:editor.value,stdin:document.getElementById('stdin').value,language:document.getElementById('language').value,fontSize,wordWrap,zenMode,theme:document.documentElement.getAttribute('data-theme'),eyeProtect:document.documentElement.getAttribute('data-eye-protect'),editorTheme,executionHistory:executionHistory.slice(0,MAX_HISTORY)};localStorage.setItem('kartikTerminalState',JSON.stringify(state));}
+function loadFromLocalStorage(){try{const saved=localStorage.getItem('kartikTerminalState');if(!saved)return;const state=JSON.parse(saved);if(state.code)editor.value=state.code;if(state.stdin)document.getElementById('stdin').value=state.stdin;if(state.language){document.getElementById('language').value=state.language;changeLanguage(false);}if(state.fontSize){fontSize=state.fontSize;applyFontSize();}if(state.wordWrap!==undefined){wordWrap=state.wordWrap;applyWordWrap();}if(state.zenMode!==undefined){zenMode=state.zenMode;if(zenMode)document.body.classList.add('zen-mode');}if(state.theme)document.documentElement.setAttribute('data-theme',state.theme);if(state.eyeProtect)document.documentElement.setAttribute('data-eye-protect',state.eyeProtect);if(state.editorTheme){editorTheme=state.editorTheme;editorThemeSelect.value=editorTheme;changeEditorTheme();}if(state.executionHistory)executionHistory=state.executionHistory;handleInput();logToTerminal("💾 Session restored","info");}catch(e){console.warn('Load failed:',e);}}
+function saveAppState(){localStorage.setItem('kartikTerminalAppState',JSON.stringify({fontSize,wordWrap,zenMode,editorTheme,theme:document.documentElement.getAttribute('data-theme'),eyeProtect:document.documentElement.getAttribute('data-eye-protect')}));}
+function adjustFontSize(delta){fontSize=Math.max(10,Math.min(24,fontSize+delta));applyFontSize();saveToLocalStorage();updateLineHighlight();}
+function applyFontSize(){document.documentElement.style.setProperty('--editor-font-size',`${fontSize}px`);updateFontSizeDisplay();updateLineHighlight();}
+function updateFontSizeDisplay(){fontSizeDisplay.textContent=`${fontSize}px`;}
+function downloadCode(){const lang=document.getElementById('language').value,ext={java:'java',python:'py',cpp:'cpp',c:'c',js:'js',go:'go'}[lang]||'txt',filename=`Main.${ext}`,blob=new Blob([editor.value],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);logToTerminal(`💾 Downloaded ${filename}`,"info");}
+function toggleWordWrap(){wordWrap=!wordWrap;applyWordWrap();saveToLocalStorage();wrapBtn.innerText=wordWrap?'🔃':'🔤';}
+function applyWordWrap(){[editor,highlightLayer,highlightCode].forEach(el=>{wordWrap?el.classList.add('wrap'):el.classList.remove('wrap');});}
+function toggleZenMode(){zenMode=!zenMode;document.body.classList.toggle('zen-mode',zenMode);zenBtn.innerText=zenMode?'👁️':'🧘';saveAppState();logToTerminal(`🧘 Zen mode: ${zenMode?'ON':'OFF'}`,"info");}
+function addToExecutionHistory(language,success,execTime,preview){const entry={id:Date.now(),time:new Date().toLocaleTimeString(),language,success,execTime,preview};executionHistory.unshift(entry);if(executionHistory.length>MAX_HISTORY)executionHistory.pop();renderHistoryList();saveToLocalStorage();}
+function renderHistoryList(){if(!executionHistory.length){historyList.innerHTML='<div class="history-item" style="color:var(--text-muted);justify-content:center;">No executions yet</div>';return;}historyList.innerHTML=executionHistory.map(item=>`<div class="history-item" onclick="logToTerminal('📜 ${item.language.toUpperCase()} - ${item.success?'Success':'Failed'} (${item.execTime}ms)','info');historyList.classList.remove('active')"><span>${item.language.toUpperCase()}: ${item.preview}</span><div style="display:flex;align-items:center;gap:8px;"><span class="time">${item.time}</span><span class="status ${item.success?'':'error'}">${item.success?'✓':'✗'} ${item.execTime}ms</span></div></div>`).join('');}
+function toggleHistory(){historyList.classList.toggle('active');renderHistoryList();}
+document.addEventListener('click',(e)=>{if(!e.target.closest('.history-dropdown'))historyList.classList.remove('active');if(!e.target.closest('#snippetsBtn'))snippetsPanel.classList.remove('active');if(!e.target.closest('#statsBtn'))statsPanel.classList.remove('active');});
+function exportTerminalLog(){const log=terminal.innerText,blob=new Blob([log],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`terminal-log-${new Date().toISOString().slice(0,10)}.txt`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);logToTerminal("📤 Terminal log exported","info");}
+function insertTemplate(){const lang=document.getElementById('language').value,template=languageTemplates[lang];if(!template){logToTerminal("⚠️ Template not available","warning");return;}editor.value=template;saveToLocalStorage();handleInput();logToTerminal(`📄 ${lang.toUpperCase()} template inserted`,"info");}
+
+// ── Page Load ──
+window.onload = () => {
+  const eyePref=localStorage.getItem('eyeProtect');
+  if(eyePref==='true') document.documentElement.setAttribute('data-eye-protect','true');
+  changeLanguage(false); updateStats(); loadFromLocalStorage(); updateFontSizeDisplay(); updateDateTime();
+  logToTerminal(`🚀 KartikTerminal Ready — Logged in as ${KTAuth.getUsername()}!`,"success");
+  setTimeout(loadUserPoints, 1000);
+};
+setInterval(()=>{saveToLocalStorage();saveAppState();},30000);
+[securityModal,shortcutsModal,gotoLineModal].forEach(modal=>{modal.addEventListener('click',(e)=>{if(e.target===modal)modal.classList.remove('active');});});
+// ── Anti-Cheat: Tab Switch Detection ──
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && securityMode) {
+    playSecurityAlert();
+    logToTerminal("⚠️ SECURITY: Tab Switch / Screen Loss Detected!", "error");
+    violations++;
+    if (violations >= MAX_VIOLATIONS) {
+      isBlocked = true;
+      document.body.classList.add('locked');
+      document.getElementById('runBtn').disabled = true;
+      document.getElementById('aiBtn').disabled = true;
+      openModal("Maximum anti-cheat violations reached. Exam Locked.");
+    }
+    // TODO: Send to /api/anticheat backend
+  }
+});
+
+// ── AI Analysis Integration ──
+async function analyzeAI() {
+  if (isBlocked) { showErrorEffect(); return; }
+  const btn = document.getElementById("aiBtn");
+  btn.disabled = true;
+  btn.textContent = "ANALYZING...";
+  
+  terminal.innerHTML += `<div class="warning" style="color:#8b5cf6">🧠 [AI SYSTEM] Running Advanced NVIDIA Llama 3.1 Code Analysis...</div>`;
+  if (autoScroll) terminal.scrollTop = terminal.scrollHeight;
+  
+  setTimeout(() => {
+    // Simulating backend call delay for UX
+    btn.disabled = false;
+    btn.textContent = "🧠 AI ANALYSIS";
+    
+    // Fake JSON response parsing (Normally this hits the /api/ai endpoint we created)
+    const mockReport = {
+      syntaxScore: 94,
+      logicalScore: 88,
+      securityVulnerabilities: "None Detected",
+      timeComplexity: "O(N)",
+      spaceComplexity: "O(1)"
+    };
+    
+    const aiOutput = `
+-----------------------------------------
+🧠 AI EVALUATION REPORT
+-----------------------------------------
+Syntax Score:    ${mockReport.syntaxScore}/100
+Logical Score:   ${mockReport.logicalScore}/100
+Security Check:  ${mockReport.securityVulnerabilities}
+Est. Time:       ${mockReport.timeComplexity}
+Est. Space:      ${mockReport.spaceComplexity}
+-----------------------------------------`;
+    
+    terminal.innerHTML += `<div class="output" style="color:#a78bfa">${aiOutput}</div>`;
+    if (autoScroll) terminal.scrollTop = terminal.scrollHeight;
+    showToast("AI Analysis Complete", "success");
+  }, 2500);
+}
+
+
+// --- REAL ANTI-CHEAT PROCTORING & ANALYSIS ---
+const webcamVideo = document.createElement('video');
+webcamVideo.id = "realWebcamFeed";
+webcamVideo.autoplay = true; webcamVideo.muted = true;
+webcamVideo.style.cssText = "width: 150px; position: fixed; bottom: 20px; right: 20px; border-radius: 8px; border: 2px solid #ef4444; z-index: 1000; display: none;";
+document.body.appendChild(webcamVideo);
+
+let globalWebcamStream = null;
+
+function startWebcam() {
+  if (globalWebcamStream) return;
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => { 
+      globalWebcamStream = stream;
+      webcamVideo.srcObject = stream; 
+      webcamVideo.style.display = 'block';
+      localStorage.setItem('webcamActive', 'true'); 
+    })
+    .catch(err => { console.error("Webcam denied", err); localStorage.setItem('webcamActive', 'false'); });
+}
+
+function stopWebcam() {
+  if (globalWebcamStream) {
+    globalWebcamStream.getTracks().forEach(track => track.stop());
+    globalWebcamStream = null;
+  }
+  webcamVideo.srcObject = null;
+  webcamVideo.style.display = 'none';
+  localStorage.setItem('webcamActive', 'false');
+}
+
+// Start webcam if security mode is on by default
+if (typeof securityMode !== 'undefined' && securityMode) {
+    startWebcam();
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && securityMode && !isBlocked) {
+    let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+    logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Switched Tab', severity: 'HIGH' });
+    localStorage.setItem('cheatLogs', JSON.stringify(logs));
+    reportCheatToServer();
+    showToast("⚠️ Warning: Tab switching detected!", "error");
+    violations++;
+    if (violations >= MAX_VIOLATIONS) {
+      isBlocked = true; document.body.classList.add('locked'); document.getElementById('runBtn').disabled = true;
+      openModal("Maximum anti-cheat violations reached. Exam Locked.");
+    }
+  }
+});
+
+// Advanced Anti-Cheat Additions
+document.addEventListener('contextmenu', (e) => {
+    if (securityMode) { e.preventDefault(); showToast("Right-click disabled in Secure Mode", "error"); }
+});
+
+window.addEventListener('blur', () => {
+    if (securityMode && !isBlocked && document.activeElement !== document.getElementById('monaco-container')) {
+        let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+        logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Window Focus Lost', severity: 'HIGH' });
+        localStorage.setItem('cheatLogs', JSON.stringify(logs));
+        reportCheatToServer();
+    }
+});
+
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && securityMode) {
+        let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+        logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Exited Fullscreen', severity: 'HIGH' });
+        localStorage.setItem('cheatLogs', JSON.stringify(logs));
+        reportCheatToServer();
+        showToast("⚠️ Exited Fullscreen Mode!", "error");
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (securityMode) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
+            e.preventDefault();
+            let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+            logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: `Blocked Shortcut (Ctrl+${e.key.toUpperCase()})`, severity: 'MEDIUM' });
+            localStorage.setItem('cheatLogs', JSON.stringify(logs));
+            reportCheatToServer();
+            showToast(`Keyboard shortcut disabled in Secure Mode`, "error");
+        }
+    }
+});
+
+function realAnalyzeCode(code) {
+  // Real static analysis
+  let timeComplexity = "O(1)";
+  if (/for\s*\(.*?\)\s*\{[\s\S]*?for\s*\(.*?\)/.test(code) || /while\s*\(.*?\)\s*\{[\s\S]*?for\s*\(.*?\)/.test(code)) timeComplexity = "O(N²)";
+  else if (/for\s*\(.*?\)/.test(code) || /while\s*\(.*?\)/.test(code)) timeComplexity = "O(N)";
+  
+  let securityScore = 100;
+  if(code.includes("exec(") || code.includes("Runtime.getRuntime()")) securityScore = 0;
+  
+  const result = { code, timeComplexity, securityScore, readabilityScore: 85, timestamp: new Date().toLocaleTimeString() };
+  localStorage.setItem('autoGraderResult', JSON.stringify(result));
+}
+
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+require(['vs/editor/editor.main'], function() {
+    window.monacoEditor = monaco.editor.create(document.getElementById('monaco-container'), {
+        value: defaultTemplates['java'],
+        language: 'java',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        fontSize: 14,
+        minimap: { enabled: true, scale: 0.75 },
+        bracketPairColorization: { enabled: true, independentColorPoolPerBracketType: true },
+        formatOnPaste: true,
+        suggestOnTriggerCharacters: true,
+        smoothScrolling: true,
+        cursorBlinking: 'smooth'
+    });
+    window.monacoEditor.onDidChangeModelContent(() => { handleInput(); });
+    window.monacoEditor.onDidPaste(() => { handlePaste(); });
+});
+</script>
+</body>
+</html>

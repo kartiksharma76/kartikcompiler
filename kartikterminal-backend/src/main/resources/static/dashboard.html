@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | Dashboard</title>
+<script src="/auth.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #050505; --panel: #0d0f14; --card: #14171c;
+  --border: #1e2530; --text: #e2e8f0; --muted: #64748b;
+  --accent: #2563eb; --success: #10b981; --warning: #f59e0b; --error: #ef4444;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: 60px;
+  background: rgba(13,15,20,0.9); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px);
+}
+.brand { font-weight: 800; font-size: 18px; background: linear-gradient(90deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; text-decoration: none; }
+.nav-links a { color: var(--muted); font-size: 13px; text-decoration: none; margin-left: 20px; }
+.nav-links a:hover, .nav-links a.active { color: var(--text); }
+.logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+.logout-btn:hover { color: var(--error); border-color: var(--error); }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+
+/* ── Stat Cards ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.accent { color: #3b82f6; }
+.success { color: var(--success); }
+.warning { color: var(--warning); }
+
+/* ── Tier Badge ── */
+.tier-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+.tier-BRONZE   { background: rgba(180,120,60,0.2);  color: #cd7f32; border: 1px solid rgba(205,127,50,0.4); }
+.tier-SILVER   { background: rgba(192,192,192,0.15); color: #c0c0c0; border: 1px solid rgba(192,192,192,0.4); }
+.tier-GOLD     { background: rgba(255,215,0,0.15);  color: #ffd700; border: 1px solid rgba(255,215,0,0.4); }
+.tier-PLATINUM { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.4); }
+.tier-DIAMOND  { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.4); }
+
+/* ── Section ── */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
+.section-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); }
+
+/* ── History Table ── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 12px 16px; border-bottom: 1px solid rgba(30,37,48,0.5); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(37,99,235,0.03); }
+.lang-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; font-family: monospace; }
+.lang-java   { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.lang-python { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.lang-cpp    { background: rgba(168,85,247,0.15); color: #c084fc; }
+.lang-c      { background: rgba(20,184,166,0.15); color: #2dd4bf; }
+.lang-js     { background: rgba(245,158,11,0.2);  color: #fcd34d; }
+.lang-go     { background: rgba(14,165,233,0.15); color: #38bdf8; }
+.status-ok  { color: var(--success); font-size: 16px; }
+.status-err { color: var(--error);   font-size: 16px; }
+.points-badge { background: rgba(37,99,235,0.15); color: #60a5fa; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+
+/* ── Bar Chart ── */
+.bar-chart { padding: 16px 20px; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; }
+.bar-label { width: 60px; color: var(--muted); flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+.bar-count { width: 36px; color: var(--text); text-align: right; flex-shrink: 0; }
+
+/* ── Pagination ── */
+.pagination { display: flex; justify-content: center; gap: 8px; padding: 16px; }
+.page-btn { padding: 6px 14px; background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; cursor: pointer; font-size: 12px; }
+.page-btn:hover { color: var(--text); }
+.page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+
+.loading { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+.empty { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/compiler.html">KARTIKTERMINAL</a>
+  <div class="nav-links">
+    <a href="/compiler.html">Editor</a>
+    <a href="/dashboard.html" class="active">Dashboard</a>
+    <a href="/college.html">Admin Section</a>
+    <a href="/quiz.html">Quizzes</a>
+    <a href="/resume.html">Resume</a>
+    <a href="/chat.html">Chat</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/intelligence.html">AI Suite</a>
+  </div>
+  <button class="logout-btn" onclick="KTAuth.logout()">Logout</button>
+</nav>
+
+<div class="container">
+  <h1 id="pageTitle">Dashboard</h1>
+  <p class="subtitle" id="pageSubtitle">Loading your stats...</p>
+
+  <!-- Stat Cards -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="loading">Loading stats...</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+    <!-- Language Breakdown -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Language Usage</span>
+      </div>
+      <div class="bar-chart" id="langChart"><div class="loading">Loading...</div></div>
+    </div>
+
+    <!-- Weekly Activity -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">This Week</span>
+      </div>
+      <div class="bar-chart" id="weekChart"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Enterprise Management (Faculty/Admin) -->
+  <div class="section" id="enterpriseSection">
+    <div class="section-header">
+      <span class="section-title" style="color: #8b5cf6;">Enterprise Management (Teams & Exams)</span>
+      <button class="run-btn" style="background:#8b5cf6; padding: 6px 12px; font-size:11px;" onclick="createNewExam()">+ New Exam</button>
+    </div>
+    <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="stat-card" style="background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.2);">
+        <div class="stat-label" style="color: #a78bfa;">Active Teams</div>
+        <div class="stat-value" style="color: #c4b5fd;">0</div>
+        <button class="run-btn" style="margin-top: 12px; background: transparent; border: 1px solid #8b5cf6; color: #a78bfa; padding: 4px 8px; font-size: 10px;">Manage Teams</button>
+      </div>
+      <div class="stat-card" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+        <div class="stat-label" style="color: #34d399;">Scheduled Exams</div>
+        <div class="stat-value" style="color: #6ee7b7;">0</div>
+        <button class="run-btn" style="margin-top: 12px; background: transparent; border: 1px solid #10b981; color: #34d399; padding: 4px 8px; font-size: 10px;">View Schedules</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Features Section (Llama 3.1) -->
+  <div class="section" id="aiFeaturesSection">
+    <div class="section-header">
+      <span class="section-title" style="color: #10b981;">Nvidia AI Suite (Llama 3.1)</span>
+    </div>
+    <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      
+      <div class="stat-card" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+        <div class="stat-label" style="color: #34d399; font-size: 14px; font-weight: bold;">AI Mock Interview</div>
+        <div class="stat-sub" style="margin-top: 8px; margin-bottom: 15px; color: var(--muted);">Generate real-world technical interviews tailored to your target role using Llama 3.1.</div>
+        <button class="run-btn" style="background: transparent; border: 1px solid #10b981; color: #34d399; padding: 8px 16px; font-size: 12px; cursor: pointer;" onclick="openInterviewModal()">Start Interview</button>
+      </div>
+
+      <div class="stat-card" style="background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.2);">
+        <div class="stat-label" style="color: #fbbf24; font-size: 14px; font-weight: bold;">AI Plagiarism Scanner</div>
+        <div class="stat-sub" style="margin-top: 8px; margin-bottom: 15px; color: var(--muted);">Deep AST-level similarity analysis of code submissions using Llama 3.1.</div>
+        <button class="run-btn" style="background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 8px 16px; font-size: 12px; cursor: pointer;" onclick="openPlagiarismModal()">Run Plagiarism Scan</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Execution History -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Execution History</span>
+      <span id="historyMeta" style="font-size:11px;color:var(--muted);"></span>
+    </div>
+    <div id="historyBody"><div class="loading">Loading history...</div></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- Modals for AI Features -->
+<style>
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+.modal h2 { margin-bottom: 16px; color: var(--text); }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+.form-group input, .form-group textarea { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: monospace; }
+.form-group textarea { min-height: 120px; resize: vertical; }
+.btn-submit { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 10px; }
+.btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.ai-output { margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; display: none; white-space: pre-wrap; font-family: sans-serif; line-height: 1.6; }
+.spinner { display: none; margin: 20px auto; width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<!-- Plagiarism Modal -->
+<div class="modal-overlay" id="plagiarismModal">
+  <div class="modal">
+    <h2>🔍 AI Plagiarism Scanner</h2>
+    <div class="form-group">
+      <label>Submission 1 (Code)</label>
+      <textarea id="plagCode1" placeholder="Paste first code here..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Submission 2 (Code)</label>
+      <textarea id="plagCode2" placeholder="Paste second code here..."></textarea>
+    </div>
+    <button class="btn-submit" onclick="runPlagiarism()">Scan Codes</button>
+    <button class="btn-cancel" onclick="closeModals()">Cancel</button>
+    <div class="spinner" id="plagSpinner"></div>
+    <div class="ai-output" id="plagOutput"></div>
+  </div>
+</div>
+
+<!-- Interview Modal -->
+<div class="modal-overlay" id="interviewModal">
+  <div class="modal">
+    <h2>🎤 AI Mock Interview Generator</h2>
+    <div class="form-group">
+      <label>Target Role</label>
+      <input type="text" id="intRole" placeholder="e.g. Senior Java Developer">
+    </div>
+    <div class="form-group">
+      <label>Focus Topic</label>
+      <input type="text" id="intTopic" placeholder="e.g. Microservices & Spring Boot">
+    </div>
+    <button class="btn-submit" onclick="runInterview()">Generate Questions</button>
+    <button class="btn-cancel" onclick="closeModals()">Cancel</button>
+    <div class="spinner" id="intSpinner"></div>
+    <div class="ai-output" id="intOutput"></div>
+  </div>
+</div>
+
+<script>
+let currentPage = 0;
+
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/dashboard');
+    if (res.status === 401) { KTAuth.logout(); return; }
+    const d = await res.json();
+    renderStats(d.stats, d.rank, d.tier, d.currentStreak);
+    renderLangChart(d.languageBreakdown);
+    renderWeekChart(d.weeklyActivity);
+  } catch (e) {
+    document.getElementById('statsGrid').innerHTML = '<div class="loading">Failed to load stats.</div>';
+  }
+}
+
+async function loadHistory(page = 0) {
+  document.getElementById('historyBody').innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const res = await fetch(`/api/dashboard/history?page=${page}&size=15`);
+    const d = await res.json();
+    renderHistory(d.content);
+    renderPagination(d.currentPage, d.totalPages);
+    document.getElementById('historyMeta').textContent = `${d.totalElements} total runs`;
+  } catch (e) {
+    document.getElementById('historyBody').innerHTML = '<div class="loading">Failed to load history.</div>';
+  }
+}
+
+function renderStats(s, rank, tier, streak) {
+  document.getElementById('pageTitle').textContent = `Welcome back, ${s.fullName || s.username}!`;
+  document.getElementById('pageSubtitle').textContent = `Member since ${new Date(s.memberSince).toLocaleDateString('en-IN', {year:'numeric',month:'long'})}`;
+
+  const tierColor = { BRONZE:'#cd7f32',SILVER:'#c0c0c0',GOLD:'#ffd700',PLATINUM:'#60a5fa',DIAMOND:'#a78bfa' };
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total Points</div>
+      <div class="stat-value accent">${s.totalPoints}</div>
+      <div class="stat-sub">Rank #${rank} &nbsp; <span class="tier-badge tier-${tier}">${tier}</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Executions</div>
+      <div class="stat-value">${s.totalExecutions}</div>
+      <div class="stat-sub">Today: ${s.todayExecutions}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Success Rate</div>
+      <div class="stat-value success">${s.successRate.toFixed(1)}%</div>
+      <div class="stat-sub">${s.successfulExecutions} successful</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Speed</div>
+      <div class="stat-value warning">${Math.round(s.avgExecutionTime)}ms</div>
+      <div class="stat-sub">per execution</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Streak</div>
+      <div class="stat-value">${streak} 🔥</div>
+      <div class="stat-sub">consecutive days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Fav Language</div>
+      <div class="stat-value" style="font-size:20px;">${s.favoriteLanguage?.toUpperCase() || '—'}</div>
+      <div class="stat-sub">most used</div>
+    </div>
+  `;
+}
+
+function renderLangChart(breakdown) {
+  if (!breakdown || !Object.keys(breakdown).length) {
+    document.getElementById('langChart').innerHTML = '<div class="empty">No data yet</div>'; return;
+  }
+  const max = Math.max(...Object.values(breakdown));
+  const colors = { java:'#fbbf24',python:'#60a5fa',cpp:'#c084fc',c:'#2dd4bf',js:'#fcd34d',go:'#38bdf8' };
+  document.getElementById('langChart').innerHTML = Object.entries(breakdown)
+    .sort((a,b) => b[1]-a[1])
+    .map(([lang, count]) => `
+      <div class="bar-row">
+        <div class="bar-label">${lang}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(count/max*100).toFixed(1)}%;background:${colors[lang]||'#64748b'};"></div></div>
+        <div class="bar-count">${count}</div>
+      </div>
+    `).join('');
+}
+
+function renderWeekChart(activity) {
+  if (!activity?.length) { document.getElementById('weekChart').innerHTML = '<div class="empty">No data yet</div>'; return; }
+  const max = Math.max(...activity.map(a => a.executions), 1);
+  document.getElementById('weekChart').innerHTML = activity.map(a => `
+    <div class="bar-row">
+      <div class="bar-label">${a.date}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(a.executions/max*100).toFixed(1)}%;background:#2563eb;"></div></div>
+      <div class="bar-count">${a.executions}</div>
+    </div>
+  `).join('');
+}
+
+function renderHistory(records) {
+  if (!records?.length) {
+    document.getElementById('historyBody').innerHTML = '<div class="empty">No executions yet. Start coding! 🚀</div>'; return;
+  }
+  document.getElementById('historyBody').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>#</th><th>Language</th><th>Status</th>
+        <th>Time</th><th>Points</th><th>Executed At</th><th>Preview</th>
+      </tr></thead>
+      <tbody>
+        ${records.map((r, i) => `
+          <tr>
+            <td style="color:var(--muted)">${r.id}</td>
+            <td><span class="lang-badge lang-${r.language}">${r.language.toUpperCase()}</span></td>
+            <td><span class="${r.success ? 'status-ok' : 'status-err'}">${r.success ? '✓' : '✗'}</span> ${r.status}</td>
+            <td style="font-family:monospace;">${r.executionTimeMs}ms</td>
+            <td><span class="points-badge">+${r.points}</span></td>
+            <td style="color:var(--muted);font-size:11px;">${new Date(r.executedAt).toLocaleString('en-IN')}</td>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:11px;color:var(--muted);">${r.codePreview || '—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderPagination(current, total) {
+  if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="changePage(${current-1})" ${current===0?'disabled':''}>← Prev</button>`;
+  for (let i = Math.max(0, current-2); i <= Math.min(total-1, current+2); i++) {
+    html += `<button class="page-btn ${i===current?'active':''}" onclick="changePage(${i})">${i+1}</button>`;
+  }
+  html += `<button class="page-btn" onclick="changePage(${current+1})" ${current===total-1?'disabled':''}>Next →</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function changePage(p) { currentPage = p; loadHistory(p); }
+
+// Modal Logic
+function closeModals() {
+  document.getElementById('plagiarismModal').classList.remove('active');
+  document.getElementById('interviewModal').classList.remove('active');
+  document.getElementById('plagOutput').style.display = 'none';
+  document.getElementById('intOutput').style.display = 'none';
+}
+function openPlagiarismModal() { document.getElementById('plagiarismModal').classList.add('active'); }
+function openInterviewModal() { document.getElementById('interviewModal').classList.add('active'); }
+
+async function runPlagiarism() {
+  const code1 = document.getElementById('plagCode1').value;
+  const code2 = document.getElementById('plagCode2').value;
+  if(!code1 || !code2) return alert("Please enter both code submissions.");
+  
+  document.getElementById('plagSpinner').style.display = 'block';
+  document.getElementById('plagOutput').style.display = 'none';
+  
+  try {
+    const res = await fetch('/api/intelligence/plagiarism/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code1, code2 })
+    });
+    const data = await res.json();
+    document.getElementById('plagOutput').innerHTML = `<strong style="color: ${data.flagged ? '#ef4444' : '#10b981'}">Similarity: ${data.similarityPercentage}%</strong><br><br><strong>Flagged:</strong> ${data.flagged ? 'Yes ⚠️' : 'No ✅'}<br><br><strong>Analysis:</strong> ${data.matchedLines}`;
+    document.getElementById('plagOutput').style.display = 'block';
+  } catch(e) {
+    alert("Analysis failed.");
+  } finally {
+    document.getElementById('plagSpinner').style.display = 'none';
+  }
+}
+
+async function runInterview() {
+  const role = document.getElementById('intRole').value || 'Software Engineer';
+  const topic = document.getElementById('intTopic').value || 'Data Structures';
+  
+  document.getElementById('intSpinner').style.display = 'block';
+  document.getElementById('intOutput').style.display = 'none';
+  
+  try {
+    const res = await fetch('/api/intelligence/interview/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role, topic })
+    });
+    const data = await res.json();
+    document.getElementById('intOutput').innerText = data.result;
+    document.getElementById('intOutput').style.display = 'block';
+  } catch(e) {
+    alert("Analysis failed.");
+  } finally {
+    document.getElementById('intSpinner').style.display = 'none';
+  }
+}
+
+// Init
+loadDashboard();
+loadHistory(0);
+</script>
+</body>
+</html>

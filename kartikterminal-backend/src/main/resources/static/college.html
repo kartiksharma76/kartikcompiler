@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | Admin Section</title>
+<script src="/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Chart.js for Advanced Analytics -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #030712; 
+  --panel: rgba(17, 24, 39, 0.7);
+  --sidebar: rgba(3, 7, 18, 0.95);
+  --card: rgba(31, 41, 55, 0.5);
+  --border: rgba(255, 255, 255, 0.05); 
+  --border-focus: rgba(59, 130, 246, 0.5);
+  --text: #f9fafb; 
+  --muted: #9ca3af;
+  --accent: #3b82f6; 
+  --accent-glow: rgba(59, 130, 246, 0.2);
+  --success: #10b981; 
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body { 
+  background: radial-gradient(circle at 50% -20%, #1e1b4b 0%, var(--bg) 70%);
+  background-attachment: fixed;
+  color: var(--text); 
+  font-family: var(--font-sans); 
+  height: 100vh; 
+  display: flex; 
+  flex-direction: column;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+/* Nav Styling */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 70px; flex-shrink: 0;
+  background: rgba(3, 7, 18, 0.8); 
+  border-bottom: 1px solid var(--border);
+  z-index: 100; 
+  backdrop-filter: blur(20px);
+}
+.brand { 
+  font-weight: 800; 
+  font-size: 20px; 
+  background: linear-gradient(135deg, #a78bfa, #3b82f6); 
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent; 
+  letter-spacing: 1.5px; 
+  text-decoration: none; 
+}
+.nav-links { display: flex; gap: 28px; }
+.nav-links a { 
+  color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; 
+  transition: all 0.3s ease; position: relative; padding: 6px 0;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text); }
+.nav-links a.active::after {
+  content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, #a78bfa, #3b82f6); border-radius: 2px;
+}
+.logout-btn { 
+  background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); 
+  color: #fca5a5; padding: 8px 18px; border-radius: 8px; cursor: pointer; 
+  font-size: 13px; font-weight: 600; transition: all 0.3s ease;
+}
+.logout-btn:hover { background: var(--error); color: white; }
+
+.workspace-container { display: flex; flex: 1; overflow: hidden; }
+
+/* Sidebar */
+.workspace-sidebar {
+  width: 280px; background: var(--sidebar); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; backdrop-filter: blur(20px);
+}
+.sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
+.sidebar-header h2 {
+  font-size: 14px; font-weight: 800;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.module-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.module-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  border-radius: 10px; cursor: pointer; transition: all 0.2s ease;
+  font-size: 13px; color: var(--muted); font-weight: 600;
+}
+.module-item:hover, .module-item.active { background: rgba(255, 255, 255, 0.04); color: var(--text); }
+.module-item.active { border-left: 3px solid #8b5cf6; background: rgba(139, 92, 246, 0.1); }
+.icon-badge {
+  width: 28px; height: 28px; border-radius: 8px; background: rgba(255, 255, 255, 0.05);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.module-item.active .icon-badge { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; }
+
+/* Main Panel */
+.workspace-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 40px; position: relative; width: 100%; }
+.content-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 20px;
+  padding: 36px; margin-bottom: 32px; backdrop-filter: blur(16px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+}
+/* Glowing Orbs */
+.content-card::before {
+  content:''; position:absolute; top:-50px; right:-50px; width:200px; height:200px;
+  background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;
+}
+.content-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; position:relative; z-index:1; width: 100%; }
+.content-header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+.content-header p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+/* Dashboard Grids */
+.bento-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; margin-top: 20px; width: 100%;
+}
+.bento-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px; position: relative; overflow: hidden; display:flex; flex-direction: column;
+}
+.bento-card::after {
+  content:''; position:absolute; inset:0; border-radius:16px; padding:1px; 
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent); 
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events:none;
+}
+.col-span-4 { grid-column: span 4; }
+.col-span-5 { grid-column: span 5; }
+.col-span-6 { grid-column: span 6; }
+.col-span-7 { grid-column: span 7; }
+.col-span-8 { grid-column: span 8; }
+.col-span-12 { grid-column: span 12; }
+
+/* Elements */
+.card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #fff; letter-spacing: 0.5px; }
+.metric-value { font-size: 36px; font-weight: 800; font-family: var(--font-mono); color: #fff; margin: 10px 0; }
+.metric-label { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+.trend-up { color: var(--success); font-size: 13px; font-weight: 600; }
+.trend-down { color: var(--error); font-size: 13px; font-weight: 600; }
+
+.badge {
+  display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.badge.active { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge.pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+.badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white;
+  border: none; padding: 12px 24px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5); }
+.btn-secondary {
+  background: rgba(255,255,255,0.03); color: var(--text); border: 1px solid var(--border);
+  padding: 12px 24px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.08); }
+
+/* Forms */
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+.form-control {
+  width: 100%; padding: 12px 16px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; transition: all 0.3s;
+}
+.form-control:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); }
+
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th, .data-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border); }
+.data-table th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Animations & Custom */
+.pulse-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+  margin-right: 8px; box-shadow: 0 0 10px var(--success); animation: pulse 1.5s infinite;
+}
+@keyframes pulse { 0% { opacity:1; box-shadow: 0 0 10px var(--success); } 50% { opacity:0.4; box-shadow: none; } 100% { opacity:1; box-shadow: 0 0 10px var(--success); } }
+
+/* Live Video Feed Mock */
+.video-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
+.video-feed {
+  aspect-ratio: 16/9; background: #000; border-radius: 8px; position: relative; overflow: hidden;
+  border: 1px solid var(--border); display: flex; align-items:center; justify-content:center;
+}
+.video-feed::before { content:'Live'; position:absolute; top:8px; left:8px; font-size:10px; background:var(--error); color:#fff; padding:2px 6px; border-radius:4px; font-weight:700;}
+.video-feed::after { content: 'Student ' attr(data-id); position:absolute; bottom:8px; left:8px; font-size:11px; color:#fff; text-shadow: 0 1px 2px #000; font-weight:600;}
+.face-box { width: 40px; height: 50px; border: 2px dashed rgba(16,185,129,0.5); border-radius: 8px; }
+.face-box.alert { border-color: var(--error); animation: blink 1s infinite;}
+@keyframes blink { 0%, 100% { opacity:1; } 50% { opacity:0; } }
+
+/* Code Snippet */
+.code-preview { background: #000; border-radius: 8px; padding: 16px; font-family: var(--font-mono); font-size: 12px; color: #fff; max-height: 250px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border); }
+.code-highlight { color: #f87171; background: rgba(239, 68, 68, 0.2); padding: 0 4px; border-radius: 2px; }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/college.html">KARTIKTERMINAL | ENTERPRISE</a>
+  <div class="nav-links">
+    <a href="/compiler.html">Editor</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/college.html" class="active">Admin Section</a>
+    <a href="/intelligence.html">AI Suite</a>
+  </div>
+  <button class="logout-btn" onclick="KTAuth.logout()">Logout</button>
+</nav>
+
+<div class="workspace-container">
+  <div class="workspace-sidebar">
+    <div class="sidebar-header">
+      <h2>Global Command Center</h2>
+    </div>
+    <div class="module-list">
+      <div class="module-item active" onclick="switchTab('analytics')">
+        <div class="icon-badge">📈</div>
+        <div>Global Analytics</div>
+      </div>
+      <div class="module-item" onclick="switchTab('anticheat')">
+        <div class="icon-badge">👁️</div>
+        <div>Live Anti-Cheat Monitor</div>
+      </div>
+      <div class="module-item" onclick="switchTab('autograder')">
+        <div class="icon-badge">🤖</div>
+        <div>AI Auto-Grader</div>
+      </div>
+      <div class="module-item" onclick="switchTab('exams')">
+        <div class="icon-badge">📝</div>
+        <div>Exam & Contest Hub</div>
+      </div>
+      <div class="module-item" onclick="switchTab('teams')">
+        <div class="icon-badge">👥</div>
+        <div>Team Formations</div>
+      </div>
+      <div class="module-item" onclick="switchTab('admin')">
+        <div class="icon-badge">⚙️</div>
+        <div>Admin Section</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace-main" id="mainContent">
+    <!-- Content renders here dynamically -->
+  </div>
+</div>
+
+<script>
+let currentTab = localStorage.getItem('collegeCurrentTab') || 'analytics';
+
+function switchTab(tab) {
+  currentTab = tab;
+  localStorage.setItem('collegeCurrentTab', tab);
+  document.querySelectorAll('.module-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.module-item').forEach(el => {
+    if(el.getAttribute('onclick').includes(tab)) el.classList.add('active');
+  });
+  renderTab();
+}
+
+async function renderTab() {
+  const main = document.getElementById('mainContent');
+  
+  if (currentTab === 'analytics') {
+    main.innerHTML = `<div style="padding: 40px; color: var(--muted)">Loading real-time analytics...</div>`;
+    
+    try {
+      const [dashRes, leadRes] = await Promise.all([
+        fetch('/api/dashboard', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } }),
+        fetch('/api/leaderboard', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } })
+      ]);
+      const dash = await dashRes.json();
+      const lead = await leadRes.json();
+      
+      let activeSessions = dash.stats ? dash.stats.todayExecutions : 0;
+      let successRate = dash.stats ? dash.stats.successRate : 0;
+      let securityVulns = dash.totalCheatViolations || 0;
+      let isAdmin = dash.stats && dash.stats.role === 'ADMIN';
+      
+      let topCoders = lead.topCoders || [];
+      let leaderboardHtml = topCoders.map((c, i) => {
+        let active = c.isActive !== undefined ? c.isActive : c.active;
+        let disqualified = c.isDisqualified !== undefined ? c.isDisqualified : c.disqualified;
+        let isLocked = !active || disqualified || c.cheatViolations >= 5;
+        let cheatBadge = '';
+        if (disqualified) {
+          cheatBadge = `<span class="badge danger" style="margin-right:8px;" title="DISQUALIFIED">DISQUALIFIED 🚫</span>`;
+        } else if (!active) {
+          cheatBadge = `<span class="badge danger" style="margin-right:8px;" title="LOCKED">LOCKED 🔒</span>`;
+        } else if (c.cheatViolations >= 5) {
+          cheatBadge = `<span class="badge danger" style="margin-right:8px;" title="DISQUALIFIED">LOCKED 🔒</span>`;
+        } else if (c.cheatViolations > 0) {
+          cheatBadge = `<span class="badge danger" style="margin-right:8px;" title="${c.cheatViolations} Cheat Violations">${c.cheatViolations} 🚨</span>`;
+        }
+        
+        let adminControls = '';
+        if (isAdmin) {
+           if (isLocked) {
+              adminControls = `
+                <td align="right">
+                  <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--success); color:var(--success)" onclick="adminAction(${c.userId}, 'unlock')">Unlock</button>
+                </td>
+              `;
+           } else if (c.cheatViolations >= 5 && !disqualified) {
+              adminControls = `
+                <td align="right">
+                  <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--warning)" onclick="adminAction(${c.userId}, 'lock')">Lock</button>
+                  <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--error); color:var(--error)" onclick="adminAction(${c.userId}, 'disqualify')">Disqualify</button>
+                </td>
+              `;
+           } else {
+              adminControls = `<td align="right">-</td>`;
+           }
+        }
+
+        return `
+          <tr style="opacity: ${isLocked ? '0.5' : '1'}; text-decoration: ${c.isDisqualified ? 'line-through' : 'none'}">
+            <td>${i+1}. ${c.fullName || c.username}</td>
+            <td align="right">
+              ${cheatBadge}
+              ${c.totalPoints} pts
+            </td>
+            ${adminControls}
+          </tr>
+        `;
+      }).join('');
+      
+      if(topCoders.length === 0) leaderboardHtml = '<tr><td colspan="2" style="color:var(--muted)">No students found.</td></tr>';
+
+      main.innerHTML = `
+      <div class="content-header">
+        <div>
+          <h1>Global College Analytics</h1>
+          <p>Real-time performance metrics across all students.</p>
+        </div>
+        <button class="btn-primary">Generate PDF Report</button>
+      </div>
+      
+      <div class="bento-grid">
+        <div class="bento-card col-span-4">
+          <div class="metric-label">Today's Executions</div>
+          <div class="metric-value"><span class="pulse-dot"></span>${activeSessions}</div>
+          <div class="trend-up">Live</div>
+        </div>
+        <div class="bento-card col-span-4">
+          <div class="metric-label">Platform Success Rate</div>
+          <div class="metric-value">${successRate}%</div>
+          <div class="trend-up">Overall Average</div>
+        </div>
+        <div class="bento-card col-span-4" style="position:relative;">
+          <div class="metric-label">Security Vulnerabilities Detected</div>
+          <div class="metric-value" style="color:#f87171">${securityVulns}</div>
+          <div class="trend-down" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Total Anti-Cheat Logs</span>
+            ${isAdmin ? `<button class="btn-secondary" style="padding:2px 8px; font-size:10px; border-color:var(--success); color:var(--success); z-index:10;" onclick="adminUnlockAll()">Unlock All</button>` : ''}
+          </div>
+        </div>
+        
+        <div class="bento-card col-span-8" style="height: 350px;">
+          <div class="card-title">Language Usage & Performance</div>
+          <canvas id="langChart"></canvas>
+        </div>
+        
+        <div class="bento-card col-span-4">
+          <div class="card-title">Student Leaderboard</div>
+          <div style="max-height: 290px; overflow-y: auto;">
+            <table class="data-table" style="margin-top:10px;">
+              ${leaderboardHtml}
+            </table>
+          </div>
+        </div>
+      </div>
+      `;
+      
+      let langLabels = ['Java', 'Python', 'C++', 'JavaScript'];
+      let langData = [1200, 1900, 800, 1500];
+      if (dash.languageBreakdown && Object.keys(dash.languageBreakdown).length > 0) {
+        langLabels = Object.keys(dash.languageBreakdown);
+        langData = Object.values(dash.languageBreakdown);
+      }
+      setTimeout(() => renderDynamicChart(langLabels, langData), 100);
+      
+    } catch(err) {
+      console.error(err);
+      main.innerHTML = `<div style="padding:40px; color:var(--error)">Failed to load analytics. Please try again.</div>`;
+    }
+  }
+  
+  else if (currentTab === 'anticheat') {
+    let webcamFeed = localStorage.getItem('webcamActive') === 'true' 
+      ? '<div style="color:var(--success); font-weight:bold; font-size:12px; display:flex; align-items:center;"><span class="pulse-dot"></span> Live Feed Active</div>' 
+      : '<div style="color:var(--error); font-weight:bold; font-size:12px;">Webcam Offline</div>';
+
+    main.innerHTML = `
+      <div class="content-header">
+        <div>
+          <h1>Live Anti-Cheating Monitor</h1>
+          <p>AI-driven surveillance detecting tab switches, external devices, and suspicious behavior.</p>
+        </div>
+      </div>
+      
+      <div class="bento-grid">
+        <div class="bento-card col-span-12">
+          <div class="card-title" style="display:flex; justify-content:space-between;">
+            <span><span class="pulse-dot"></span> Live Proctoring Status</span>
+            <span class="badge active" id="liveAlertsBadge">Loading...</span>
+          </div>
+          <div style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-top: 10px;">
+             ${webcamFeed}
+             <p style="color:var(--muted); font-size:12px; margin-top:10px;">Webcam is rendered directly in the student's Sandbox view (compiler.html).</p>
+          </div>
+        </div>
+        
+        <div class="bento-card col-span-12">
+          <div class="card-title">Real-Time Behavior Log</div>
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Email</th><th>Activity Detected</th><th>Severity</th><th>Action</th></tr></thead>
+            <tbody id="liveCheatLogsBody">
+              <tr><td colspan="5" style="color:var(--muted)">Fetching live logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    
+    // Fetch live logs from backend
+    fetch('/api/admin/users/cheaters', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } })
+      .then(res => res.json())
+      .then(cheaters => {
+         document.getElementById('liveAlertsBadge').innerText = `${cheaters.length} Alerts`;
+         document.getElementById('liveAlertsBadge').className = `badge ${cheaters.length > 0 ? 'danger' : 'active'}`;
+         
+         const tbody = document.getElementById('liveCheatLogsBody');
+         if(cheaters.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted)">No violations detected yet.</td></tr>';
+            return;
+         }
+         tbody.innerHTML = cheaters.map(c => `
+           <tr>
+             <td><div style="font-weight:600;">${c.fullName}</div><div style="font-size:12px; color:var(--muted)">@${c.username}</div></td>
+             <td>${c.email}</td>
+             <td style="color:var(--warning)">Suspicious Activity (${c.cheatViolations} violations)</td>
+             <td><span class="badge danger">HIGH</span></td>
+             <td><button class="btn-secondary" style="padding:4px 8px;font-size:10px; border-color:var(--success); color:var(--success);" onclick="adminAction(${c.id}, 'unlock')">Resolve</button></td>
+           </tr>
+         `).join('');
+      })
+      .catch(err => {
+         document.getElementById('liveCheatLogsBody').innerHTML = '<tr><td colspan="5" style="color:var(--error)">Error loading live logs.</td></tr>';
+      });
+  }
+  
+  else if (currentTab === 'autograder') {
+    let result = JSON.parse(localStorage.getItem('autoGraderResult'));
+    if (!result) {
+       main.innerHTML = `<div class="content-header"><div><h1>AI Auto-Grader Engine</h1><p>No code evaluated yet. Go to Editor and run some code first!</p></div></div>`;
+       return;
+    }
+    
+    let timeComplexityScore = result.timeComplexity === 'O(1)' ? 100 : (result.timeComplexity === 'O(N)' ? 80 : 40);
+    let timeColor = timeComplexityScore > 70 ? 'var(--success)' : 'var(--warning)';
+
+    main.innerHTML = `
+      <div class="content-header">
+        <div>
+          <h1>AI Auto-Grader Engine</h1>
+          <p>Deep code analysis measuring Complexity, Security, and Style patterns.</p>
+        </div>
+      </div>
+      
+      <div class="bento-grid">
+        <div class="bento-card col-span-7">
+          <div class="card-title">Recent Submission (${result.timestamp})</div>
+          <div class="code-preview" style="white-space: pre-wrap;">${result.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+          <div style="margin-top:20px;">
+            <div class="metric-label">AI Suggestions</div>
+            <div style="background:rgba(59,130,246,0.1); border-left:3px solid var(--accent); padding:12px; font-size:13px; margin-top:8px; border-radius:4px;">
+              <strong>Analysis:</strong> Code analyzed with ${result.timeComplexity} complexity. Security score is ${result.securityScore}.
+            </div>
+          </div>
+        </div>
+        
+        <div class="bento-card col-span-5">
+          <div class="card-title">Evaluation Metrics</div>
+          
+          <div style="margin-top:15px; margin-bottom:5px; font-size:12px; font-weight:600; display:flex; justify-content:space-between;">
+            <span>Time Complexity (${result.timeComplexity})</span><span style="color:${timeColor}">${timeComplexityScore}/100</span>
+          </div>
+          <div style="width:100%; height:6px; background:var(--border); border-radius:3px; overflow:hidden;">
+            <div style="width:${timeComplexityScore}%; height:100%; background:${timeColor};"></div>
+          </div>
+          
+          <div style="margin-top:15px; margin-bottom:5px; font-size:12px; font-weight:600; display:flex; justify-content:space-between;">
+            <span>Code Readability</span><span style="color:var(--accent)">${result.readabilityScore}/100</span>
+          </div>
+          <div style="width:100%; height:6px; background:var(--border); border-radius:3px; overflow:hidden;">
+            <div style="width:${result.readabilityScore}%; height:100%; background:var(--accent);"></div>
+          </div>
+          
+          <div style="margin-top:15px; margin-bottom:5px; font-size:12px; font-weight:600; display:flex; justify-content:space-between;">
+            <span>Security Scan</span><span style="color:${result.securityScore === 100 ? 'var(--success)' : 'var(--error)'}">${result.securityScore === 100 ? 'Secure' : 'Vulnerable'}</span>
+          </div>
+          <div style="width:100%; height:6px; background:var(--border); border-radius:3px; overflow:hidden;">
+            <div style="width:${result.securityScore}%; height:100%; background:${result.securityScore === 100 ? 'var(--success)' : 'var(--error)'};"></div>
+          </div>
+          
+        </div>
+      </div>
+    `;
+  }
+  
+  else if (currentTab === 'exams') {
+    main.innerHTML = `
+      <div class="content-header">
+        <div>
+          <h1>Exam & Contest Hub</h1>
+          <p>Create and distribute secure coding assessments.</p>
+        </div>
+        <button class="btn-primary" onclick="showCreateExamForm()">+ Create New Exam</button>
+      </div>
+      
+      <div class="bento-grid">
+        <div class="bento-card col-span-12">
+          <div class="data-grid" id="examsGrid"><div style="color:var(--muted)">Loading exams...</div></div>
+        </div>
+      </div>
+      <div id="examFormContainer" style="margin-top:20px;"></div>
+    `;
+    fetchExams();
+  }
+  
+  else if (currentTab === 'teams') {
+    main.innerHTML = `
+      <div class="content-header">
+        <div>
+          <h1>Team Formation</h1>
+          <p>Manage student groups for Hackathons and projects.</p>
+        </div>
+        <button class="btn-primary" onclick="showCreateTeamForm()">+ Create Team</button>
+      </div>
+      
+      <div class="bento-card">
+        <table class="data-table">
+          <thead><tr><th>Team Name</th><th>Team Code</th><th>Members</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="teamsTableBody"><tr><td colspan="5" style="color:var(--muted)">Loading teams...</td></tr></tbody>
+        </table>
+      </div>
+      <div id="teamFormContainer" style="margin-top:20px;"></div>
+    `;
+    fetchTeams();
+  } else if (currentTab === 'admin') {
+    main.innerHTML = `
+      <div class="content-header">
+        <div>
+          <h1>Admin Control Center</h1>
+          <p>System configuration, user roles, and advanced permissions.</p>
+        </div>
+      </div>
+      <div class="bento-grid" style="margin-top:20px;">
+        <div class="bento-card col-span-12">
+           <h3 style="margin-bottom:10px;">User Role Management</h3>
+           <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">
+             Assign ADMIN privileges to users. Note: Only existing Admins can promote other users.
+           </p>
+           <div style="display:flex; align-items:center; gap:10px;">
+             <input type="number" id="promoteUserId" class="form-control" placeholder="Enter User ID to promote" style="max-width:300px;">
+             <button class="btn-primary" onclick="promoteToAdmin()">Promote to ADMIN</button>
+           </div>
+        </div>
+
+        <div class="bento-card col-span-6">
+           <h3 style="margin-bottom:10px;">Anti-Cheat Management</h3>
+           <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">
+             Reset and unlock ALL students who have been locked out due to anti-cheat violations.
+           </p>
+           <button class="btn-primary" style="background:var(--success); width:100%;" onclick="adminUnlockAll()">Unlock ALL Students (Master Reset)</button>
+        </div>
+
+        <div class="bento-card col-span-6">
+           <h3 style="margin-bottom:10px;">Register New User</h3>
+           <p style="color:var(--muted); font-size:13px; margin-bottom:15px;">
+             Create a new student, faculty, or admin account directly.
+           </p>
+           <form onsubmit="adminRegisterUser(event)">
+             <div class="form-group" style="margin-bottom:10px;"><input type="text" id="newUsername" class="form-control" placeholder="Username" required></div>
+             <div class="form-group" style="margin-bottom:10px;"><input type="email" id="newEmail" class="form-control" placeholder="Email Address" required></div>
+             <div class="form-group" style="margin-bottom:10px;"><input type="password" id="newPassword" class="form-control" placeholder="Password" required></div>
+             <div class="form-group" style="margin-bottom:15px;">
+                <select id="newRole" class="form-control">
+                  <option value="STUDENT">Student</option>
+                  <option value="FACULTY">Faculty</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+             </div>
+             <button type="submit" class="btn-primary" style="width:100%;">Create User</button>
+           </form>
+        </div>
+
+        <div class="bento-card col-span-12">
+           <h3 style="margin-bottom:10px;">Anti-Cheat Detection Log</h3>
+           <p style="color:var(--muted); font-size:13px; margin-bottom:15px;">
+             Live list of users flagged for suspicious activity (Alt-Tabbing, copying, navigating away).
+           </p>
+           <table class="data-table" style="width:100%; text-align:left;">
+             <thead>
+               <tr>
+                 <th>User</th>
+                 <th>Email</th>
+                 <th>Violations</th>
+                 <th>Status</th>
+                 <th>Actions</th>
+               </tr>
+             </thead>
+             <tbody id="cheaterLogBody">
+                <tr><td colspan="5" style="color:var(--muted)">Loading detection logs...</td></tr>
+             </tbody>
+           </table>
+        </div>
+      </div>
+    `;
+    fetchCheaterLog();
+  }
+}
+
+function renderDynamicChart(labels, data) {
+  const ctx = document.getElementById('langChart');
+  if(!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Submissions',
+        data: data,
+        backgroundColor: 'rgba(139, 92, 246, 0.5)',
+        borderColor: '#8b5cf6',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af', precision: 0 } },
+        x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+      }
+    }
+  });
+}
+
+// ---- Backend Integrations ----
+let examsList = [];
+let teamsList = [];
+
+async function fetchExams() {
+  try {
+    const res = await fetch('/api/exams/faculty/1', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } });
+    if(res.ok) examsList = await res.json();
+    const grid = document.getElementById('examsGrid');
+    if(!grid) return;
+    if(examsList.length === 0) { grid.innerHTML = '<div style="color:var(--muted);font-size:14px;">No exams found.</div>'; return; }
+    grid.innerHTML = examsList.map(e => `
+      <div class="data-card" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:12px; position:relative;">
+        <span class="badge active" style="position:absolute; top:20px; right:20px;">ACTIVE</span>
+        <div class="card-title" style="font-size:16px; font-weight:700;">${e.title}</div>
+        <div class="card-meta" style="font-size:13px; color:var(--muted); margin-bottom:15px;">${e.description}</div>
+        <a href="/compiler.html" class="btn-secondary" style="text-decoration:none; display:inline-block;">Open Exam Sandbox</a>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+async function fetchTeams() {
+  try {
+    const res = await fetch('/api/teams', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } });
+    if(res.ok) teamsList = await res.json();
+    const tbody = document.getElementById('teamsTableBody');
+    if(!tbody) return;
+    if(teamsList.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted)">No teams found.</td></tr>'; return; }
+    tbody.innerHTML = teamsList.map(t => `
+      <tr>
+        <td style="font-weight:700;">${t.name}</td>
+        <td><code style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px;">${t.teamCode}</code></td>
+        <td>${t.members ? t.members.length : 0} Members</td>
+        <td><span class="badge active">Active</span></td>
+        <td><button class="btn-secondary" style="padding:4px 10px; font-size:11px;">Manage</button></td>
+      </tr>
+    `).join('');
+  } catch(e) {}
+}
+
+function showCreateExamForm() {
+  document.getElementById('examFormContainer').innerHTML = `
+    <div class="bento-card">
+      <h2 style="font-size:18px; margin-bottom:15px;">Create New Exam</h2>
+      <form onsubmit="submitExam(event)">
+        <div class="form-group"><label>Exam Title</label><input type="text" id="exTitle" class="form-control" required></div>
+        <div class="form-group"><label>Description</label><input type="text" id="exDesc" class="form-control" required></div>
+        <div class="form-group"><label>Duration (Minutes)</label><input type="number" id="exDuration" class="form-control" value="60"></div>
+        <button type="submit" class="btn-primary">Save Exam</button>
+      </form>
+    </div>
+  `;
+}
+
+async function submitExam(e) {
+  e.preventDefault();
+  const duration = parseInt(document.getElementById('exDuration').value) || 60;
+  const now = new Date();
+  const endTime = new Date(now.getTime() + duration * 60000);
+  
+  const payload = {
+    title: document.getElementById('exTitle').value,
+    description: document.getElementById('exDesc').value,
+    faculty: { id: 1 },
+    startTime: now.toISOString(),
+    endTime: endTime.toISOString(),
+    isActive: true,
+    antiCheatEnabled: true
+  };
+  try {
+    const res = await fetch('/api/exams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      body: JSON.stringify(payload)
+    });
+    if(res.ok) { document.getElementById('examFormContainer').innerHTML = ''; fetchExams(); }
+    else alert("Failed to create exam: API Error " + res.status);
+  } catch(err) { alert("API Error"); }
+}
+
+function showCreateTeamForm() {
+  document.getElementById('teamFormContainer').innerHTML = `
+    <div class="bento-card">
+      <h2 style="font-size:18px; margin-bottom:15px;">Create New Team</h2>
+      <form onsubmit="submitTeam(event)">
+        <div class="form-group"><label>Team Name</label><input type="text" id="tmName" class="form-control" required></div>
+        <button type="submit" class="btn-primary">Create Team</button>
+      </form>
+    </div>
+  `;
+}
+
+async function submitTeam(e) {
+  e.preventDefault();
+  const tmName = document.getElementById('tmName').value;
+  const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const payload = { name: tmName, teamCode: randomCode, createdBy: { id: 1 } };
+  try {
+    const res = await fetch('/api/teams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      body: JSON.stringify(payload)
+    });
+    if(res.ok) { document.getElementById('teamFormContainer').innerHTML = ''; fetchTeams(); }
+    else alert("Failed to create team: API Error " + res.status);
+  } catch(err) { alert("API Error"); }
+}
+
+switchTab(currentTab);
+
+window.adminAction = async function(userId, action) {
+  if(!confirm(`Are you sure you want to ${action} this student?`)) return;
+  try {
+    const res = await fetch(`/api/admin/users/${userId}/${action}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if(res.ok) {
+      alert(`Student successfully ${action}ed!`);
+      switchTab('analytics'); // refresh
+    } else {
+      alert("Failed. You might not have Admin permissions.");
+    }
+  } catch(e) {
+    alert("API Error");
+  }
+}
+
+window.adminUnlockAll = async function() {
+  if(!confirm(`Are you sure you want to unlock ALL students and reset cheat violations?`)) return;
+  try {
+    const res = await fetch('/api/admin/users/unlock-all', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if(res.ok) {
+      alert(`All students successfully unlocked!`);
+      if(currentTab === 'analytics') switchTab('analytics'); // refresh
+    } else {
+      alert("Failed. You might not have Admin permissions.");
+    }
+  } catch(e) {
+    alert("API Error");
+  }
+}
+
+window.adminRegisterUser = async function(e) {
+  e.preventDefault();
+  const payload = {
+    username: document.getElementById('newUsername').value,
+    email: document.getElementById('newEmail').value,
+    password: document.getElementById('newPassword').value,
+    role: document.getElementById('newRole').value
+  };
+  try {
+    const res = await fetch('/api/admin/users/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      body: JSON.stringify(payload)
+    });
+    if(res.ok) {
+      alert(`User ${payload.username} created successfully!`);
+      document.getElementById('newUsername').value = '';
+      document.getElementById('newEmail').value = '';
+      document.getElementById('newPassword').value = '';
+    } else {
+      const data = await res.json();
+      alert("Failed to create user: " + (data.message || "Unknown error"));
+    }
+  } catch(err) {
+    alert("API Error");
+  }
+}
+
+async function fetchCheaterLog() {
+  const tbody = document.getElementById('cheaterLogBody');
+  if(!tbody) return;
+  try {
+    const res = await fetch('/api/admin/users/cheaters', {
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if(!res.ok) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--error)">Access Denied or Error</td></tr>';
+      return;
+    }
+    const cheaters = await res.json();
+    if(cheaters.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--success)">No cheating violations detected.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = cheaters.map(c => {
+      let statusBadge = '<span class="badge warning">WARNING</span>';
+      if(c.isDisqualified) statusBadge = '<span class="badge danger">DISQUALIFIED</span>';
+      else if(!c.isActive || c.cheatViolations >= 5) statusBadge = '<span class="badge danger">LOCKED</span>';
+
+      return `
+        <tr>
+          <td><div style="font-weight:600;">${c.fullName}</div><div style="font-size:12px; color:var(--muted)">@${c.username}</div></td>
+          <td>${c.email}</td>
+          <td style="color:var(--error); font-weight:bold;">${c.cheatViolations} 🚨</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--success); color:var(--success)" onclick="adminAction(${c.id}, 'unlock')">Unlock</button>
+            <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--error); color:var(--error)" onclick="adminAction(${c.id}, 'disqualify')">Disqualify</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--error)">Failed to load log.</td></tr>';
+  }
+}
+
+</script>
+</body>
+</html>

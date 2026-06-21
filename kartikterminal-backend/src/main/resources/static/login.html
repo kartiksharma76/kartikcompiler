@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | Login</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #050505; --panel: #0d0f14; --border: #1e2530;
+  --text: #e2e8f0; --muted: #64748b; --accent: #2563eb;
+  --success: #10b981; --error: #ef4444;
+}
+
+body {
+  min-height: 100vh; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text);
+  overflow: hidden;
+}
+
+/* Animated background grid */
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: gridMove 20s linear infinite;
+  pointer-events: none;
+}
+@keyframes gridMove { from { transform: translateY(0); } to { transform: translateY(40px); } }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 44px;
+  width: 420px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 0 80px rgba(37,99,235,0.08);
+  animation: fadeUp 0.5s ease-out;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Top accent line */
+.card::before {
+  content: ''; position: absolute; top: 0; left: 10%; right: 10%;
+  height: 2px; background: linear-gradient(90deg, transparent, #2563eb, transparent);
+  border-radius: 0 0 4px 4px;
+}
+
+.logo {
+  font-size: 28px; font-weight: 800; letter-spacing: 2px;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+.tagline {
+  font-size: 13px; color: var(--muted);
+  margin-bottom: 36px; letter-spacing: 0.5px;
+}
+
+/* ── Google Button ── */
+.google-btn {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; padding: 14px 24px;
+  background: #fff; color: #1f1f1f;
+  border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: box-shadow 0.2s, transform 0.15s;
+  margin-bottom: 24px;
+}
+.google-btn:hover {
+  box-shadow: 0 4px 20px rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+.google-btn:active { transform: translateY(0); }
+
+.google-btn svg { flex-shrink: 0; }
+
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0; color: var(--muted); font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Form Fields ── */
+.field { margin-bottom: 14px; text-align: left; }
+.field label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+.field input {
+  width: 100%; padding: 12px 14px;
+  background: #0a0c10; border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; font-size: 14px; outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--accent); }
+
+.submit-btn {
+  width: 100%; padding: 13px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  margin-top: 4px;
+}
+.submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 0; margin-bottom: 28px; background: #0a0c10; border-radius: 10px; padding: 4px; }
+.tab-btn {
+  flex: 1; padding: 9px; background: transparent; border: none;
+  color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+  border-radius: 7px; transition: all 0.2s;
+}
+.tab-btn.active { background: var(--accent); color: #fff; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── Status Messages ── */
+.msg {
+  padding: 11px 14px; border-radius: 8px;
+  font-size: 13px; margin-bottom: 14px; display: none;
+}
+.msg.error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5; }
+.msg.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+
+.footer-note {
+  margin-top: 24px; font-size: 11px; color: var(--muted); line-height: 1.6;
+}
+.footer-note a { color: var(--accent); text-decoration: none; }
+
+/* ── Error from OAuth2 redirect ── */
+.oauth-error {
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5; padding: 11px 14px; border-radius: 8px;
+  font-size: 13px; margin-bottom: 20px; display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">KARTIKTERMINAL</div>
+  <div class="tagline">Enterprise Code Execution Platform</div>
+
+  <!-- OAuth error message -->
+  <div class="oauth-error" id="oauthError"></div>
+
+  <!-- Google Sign In (Primary) -->
+  <a class="google-btn" href="/oauth2/authorization/google" id="googleBtn">
+    <svg width="20" height="20" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+    Continue with Google
+  </a>
+
+  <div class="divider">or use email/password</div>
+
+  <!-- Tabs: Login / Register -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+  </div>
+
+  <!-- Login Tab -->
+  <div class="tab-content active" id="tab-login">
+    <div class="msg" id="loginMsg"></div>
+    <div class="field">
+      <label>Username or Email</label>
+      <input type="text" id="loginUser" placeholder="your_username or email@example.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="submit-btn" id="loginBtn" onclick="handleLogin()">Login</button>
+  </div>
+
+  <!-- Register Tab -->
+  <div class="tab-content" id="tab-register">
+    <div class="msg" id="registerMsg"></div>
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text" id="regName" placeholder="Kartik Sharma">
+    </div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="regUser" placeholder="kartik_dev" oninput="checkUsername(this.value)">
+      <div id="usernameFeedback" style="font-size:11px; margin-top:4px;"></div>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="regEmail" placeholder="email@example.com">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="regPass" placeholder="Min 6 characters">
+    </div>
+    <button class="submit-btn" id="registerBtn" onclick="handleRegister()">Create Account</button>
+  </div>
+
+  <div class="footer-note">
+    By continuing, you agree to KartikTerminal's terms.<br>
+    Your code runs in a <strong>sandboxed environment</strong>.
+  </div>
+</div>
+
+<script>
+const API = '';  // Same origin
+
+// ── Handle ?error= from OAuth2 failure redirect ──
+const params = new URLSearchParams(location.search);
+if (params.get('error')) {
+  const el = document.getElementById('oauthError');
+  el.textContent = 'Google login failed. Please try again or use email/password.';
+  el.style.display = 'block';
+}
+
+// ── If already logged in, go to compiler ──
+if (localStorage.getItem('kt_token')) {
+  location.href = '/compiler.html';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === (tab === 'login' ? 0 : 1)));
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = `msg ${type}`;
+  el.style.display = 'block';
+}
+
+// ── Login ──
+async function handleLogin() {
+  const usernameOrEmail = document.getElementById('loginUser').value.trim();
+  const password        = document.getElementById('loginPass').value;
+
+  if (!usernameOrEmail || !password) {
+    showMsg('loginMsg', 'Please fill in all fields.', 'error'); return;
+  }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Logging in...';
+
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernameOrEmail, password })
+    });
+    const data = await res.json();
+
+    if (data.success && data.token) {
+      saveAuthAndRedirect(data);
+    } else {
+      showMsg('loginMsg', data.message || 'Login failed.', 'error');
+    }
+  } catch (e) {
+    showMsg('loginMsg', 'Server error. Is the backend running?', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Login';
+  }
+}
+
+// ── Register ──
+async function handleRegister() {
+  const fullName = document.getElementById('regName').value.trim();
+  const username = document.getElementById('regUser').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPass').value;
+
+  if (!username || !email || !password) {
+    showMsg('registerMsg', 'Please fill in all required fields.', 'error'); return;
+  }
+
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true; btn.textContent = 'Creating account...';
+
+  try {
+    const res = await fetch(`${API}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, fullName })
+    });
+    const data = await res.json();
+
+    if (data.success && data.token) {
+      saveAuthAndRedirect(data);
+    } else {
+      showMsg('registerMsg', data.message || 'Registration failed.', 'error');
+    }
+  } catch (e) {
+    showMsg('registerMsg', 'Server error. Is the backend running?', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+
+// ── Username availability check ──
+let usernameTimer;
+async function checkUsername(val) {
+  clearTimeout(usernameTimer);
+  const el = document.getElementById('usernameFeedback');
+  if (val.length < 3) { el.textContent = ''; return; }
+  usernameTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`${API}/api/auth/check-username/${encodeURIComponent(val)}`);
+      const data = await res.json();
+      el.style.color = data.available ? '#10b981' : '#ef4444';
+      el.textContent  = data.available ? '✓ Available' : '✗ Already taken';
+    } catch { el.textContent = ''; }
+  }, 400);
+}
+
+// ── Save JWT and redirect ──
+function saveAuthAndRedirect(data) {
+  localStorage.setItem('kt_token',    data.token);
+  localStorage.setItem('kt_username', data.username);
+  localStorage.setItem('kt_email',    data.email || '');
+  localStorage.setItem('kt_fullname', data.fullName || data.username);
+  localStorage.setItem('kt_role',     data.role || 'USER');
+  localStorage.setItem('kt_userid',   data.userId || '');
+  location.href = '/compiler.html';
+}
+
+// ── Enter key support ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const activeTab = document.querySelector('.tab-content.active').id;
+    if (activeTab === 'tab-login') handleLogin();
+    else handleRegister();
+  }
+});
+</script>
+</body>
+</html>

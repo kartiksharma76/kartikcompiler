@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | Knowledge Quizzes</title>
+<script src="/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #030408; 
+  --panel: rgba(10, 12, 22, 0.6);
+  --card: rgba(18, 22, 38, 0.4);
+  --border: rgba(255, 255, 255, 0.08); 
+  --border-focus: rgba(99, 102, 241, 0.4);
+  --text: #f8fafc; 
+  --muted: #94a3b8;
+  --accent: #6366f1; 
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  --success: #10b981; 
+  --warning: #f59e0b; 
+  --error: #f43f5e;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+body { 
+  background: radial-gradient(circle at 50% 0%, #0c102b 0%, var(--bg) 70%);
+  color: var(--text); 
+  font-family: var(--font-sans); 
+  min-height: 100vh; 
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* Nav Styling */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 70px;
+  background: rgba(3, 4, 8, 0.7); 
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100; 
+  backdrop-filter: blur(20px);
+}
+.brand { 
+  font-weight: 800; 
+  font-size: 20px; 
+  background: linear-gradient(135deg, #6366f1, #a855f7); 
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent; 
+  letter-spacing: 1.5px; 
+  text-decoration: none; 
+}
+.nav-links {
+  display: flex;
+  gap: 28px;
+}
+.nav-links a { 
+  color: var(--muted); 
+  font-size: 14px; 
+  font-weight: 500;
+  text-decoration: none; 
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 6px 0;
+}
+.nav-links a:hover, .nav-links a.active { 
+  color: var(--text); 
+}
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  border-radius: 2px;
+}
+.logout-btn { 
+  background: rgba(244, 63, 94, 0.1); 
+  border: 1px solid rgba(244, 63, 94, 0.2); 
+  color: #fda4af; 
+  padding: 8px 18px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-size: 13px; 
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.logout-btn:hover { 
+  background: var(--error); 
+  color: white; 
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+}
+
+/* Container */
+.container { max-width: 1000px; margin: 0 auto; padding: 40px 24px 120px 24px; }
+h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+.subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+/* AI Quiz Generator Card */
+.ai-generator-panel {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 36px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+.ai-generator-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #a855f7; display: flex; align-items: center; gap: 8px; }
+
+/* Grid & Cards */
+.quiz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-bottom: 28px; }
+.quiz-card { 
+  background: var(--panel); 
+  border: 1px solid var(--border); 
+  border-radius: 16px; 
+  padding: 24px; 
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  cursor: pointer; 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.quiz-card:hover { 
+  transform: translateY(-4px); 
+  border-color: rgba(99, 102, 241, 0.4); 
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.15);
+}
+.quiz-title { font-weight: 700; font-size: 18px; margin-bottom: 12px; color: var(--text); }
+.quiz-meta { font-size: 12px; color: var(--muted); margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+.quiz-meta span { background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px; font-weight: 500; }
+.quiz-meta .tag-ai { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+/* Buttons */
+.btn-primary { 
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+  color: white; 
+  border: none; 
+  padding: 12px 24px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-size: 14px; 
+  font-weight: 600; 
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+.btn-primary:hover { 
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+.btn-ai {
+  background: linear-gradient(135deg, #a855f7, #ec4899); 
+  color: white; 
+  border: none; 
+  padding: 12px 24px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-size: 14px; 
+  font-weight: 600; 
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+.btn-ai:hover { 
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+}
+.btn-secondary { 
+  background: rgba(255, 255, 255, 0.03); 
+  border: 1px solid var(--border); 
+  color: var(--muted); 
+  padding: 10px 18px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-size: 13px; 
+  font-weight: 500;
+  transition: all 0.2s ease; 
+}
+.btn-secondary:hover { 
+  color: var(--text); 
+  background: rgba(255, 255, 255, 0.08); 
+}
+.btn-danger { 
+  background: rgba(244, 63, 94, 0.1); 
+  color: #fda4af; 
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer; 
+  font-size: 13px; 
+  font-weight: 600;
+}
+
+/* Active Quiz Taking Console */
+.active-quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 28px;
+  align-items: start;
+}
+.question-block { 
+  background: var(--panel); 
+  border: 1px solid var(--border); 
+  border-radius: 16px; 
+  padding: 28px; 
+  margin-bottom: 24px; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.q-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; line-height: 1.6; }
+.options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.option-label { 
+  display: flex; align-items: center; gap: 12px; font-size: 14px; 
+  padding: 14px 18px; background: rgba(255,255,255,0.02); 
+  border: 1px solid var(--border); border-radius: 8px; 
+  cursor: pointer; transition: all 0.2s ease; 
+}
+.option-label:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); }
+.option-label.selected { background: rgba(99, 102, 241, 0.08); border-color: var(--accent); }
+.option-label input { display: none; }
+
+/* AI Hint Panel */
+.ai-hint-box { 
+  margin-top: 16px; padding: 20px; 
+  background: rgba(16, 185, 129, 0.08); 
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px; font-size: 13px; color: #a7f3d0; 
+  display: none; line-height: 1.6; white-space: pre-wrap; 
+}
+
+/* Sidebar Progress Tracker */
+.sidebar-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  position: sticky; top: 94px;
+}
+.sidebar-title { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; letter-spacing: 0.5px; }
+.progress-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.progress-badge { 
+  display: flex; align-items: center; justify-content: center; 
+  height: 40px; border-radius: 8px; border: 1px solid var(--border); 
+  font-weight: 700; font-size: 14px; color: var(--muted);
+  cursor: pointer; transition: all 0.2s ease;
+}
+.progress-badge.filled {
+  background: rgba(99, 102, 241, 0.15); border-color: var(--accent); color: var(--text);
+}
+
+/* Loading */
+.loading { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(3, 4, 8, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s ease;
+}
+.modal-overlay.active {
+  opacity: 1; pointer-events: auto;
+}
+.modal-card {
+  background: #0b0d19;
+  border: 1px solid var(--border-focus);
+  border-radius: 20px;
+  width: 90%; max-width: 750px;
+  max-height: 80vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  transform: scale(0.9);
+  transition: all 0.3s ease;
+}
+.modal-overlay.active .modal-card {
+  transform: scale(1);
+}
+.modal-header {
+  padding: 24px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-header h2 { font-size: 20px; font-weight: 700; color: #a855f7; display: flex; align-items: center; gap: 8px; }
+.modal-body {
+  padding: 32px; overflow-y: auto; flex: 1;
+  line-height: 1.7; font-size: 14px;
+}
+.modal-body h3 { font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 12px; color: #6366f1; }
+.modal-body p { margin-bottom: 16px; color: #cbd5e1; }
+.modal-body ul, .modal-body ol { padding-left: 20px; margin-bottom: 16px; color: #cbd5e1; }
+.modal-body li { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/compiler.html">KARTIKTERMINAL</a>
+  <div class="nav-links">
+    <a href="/compiler.html">Editor</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/quiz.html" class="active">Quizzes</a>
+    <a href="/resume.html">Resume</a>
+    <a href="/chat.html">Chat</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/intelligence.html">AI Suite</a>
+  </div>
+  <button class="logout-btn" onclick="KTAuth.logout()">Logout</button>
+</nav>
+
+<div class="container">
+  <div id="quizSelection">
+    <h1>📝 Assessment Center</h1>
+    <p class="subtitle">Validate your engineering expertise, earn XP points, and receive real-time conceptual feedback.</p>
+    
+    <!-- AI Quiz Generator -->
+    <div class="ai-generator-panel">
+      <h3>✨ Auto-Generate New AI Quiz</h3>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
+        <input type="text" id="aiQuizTopic" placeholder="Topic (e.g. Java Streams)" style="padding:12px 16px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.25); color:var(--text); flex:1; min-width: 250px; font-family: inherit;">
+        <select id="aiQuizDifficulty" style="padding:12px 16px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.25); color:var(--text); font-family: inherit;">
+          <option value="EASY">EASY</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="HARD">HARD</option>
+        </select>
+        <button class="btn-ai" id="aiGenerateBtn" onclick="requestAiQuiz()">Generate Quiz</button>
+      </div>
+    </div>
+    <div id="quizList" class="quiz-grid"><div class="loading">Loading quizzes...</div></div>
+  </div>
+
+  <div id="activeQuizWrapper" style="display:none;">
+    <button class="btn-secondary" style="margin-bottom:28px;" onclick="backToList()">← Back to Quizzes</button>
+    <div class="active-quiz-grid">
+      <div>
+        <h1 id="activeQuizTitle" style="font-size: 24px;">Quiz</h1>
+        <p class="subtitle" id="activeQuizMeta" style="margin-bottom: 24px;">Answer the questions below.</p>
+        <div id="questionsContainer"></div>
+        <button class="btn-primary" id="submitBtn" onclick="submitQuiz()" style="width:100%; padding: 16px; font-size: 15px; margin-top: 12px;">Submit Answers</button>
+        
+        <div id="resultBox" style="display:none; margin-top:24px; padding:32px; background: rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:16px; text-align:center; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+          <!-- Result dynamic -->
+        </div>
+      </div>
+
+      <!-- Sidebar Progress Tracker -->
+      <div class="sidebar-panel" id="progressSidebar">
+        <div class="sidebar-title">Question Progress</div>
+        <div class="progress-grid" id="sidebarGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Performance Review Modal -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>✨ AI Performance Cognitive Report</h2>
+      <button class="btn-danger" onclick="closeReviewModal()">Close</button>
+    </div>
+    <div class="modal-body" id="reviewModalBody">
+      <!-- Generated Dynamically -->
+    </div>
+  </div>
+</div>
+
+<script>
+let allQuizzes = [];
+let currentQuizId = null;
+let currentQuestions = [];
+let latestSubmissionId = null;
+
+async function loadQuizzes() {
+  try {
+    const res = await fetch('/api/quiz');
+    if(res.status === 401) return KTAuth.logout();
+    allQuizzes = await res.json();
+    renderQuizzes();
+  } catch(e) {
+    document.getElementById('quizList').innerHTML = '<div class="loading">Failed to load.</div>';
+  }
+}
+
+async function requestAiQuiz() {
+  const topic = document.getElementById('aiQuizTopic').value.trim();
+  const diff = document.getElementById('aiQuizDifficulty').value;
+  if (!topic) return alert('Enter a topic!');
+  
+  const btn = document.getElementById('aiGenerateBtn');
+  btn.textContent = 'Generating Quiz...'; btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/quiz/ai/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: topic, difficulty: diff, count: 5 })
+    });
+    if (!res.ok) throw new Error('Generation failed');
+    await loadQuizzes();
+    document.getElementById('aiQuizTopic').value = '';
+    alert('AI Quiz Successfully Generated!');
+  } catch(e) {
+    alert("Could not generate AI quiz. Make sure NVIDIA APIs are active.");
+  } finally {
+    btn.textContent = 'Generate Quiz'; btn.disabled = false;
+  }
+}
+
+function renderQuizzes() {
+  const container = document.getElementById('quizList');
+  if(!allQuizzes.length) {
+    container.innerHTML = '<div style="color:var(--muted)">No quizzes available currently.</div>';
+    return;
+  }
+  container.innerHTML = allQuizzes.map(q => `
+    <div class="quiz-card" onclick="startQuiz(${q.id})">
+      <div>
+        <div class="quiz-title">${q.title}</div>
+        <div class="quiz-meta">
+          <span>${q.topic}</span>
+          <span style="color:${q.difficulty==='HARD'?'#f43f5e':q.difficulty==='MEDIUM'?'#fbbf24':'#34d399'}">${q.difficulty}</span>
+          ${q.aiGenerated ? '<span class="tag-ai">🤖 AI Generated</span>' : ''}
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%;">Attempt Quiz</button>
+    </div>
+  `).join('');
+}
+
+async function startQuiz(quizId) {
+  currentQuizId = quizId;
+  const q = allQuizzes.find(x => x.id === quizId);
+  document.getElementById('quizSelection').style.display = 'none';
+  document.getElementById('activeQuizWrapper').style.display = 'block';
+  document.getElementById('activeQuizTitle').textContent = q.title;
+  document.getElementById('submitBtn').style.display = 'block';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = 'Submit Answers';
+  document.getElementById('resultBox').style.display = 'none';
+  
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '<div class="loading">Loading questions...</div>';
+
+  try {
+    const res = await fetch(`/api/quiz/${quizId}/questions`);
+    currentQuestions = await res.json();
+    if(!currentQuestions.length) {
+      container.innerHTML = '<div>No questions found for this quiz.</div>';
+      return;
+    }
+    
+    // Render progress badges
+    const grid = document.getElementById('sidebarGrid');
+    grid.innerHTML = currentQuestions.map((_, i) => `
+      <div class="progress-badge" id="badge-${i}" onclick="scrollToQuestion(${i})">${i+1}</div>
+    `).join('');
+
+    container.innerHTML = currentQuestions.map((question, i) => `
+      <div class="question-block" id="qb-${question.id}">
+        <div class="q-title">${i+1}. ${question.text}</div>
+        <div class="options">
+          <label class="option-label" onclick="selectOption(this, ${i})">
+            <input type="radio" name="q-${question.id}" value="optionA"> 
+            <span>A) ${question.optionA}</span>
+          </label>
+          <label class="option-label" onclick="selectOption(this, ${i})">
+            <input type="radio" name="q-${question.id}" value="optionB"> 
+            <span>B) ${question.optionB}</span>
+          </label>
+          <label class="option-label" onclick="selectOption(this, ${i})">
+            <input type="radio" name="q-${question.id}" value="optionC"> 
+            <span>C) ${question.optionC}</span>
+          </label>
+          <label class="option-label" onclick="selectOption(this, ${i})">
+            <input type="radio" name="q-${question.id}" value="optionD"> 
+            <span>D) ${question.optionD}</span>
+          </label>
+        </div>
+        <button class="btn-secondary ai-hint-btn" onclick="askAi(${question.id}, this)">✨ Ask AI Hint</button>
+        <div class="ai-hint-box" id="hint-${question.id}"></div>
+      </div>
+    `).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="loading">Error loading questions</div>';
+  }
+}
+
+function selectOption(label, questionIndex) {
+  // Toggle selection visually
+  const group = label.parentElement.querySelectorAll('.option-label');
+  group.forEach(l => l.classList.remove('selected'));
+  label.classList.add('selected');
+
+  // Check radio input
+  label.querySelector('input').checked = true;
+
+  // Fill progress badge
+  document.getElementById(`badge-${questionIndex}`).classList.add('filled');
+}
+
+function scrollToQuestion(index) {
+  const block = document.querySelectorAll('.question-block')[index];
+  if(block) {
+    block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+async function askAi(questionId, btnElement) {
+  btnElement.textContent = 'Thinking...';
+  btnElement.disabled = true;
+  try {
+    const res = await fetch(`/api/quiz/questions/${questionId}/hint`);
+    const hint = await res.text();
+    const box = document.getElementById(`hint-${questionId}`);
+    box.textContent = hint;
+    box.style.display = 'block';
+    btnElement.style.display = 'none';
+  } catch(e) {
+    btnElement.textContent = '✨ Ask AI Hint';
+    btnElement.disabled = false;
+    alert("AI couldn't process this right now.");
+  }
+}
+
+async function submitQuiz() {
+  const blocks = document.querySelectorAll('.question-block');
+  const answers = [];
+  let allAnswered = true;
+
+  blocks.forEach(block => {
+    const qId = block.id.replace('qb-', '');
+    const selected = document.querySelector(`input[name="q-${qId}"]:checked`);
+    if(selected) {
+      answers.push({ questionId: parseInt(qId), selectedOption: selected.value });
+    } else {
+      allAnswered = false;
+    }
+  });
+
+  if(!allAnswered && !confirm("You haven't answered all questions. Submit anyway?")) return;
+
+  document.getElementById('submitBtn').textContent = 'Submitting...';
+  document.getElementById('submitBtn').disabled = true;
+
+  try {
+    const payload = { quizId: currentQuizId, answers };
+    const res = await fetch('/api/quiz/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    const result = await res.json();
+    latestSubmissionId = result.id;
+    
+    document.getElementById('submitBtn').style.display = 'none';
+    const rb = document.getElementById('resultBox');
+    rb.style.display = 'block';
+    rb.innerHTML = `
+      <h2 style="color:var(--success); margin-bottom:12px; font-size: 22px;">🎉 Quiz Completed!</h2>
+      <p style="font-size:32px; font-weight:800; color:var(--text); margin-bottom: 12px;">${result.score} / ${result.totalQuestions}</p>
+      <p style="margin-bottom: 24px; color:#6ee7b7; font-weight:600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">XP Awarded: +${result.score * 10}</p>
+      <button class="btn-ai" onclick="analyzePerformanceWithAI()">✨ AI Performance Analysis</button>
+    `;
+
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+  } catch(e) {
+    document.getElementById('submitBtn').textContent = 'Submit Answers';
+    document.getElementById('submitBtn').disabled = false;
+    alert("Submission failed.");
+  }
+}
+
+async function analyzePerformanceWithAI() {
+  if (!latestSubmissionId) return;
+
+  const btn = document.querySelector('#resultBox .btn-ai');
+  const originalText = btn.textContent;
+  btn.textContent = 'Generating Analysis...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/quiz/submission/${latestSubmissionId}/ai-review`);
+    const data = await res.json();
+    renderMarkdownReport(data.review);
+    document.getElementById('reviewModal').classList.add('active');
+  } catch (e) {
+    alert("Failed to fetch performance analysis.");
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+function renderMarkdownReport(md) {
+  const container = document.getElementById('reviewModalBody');
+  
+  // Custom simple Markdown parser for styled elements
+  let html = md
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+    .replace(/^- (.*?)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.*?)$/gm, '<li>$1</li>')
+    .split('\n\n')
+    .map(p => {
+      p = p.trim();
+      if (p.startsWith('<li>')) return `<ul>${p}</ul>`;
+      if (p.startsWith('<h3>') || p.startsWith('<h2>') || p.startsWith('<h1>')) return p;
+      return `<p>${p}</p>`;
+    })
+    .join('');
+
+  container.innerHTML = html;
+}
+
+function closeReviewModal() {
+  document.getElementById('reviewModal').classList.remove('active');
+}
+
+function backToList() {
+  document.getElementById('activeQuizWrapper').style.display = 'none';
+  document.getElementById('quizSelection').style.display = 'block';
+  currentQuizId = null;
+  loadQuizzes();
+}
+
+loadQuizzes();
+</script>
+</body>
+</html>

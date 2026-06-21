@@ -1,0 +1,316 @@
+package com.kartik.terminal.service;
+
+import com.kartik.terminal.dto.CompilerDTOs.*;
+import com.kartik.terminal.entity.ExecutionRecord;
+import com.kartik.terminal.entity.User;
+import com.kartik.terminal.repository.ExecutionRecordRepository;
+import com.kartik.terminal.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.*;
+import java.nio.file.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import java.util.concurrent.*;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CompilerService {
+
+    private final ExecutionRecordRepository executionRecordRepository;
+    private final UserRepository userRepository;
+    private final AuthService authService;
+
+    @Value("${app.compiler.temp-dir:/tmp/kartik_compiler}")
+    private String tempDir;
+
+    @Value("${app.compiler.timeout:10}")
+    private int timeoutSeconds;
+
+    @Value("${app.compiler.max-output:50000}")
+    private int maxOutputBytes;
+
+    // ========== MAIN EXECUTE METHOD ==========
+    @Transactional
+    public ExecutionResponse executeCode(CodeRequest request) {
+        User user = authService.getCurrentUser();
+        long startTime = System.currentTimeMillis();
+
+        ExecutionResult result = runCodeInSandbox(request);
+        long execTime = System.currentTimeMillis() - startTime;
+
+        boolean success = result.exitCode == 0 && result.error.isEmpty();
+        ExecutionRecord.ExecutionStatus status = determineStatus(result, execTime);
+        int points = ExecutionRecord.calculatePoints(success, execTime, request.getLanguage());
+
+        // Save execution record
+        ExecutionRecord record = ExecutionRecord.builder()
+                .user(user)
+                .language(request.getLanguage())
+                .code(request.getCode())
+                .input(request.getInput())
+                .output(truncate(result.output, maxOutputBytes))
+                .errorOutput(truncate(result.error, maxOutputBytes))
+                .success(success)
+                .executionTimeMs(execTime)
+                .status(status)
+                .points(success ? points : 0)
+                .title(request.getTitle())
+                .build();
+
+        ExecutionRecord saved = executionRecordRepository.save(record);
+
+        // Update user stats
+        userRepository.updateExecutionStats(
+                user.getId(),
+                success ? 1 : 0,
+                success ? points : 0,
+                execTime,
+                request.getLanguage()
+        );
+
+        log.info("Code executed: user={}, lang={}, success={}, time={}ms",
+                user.getUsername(), request.getLanguage(), success, execTime);
+
+        return ExecutionResponse.builder()
+                .output(success ? result.output : "")
+                .error(success ? "" : result.error)
+                .success(success)
+                .executionTimeMs(execTime)
+                .language(request.getLanguage())
+                .points(success ? points : 0)
+                .status(status.name())
+                .executedAt(LocalDateTime.now())
+                .recordId(saved.getId())
+                .build();
+    }
+
+    // ========== SANDBOX EXECUTION ==========
+    private ExecutionResult runCodeInSandbox(CodeRequest request) {
+        String sessionId = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        Path workDir = null;
+
+        try {
+            workDir = Files.createTempDirectory(Path.of(tempDir), "run_" + sessionId + "_");
+            workDir.toFile().setWritable(true);
+
+            return switch (request.getLanguage().toLowerCase()) {
+                case "java"   -> runJava(workDir, request.getCode(), request.getInput());
+                case "python" -> runPython(workDir, request.getCode(), request.getInput());
+                case "cpp"    -> runCpp(workDir, request.getCode(), request.getInput());
+                case "c"      -> runC(workDir, request.getCode(), request.getInput());
+                case "js"     -> runNode(workDir, request.getCode(), request.getInput());
+                case "go"     -> runGo(workDir, request.getCode(), request.getInput());
+                default       -> new ExecutionResult("", "Unsupported language: " + request.getLanguage(), 1);
+            };
+
+        } catch (IOException e) {
+            log.error("Failed to create temp directory", e);
+            return new ExecutionResult("", "Internal server error: " + e.getMessage(), 1);
+        } finally {
+            // Clean up temp files
+            if (workDir != null) {
+                deleteDirectory(workDir.toFile());
+            }
+        }
+    }
+
+    // ========== JAVA ==========
+    private ExecutionResult runJava(Path dir, String code, String input) throws IOException {
+        // Extract class name
+        String className = extractJavaClassName(code);
+        Path srcFile = dir.resolve(className + ".java");
+        Files.writeString(srcFile, code);
+
+        // Compile
+        ExecutionResult compileResult = runProcess(
+                new String[]{"javac", srcFile.toString()},
+                dir, "", 30
+        );
+        if (compileResult.exitCode != 0) {
+            return new ExecutionResult("", "Compilation Error:\n" + compileResult.error, 1);
+        }
+
+        // Run with security restrictions
+        return runProcess(
+                new String[]{
+                    "java",
+                    "-cp", dir.toString(),
+                    "-Xmx128m",        // limit memory
+                    "-Xss512k",        // limit stack
+                    className
+                },
+                dir, input, timeoutSeconds
+        );
+    }
+
+    // ========== PYTHON ==========
+    private ExecutionResult runPython(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.py");
+        Files.writeString(srcFile, code);
+        return runProcess(
+                new String[]{"python3", srcFile.toString()},
+                dir, input, timeoutSeconds
+        );
+    }
+
+    // ========== C++ ==========
+    private ExecutionResult runCpp(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.cpp");
+        Path binFile = dir.resolve("main_out");
+        Files.writeString(srcFile, code);
+
+        ExecutionResult compileResult = runProcess(
+                new String[]{"g++", "-O2", "-o", binFile.toString(), srcFile.toString()},
+                dir, "", 30
+        );
+        if (compileResult.exitCode != 0) {
+            return new ExecutionResult("", "Compilation Error:\n" + compileResult.error, 1);
+        }
+        return runProcess(new String[]{binFile.toString()}, dir, input, timeoutSeconds);
+    }
+
+    // ========== C ==========
+    private ExecutionResult runC(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.c");
+        Path binFile = dir.resolve("main_out");
+        Files.writeString(srcFile, code);
+
+        ExecutionResult compileResult = runProcess(
+                new String[]{"gcc", "-o", binFile.toString(), srcFile.toString()},
+                dir, "", 30
+        );
+        if (compileResult.exitCode != 0) {
+            return new ExecutionResult("", "Compilation Error:\n" + compileResult.error, 1);
+        }
+        return runProcess(new String[]{binFile.toString()}, dir, input, timeoutSeconds);
+    }
+
+    // ========== NODE.JS ==========
+    private ExecutionResult runNode(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.js");
+        Files.writeString(srcFile, code);
+        return runProcess(
+                new String[]{"node", srcFile.toString()},
+                dir, input, timeoutSeconds
+        );
+    }
+
+    // ========== GO ==========
+    private ExecutionResult runGo(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.go");
+        Files.writeString(srcFile, code);
+        return runProcess(
+                new String[]{"go", "run", srcFile.toString()},
+                dir, input, timeoutSeconds
+        );
+    }
+
+    // ========== PROCESS RUNNER ==========
+    private ExecutionResult runProcess(String[] cmd, Path workDir, String input, int timeoutSecs) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.directory(workDir.toFile());
+            pb.redirectErrorStream(false);
+
+            Process process = pb.start();
+
+            // Write input
+            if (input != null && !input.isEmpty()) {
+                try (OutputStream os = process.getOutputStream()) {
+                    os.write(input.getBytes());
+                    os.flush();
+                }
+            } else {
+                process.getOutputStream().close();
+            }
+
+            // Read stdout and stderr concurrently
+            Future<String> stdoutFuture = executor.submit(() -> readStream(process.getInputStream()));
+            Future<String> stderrFuture = executor.submit(() -> readStream(process.getErrorStream()));
+
+            boolean finished = process.waitFor(timeoutSecs, TimeUnit.SECONDS);
+
+            if (!finished) {
+                process.destroyForcibly();
+                return new ExecutionResult("", "⏱️ Execution Timeout: Code exceeded " + timeoutSecs + " second limit.", 124);
+            }
+
+            String stdout = stdoutFuture.get(5, TimeUnit.SECONDS);
+            String stderr = stderrFuture.get(5, TimeUnit.SECONDS);
+            int exitCode = process.exitValue();
+
+            return new ExecutionResult(
+                    truncate(stdout, maxOutputBytes),
+                    truncate(stderr, maxOutputBytes),
+                    exitCode
+            );
+
+        } catch (Exception e) {
+            return new ExecutionResult("", "Execution error: " + e.getMessage(), 1);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private String readStream(InputStream is) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+                if (sb.length() > maxOutputBytes) {
+                    sb.append("\n[Output truncated - max size exceeded]");
+                    break;
+                }
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    // ========== HELPER METHODS ==========
+    private String extractJavaClassName(String code) {
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("public\\s+class\\s+(\\w+)")
+                .matcher(code);
+        return m.find() ? m.group(1) : "Main";
+    }
+
+    private ExecutionRecord.ExecutionStatus determineStatus(ExecutionResult result, long execTime) {
+        if (result.exitCode == 124) return ExecutionRecord.ExecutionStatus.TIMEOUT;
+        if (result.exitCode == 0) return ExecutionRecord.ExecutionStatus.SUCCESS;
+        if (result.error.contains("Compilation Error")) return ExecutionRecord.ExecutionStatus.COMPILE_ERROR;
+        return ExecutionRecord.ExecutionStatus.RUNTIME_ERROR;
+    }
+
+    private String truncate(String s, int maxLen) {
+        if (s == null) return "";
+        return s.length() > maxLen ? s.substring(0, maxLen) + "\n[truncated]" : s;
+    }
+
+    private void deleteDirectory(File dir) {
+        if (dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) for (File f : files) deleteDirectory(f);
+        }
+        dir.delete();
+    }
+
+    // Ensure temp dir exists
+    @jakarta.annotation.PostConstruct
+    public void init() throws IOException {
+        Files.createDirectories(Path.of(tempDir));
+        log.info("Compiler temp directory: {}", tempDir);
+    }
+
+    // ========== INNER RESULT CLASS ==========
+    private record ExecutionResult(String output, String error, int exitCode) {}
+}

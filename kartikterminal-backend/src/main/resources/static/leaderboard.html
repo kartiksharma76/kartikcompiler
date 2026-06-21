@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | Leaderboard</title>
+<script src="/auth.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #050505; --panel: #0d0f14; --card: #14171c;
+  --border: #1e2530; --text: #e2e8f0; --muted: #64748b;
+  --accent: #2563eb; --success: #10b981;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: 60px;
+  background: rgba(13,15,20,0.9); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px);
+}
+.brand { font-weight: 800; font-size: 18px; background: linear-gradient(90deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; text-decoration: none; }
+.nav-links a { color: var(--muted); font-size: 13px; text-decoration: none; margin-left: 20px; }
+.nav-links a.active { color: var(--text); }
+.logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+
+.container { max-width: 900px; margin: 0 auto; padding: 36px 24px; }
+
+/* ── Hero ── */
+.hero { text-align: center; margin-bottom: 40px; }
+.hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+.hero h1 span { background: linear-gradient(135deg, #ffd700, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--muted); font-size: 14px; }
+.platform-stats { display: flex; justify-content: center; gap: 40px; margin-top: 20px; }
+.pstat { text-align: center; }
+.pstat-value { font-size: 24px; font-weight: 700; color: #3b82f6; }
+.pstat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── Your Rank Card ── */
+.my-rank-card {
+  background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(37,99,235,0.04));
+  border: 1px solid rgba(37,99,235,0.3);
+  border-radius: 16px; padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.my-rank-card .rank-num { font-size: 36px; font-weight: 800; color: #3b82f6; }
+.my-rank-card .info { flex: 1; margin-left: 20px; }
+.my-rank-card .name { font-size: 16px; font-weight: 700; }
+.my-rank-card .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ── Tier Legend ── */
+.tier-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.tier-pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+.tier-BRONZE   { background: rgba(205,127,50,0.15);   color: #cd7f32; border: 1px solid rgba(205,127,50,0.4);   }
+.tier-SILVER   { background: rgba(192,192,192,0.12);  color: #c0c0c0; border: 1px solid rgba(192,192,192,0.4);  }
+.tier-GOLD     { background: rgba(255,215,0,0.12);    color: #ffd700; border: 1px solid rgba(255,215,0,0.4);    }
+.tier-PLATINUM { background: rgba(96,165,250,0.12);   color: #60a5fa; border: 1px solid rgba(96,165,250,0.4);   }
+.tier-DIAMOND  { background: rgba(139,92,246,0.12);   color: #a78bfa; border: 1px solid rgba(139,92,246,0.4);   }
+
+/* ── Leaderboard Table ── */
+.lb-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.lb-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.lb-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 10px 16px; font-size: 11px; color: var(--muted); text-align: left; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+tbody td { padding: 14px 16px; border-bottom: 1px solid rgba(30,37,48,0.4); font-size: 13px; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(37,99,235,0.04); }
+tbody tr.is-me td { background: rgba(37,99,235,0.06); }
+
+/* Rank number styling */
+.rank-1 { color: #ffd700; font-weight: 800; font-size: 18px; }
+.rank-2 { color: #c0c0c0; font-weight: 800; font-size: 16px; }
+.rank-3 { color: #cd7f32; font-weight: 800; font-size: 15px; }
+.rank-other { color: var(--muted); font-weight: 600; }
+
+.user-cell { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.username { font-weight: 600; }
+.fullname { font-size: 11px; color: var(--muted); }
+.points-cell { font-weight: 700; font-size: 15px; color: #3b82f6; }
+.exec-cell { color: var(--muted); }
+.success-cell { color: var(--success); }
+.lang-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; font-family: monospace; background: rgba(255,255,255,0.06); color: var(--muted); }
+.you-badge { background: rgba(37,99,235,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 6px; }
+
+.loading { text-align: center; padding: 60px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/compiler.html">KARTIKTERMINAL</a>
+  <div class="nav-links">
+    <a href="/compiler.html">Editor</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/quiz.html">Quizzes</a>
+    <a href="/resume.html">Resume</a>
+    <a href="/chat.html">Chat</a>
+    <a href="/leaderboard.html" class="active">Leaderboard</a>
+    <a href="/intelligence.html">AI Suite</a>
+  </div>
+  <button class="logout-btn" onclick="KTAuth.logout()">Logout</button>
+</nav>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>🏆 <span>Leaderboard</span></h1>
+    <p>Top coders ranked by points. Code more, earn more!</p>
+    <div class="platform-stats" id="platformStats">
+      <div class="pstat"><div class="pstat-value" id="totalUsers">—</div><div class="pstat-label">Total Coders</div></div>
+      <div class="pstat"><div class="pstat-value" id="todayRuns">—</div><div class="pstat-label">Runs Today</div></div>
+    </div>
+  </div>
+
+  <!-- Your Rank -->
+  <div class="my-rank-card" id="myRankCard" style="display:none;">
+    <div class="rank-num" id="myRankNum">#—</div>
+    <div class="info">
+      <div class="name" id="myRankName">—</div>
+      <div class="sub" id="myRankSub">—</div>
+    </div>
+    <div id="myRankTier"></div>
+  </div>
+
+  <!-- Tier Legend -->
+  <div class="tier-legend">
+    <div class="tier-pill tier-BRONZE">BRONZE 0–99pts</div>
+    <div class="tier-pill tier-SILVER">SILVER 100–249pts</div>
+    <div class="tier-pill tier-GOLD">GOLD 250–499pts</div>
+    <div class="tier-pill tier-PLATINUM">PLATINUM 500–999pts</div>
+    <div class="tier-pill tier-DIAMOND">DIAMOND 1000+pts</div>
+  </div>
+
+  <!-- Table -->
+  <div class="lb-card">
+    <div class="lb-header">
+      <span class="lb-title">Top Coders</span>
+      <span style="font-size:11px;color:var(--muted);" id="lbMeta"></span>
+    </div>
+    <div id="tableContainer"><div class="loading">Loading leaderboard...</div></div>
+  </div>
+
+</div>
+
+<script>
+const meUsername = KTAuth.getUsername();
+
+async function loadLeaderboard() {
+  try {
+    const res = await fetch('/api/leaderboard');
+    const d = await res.json();
+
+    // Platform stats
+    document.getElementById('totalUsers').textContent = d.totalUsers || 0;
+    document.getElementById('todayRuns').textContent  = d.totalExecutionsToday || 0;
+    document.getElementById('lbMeta').textContent = `Showing top ${d.topCoders?.length || 0} coders`;
+
+    // My rank card
+    if (d.currentUserRank) {
+      const me = d.currentUserRank;
+      document.getElementById('myRankCard').style.display = 'flex';
+      document.getElementById('myRankNum').textContent  = '#' + me.rank;
+      document.getElementById('myRankName').textContent = me.fullName || me.username;
+      document.getElementById('myRankSub').textContent  = `${me.totalPoints} pts · ${me.successfulExecutions} successful runs · ${me.successRate.toFixed(1)}% success rate`;
+      document.getElementById('myRankTier').innerHTML   = `<span class="tier-pill tier-${me.tier}">${me.tier}</span>`;
+    }
+
+    // Render table
+    renderTable(d.topCoders || []);
+  } catch (e) {
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">Failed to load. Please refresh.</div>';
+  }
+}
+
+function renderTable(users) {
+  if (!users.length) {
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">No coders yet. Be the first! 🚀</div>';
+    return;
+  }
+  document.getElementById('tableContainer').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Coder</th>
+          <th>Points</th>
+          <th>Executions</th>
+          <th>Success Rate</th>
+          <th>Fav Lang</th>
+          <th>Tier</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${users.map((u, i) => {
+          const isMe = u.username === meUsername;
+          const initials = (u.fullName || u.username).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+          const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+          const rankIcon  = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+          return `
+            <tr class="${isMe ? 'is-me' : ''}">
+              <td><span class="${rankClass}">${rankIcon || '#'+(i+1)}</span></td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar">${u.avatarUrl
+                    ? `<img src="${u.avatarUrl}" alt="avatar">`
+                    : initials}</div>
+                  <div>
+                    <div class="username">${u.username}${isMe ? '<span class="you-badge">YOU</span>' : ''}</div>
+                    <div class="fullname">${u.fullName || ''}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="points-cell">${u.totalPoints}</td>
+              <td class="exec-cell">${u.totalExecutions}</td>
+              <td class="success-cell">${u.successRate.toFixed(1)}%</td>
+              <td><span class="lang-badge">${(u.favoriteLanguage||'—').toUpperCase()}</span></td>
+              <td><span class="tier-pill tier-${u.tier}">${u.tier}</span></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+loadLeaderboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | AI Command Center</title>
+<script src="/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #030408; 
+  --panel: rgba(10, 12, 22, 0.6);
+  --sidebar: rgba(6, 8, 14, 0.85);
+  --card: rgba(18, 22, 38, 0.4);
+  --border: rgba(255, 255, 255, 0.08); 
+  --border-focus: rgba(99, 102, 241, 0.4);
+  --text: #f8fafc; 
+  --muted: #94a3b8;
+  --accent: #6366f1; 
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  --success: #10b981; 
+  --warning: #f59e0b;
+  --error: #f43f5e;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body { 
+  background: radial-gradient(circle at 50% 0%, #0c102b 0%, var(--bg) 70%);
+  color: var(--text); 
+  font-family: var(--font-sans); 
+  height: 100vh; 
+  display: flex; 
+  flex-direction: column;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+/* Nav Styling */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 70px; flex-shrink: 0;
+  background: rgba(3, 4, 8, 0.7); 
+  border-bottom: 1px solid var(--border);
+  z-index: 100; 
+  backdrop-filter: blur(20px);
+}
+.brand { 
+  font-weight: 800; 
+  font-size: 20px; 
+  background: linear-gradient(135deg, #6366f1, #a855f7); 
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent; 
+  letter-spacing: 1.5px; 
+  text-decoration: none; 
+}
+.nav-links {
+  display: flex;
+  gap: 28px;
+}
+.nav-links a { 
+  color: var(--muted); 
+  font-size: 14px; 
+  font-weight: 500;
+  text-decoration: none; 
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 6px 0;
+}
+.nav-links a:hover, .nav-links a.active { 
+  color: var(--text); 
+}
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  border-radius: 2px;
+}
+.logout-btn { 
+  background: rgba(244, 63, 94, 0.1); 
+  border: 1px solid rgba(244, 63, 94, 0.2); 
+  color: #fda4af; 
+  padding: 8px 18px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-size: 13px; 
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.logout-btn:hover { 
+  background: var(--error); 
+  color: white; 
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+}
+
+.workspace-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar with 10 channels */
+.workspace-sidebar {
+  width: 320px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  backdrop-filter: blur(20px);
+}
+.sidebar-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-header h2 {
+  font-size: 16px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.module-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.module-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.module-item:hover, .module-item.active {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+.module-item.active {
+  border-left: 3px solid var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+.icon-badge {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.module-item.active .icon-badge {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+}
+
+/* Workspace Main Panel */
+.workspace-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 40px;
+}
+.content-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+.content-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.content-header p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+.form-control {
+  width: 100%;
+  padding: 12px 18px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+textarea.form-control {
+  font-family: var(--font-mono);
+  resize: vertical;
+  min-height: 150px;
+}
+
+.btn-ai {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-ai:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+}
+.btn-ai:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Output Card */
+.output-section {
+  display: none;
+  background: rgba(18, 22, 38, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 36px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+}
+.output-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #a855f7;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.output-body {
+  line-height: 1.8;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+/* Markdown parsing output styling */
+.output-body h1, .output-body h2, .output-body h3 {
+  color: var(--text);
+  font-weight: 700;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+.output-body h1 { font-size: 20px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.output-body h2 { font-size: 17px; }
+.output-body h3 { font-size: 15px; }
+.output-body p { margin-bottom: 16px; }
+.output-body ul, .output-body ol { margin-bottom: 16px; padding-left: 20px; }
+.output-body li { margin-bottom: 6px; }
+.output-body table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+.output-body th { background: rgba(255,255,255,0.05); font-weight: 700; padding: 10px; border: 1px solid var(--border); text-align: left; }
+.output-body td { padding: 10px; border: 1px solid var(--border); }
+.output-body code { font-family: var(--font-mono); background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #f43f5e; }
+.output-body pre { font-family: var(--font-mono); background: #030408; border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 16px 0; overflow-x: auto; }
+.output-body pre code { color: #a7f3d0; background: transparent; padding: 0; }
+
+/* Dynamic Glass Loader */
+.spinner-container {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 40px;
+  gap: 16px;
+}
+.spinner {
+  width: 48px; height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/compiler.html">KARTIKTERMINAL</a>
+  <div class="nav-links">
+    <a href="/compiler.html">Editor</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/college.html">Admin Section</a>
+    <a href="/quiz.html">Quizzes</a>
+    <a href="/resume.html">Resume</a>
+    <a href="/chat.html">Chat</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/intelligence.html" class="active">AI Suite</a>
+  </div>
+  <button class="logout-btn" onclick="KTAuth.logout()">Logout</button>
+</nav>
+
+<div class="workspace-container">
+  <div class="workspace-sidebar">
+    <div class="sidebar-header">
+      <h2>AI Career command</h2>
+    </div>
+    <div class="module-list">
+      <div class="module-item active" onclick="switchTab('visa')">
+        <div class="icon-badge">🌍</div>
+        <div>Visa & Relocation</div>
+      </div>
+      <div class="module-item" onclick="switchTab('mentorship')">
+        <div class="icon-badge">🤝</div>
+        <div>Mentorship outreach</div>
+      </div>
+      <div class="module-item" onclick="switchTab('interview')">
+        <div class="icon-badge">🎤</div>
+        <div>Mock interviews</div>
+      </div>
+      <div class="module-item" onclick="switchTab('heatmap')">
+        <div class="icon-badge">📈</div>
+        <div>Talent Market</div>
+      </div>
+      <div class="module-item" onclick="switchTab('project-architect')">
+        <div class="icon-badge">📐</div>
+        <div>Project Architect</div>
+      </div>
+      <div class="module-item" onclick="switchTab('security-audit')">
+        <div class="icon-badge">🛡️</div>
+        <div>Security & Audit</div>
+      </div>
+      <div class="module-item" onclick="switchTab('skill-graph')">
+        <div class="icon-badge">📊</div>
+        <div>Skills Bridge</div>
+      </div>
+      <div class="module-item" onclick="switchTab('open-source')">
+        <div class="icon-badge">🐙</div>
+        <div>Open Source Match</div>
+      </div>
+      <div class="module-item" onclick="switchTab('events')">
+        <div class="icon-badge">🏆</div>
+        <div>Hackathon Pitch</div>
+      </div>
+      <div class="module-item" onclick="switchTab('career-multiplier')">
+        <div class="icon-badge">🚀</div>
+        <div>Career Multiplier</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace-main">
+    <div class="content-card">
+      <div id="moduleContent">
+        <!-- Forms dynamically render here based on active tab -->
+      </div>
+      
+      <!-- Interactive Glass Loader -->
+      <div class="spinner-container" id="spinner">
+        <div class="spinner"></div>
+        <div style="font-size: 13px; color: var(--muted); font-weight: 500;">Consulting Nvidia NIM Llama Agent...</div>
+      </div>
+
+      <!-- Output Section -->
+      <div class="output-section" id="outputArea">
+        <div class="output-title">✨ AI Intelligence Response</div>
+        <div class="output-body" id="outputBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTab = 'visa';
+
+const moduleConfigs = {
+  visa: {
+    title: "🌍 Global Visa & Relocation Intelligence",
+    description: "Map immigration pathways, relocation requirements, and golden visa metrics for target tech hubs.",
+    fields: [
+      { id: "targetCountry", label: "Target Country", type: "text", placeholder: "e.g. Germany, Canada, UK, USA" },
+      { id: "skills", label: "Your Core Technical Skill Set", type: "text", placeholder: "e.g. Java Microservices, Spring Boot, DevOps" }
+    ],
+    api: "/api/intelligence/visa"
+  },
+  mentorship: {
+    title: "🤝 Mentorship outreach strategies",
+    description: "Find matching tech mentors, organize connection steps, and construct professional custom cold emails.",
+    fields: [
+      { id: "role", label: "Target Professional Role", type: "text", placeholder: "e.g. Staff Software Engineer" },
+      { id: "targetCompany", label: "Target Tech Company", type: "text", placeholder: "e.g. Google, Microsoft, Stripe" },
+      { id: "skills", label: "Your Core Technology Stack", type: "text", placeholder: "e.g. Java, Docker, AWS" }
+    ],
+    api: "/api/intelligence/mentorship"
+  },
+  interview: {
+    title: "🎤 Live Behavioral Mock Interview Room",
+    description: "Prepare with targeted questions, STAR formats, and AI behavior expectations tailored for elite technical candidates.",
+    fields: [
+      { id: "role", label: "Interview Role", type: "text", placeholder: "e.g. Senior Java Tech Lead" },
+      { id: "topic", label: "Focus Topic area", type: "text", placeholder: "e.g. System Design, Concurrency & Thread safety" }
+    ],
+    api: "/api/intelligence/interview"
+  },
+  heatmap: {
+    title: "📈 Talent Hotspots & Market Heatmaps",
+    description: "Examine active recruiting cities, average salary figures, remote ratio parameters, and talent density metrics.",
+    fields: [
+      { id: "techStack", label: "Target Technology Stack", type: "text", placeholder: "e.g. Java, Kubernetes, Spring Cloud" }
+    ],
+    api: "/api/intelligence/heatmap"
+  },
+  'project-architect': {
+    title: "📐 Code Project Blueprint Architect",
+    description: "Convert a rough concept into database schemas, folder configurations, and microservice definitions.",
+    fields: [
+      { id: "projectIdea", label: "High Level Project Idea", type: "text", placeholder: "e.g. Multi-tenant real-time online compiler platform" },
+      { id: "stack", label: "Target Technology Stack", type: "text", placeholder: "e.g. Java, WebSockets, PostgreSQL, Redis" }
+    ],
+    api: "/api/intelligence/project-architect"
+  },
+  'security-audit': {
+    title: "🛡️ OWASP Security Audit & Reviewer",
+    description: "Inspect code files for memory vulnerabilities, resource leaks, SQL injection pathways, and compile errors.",
+    fields: [
+      { id: "codeSnippet", label: "Paste Code Snippet", type: "textarea", placeholder: "Paste code here..." }
+    ],
+    api: "/api/intelligence/security-audit"
+  },
+  'skill-graph': {
+    title: "📊 Interactive 12-Week Skills Bridge Roadmap",
+    description: "Analyze current skills and map a personalized bridge plan to transition directly into your target job.",
+    fields: [
+      { id: "currentStack", label: "Your Current Skill Set", type: "text", placeholder: "e.g. Java Spring Core, CSS" },
+      { id: "targetJob", label: "Target Dream Job", type: "text", placeholder: "e.g. Staff AI Infrastructure Architect" }
+    ],
+    api: "/api/intelligence/skill-graph"
+  },
+  'open-source': {
+    title: "🐙 Open Source Contribution Matcher",
+    description: "Guide beginner-friendly GitHub repositories, PR rules, and assign first issue guidelines.",
+    fields: [
+      { id: "preferredLanguage", label: "Preferred Coding Language", type: "text", placeholder: "e.g. Java, Go, Python" },
+      { id: "difficulty", label: "Target Difficulty", type: "select", options: ["EASY", "MEDIUM", "HARD"] }
+    ],
+    api: "/api/intelligence/open-source"
+  },
+  events: {
+    title: "🏆 High-Impact Hackathon Pitch Maker",
+    description: "Draft 3 project blueprints and compile elevator pitch scripts for successful team formation.",
+    fields: [
+      { id: "techStack", label: "Target Tech Stack", type: "text", placeholder: "e.g. Python, Java, Spring Boot, React" },
+      { id: "domain", label: "Innovation Domain", type: "text", placeholder: "e.g. Generative AI Healthcare Applications" }
+    ],
+    api: "/api/intelligence/events"
+  },
+  'career-multiplier': {
+    title: "🚀 Career demand pivoting roadmap",
+    description: "Map future technological trends and chart highly profitable adjacent domain pivots.",
+    fields: [
+      { id: "currentStack", label: "Your Current Primary Stack", type: "text", placeholder: "e.g. Java backend developer" }
+    ],
+    api: "/api/intelligence/career-multiplier"
+  }
+};
+
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll('.module-item').forEach(el => el.classList.remove('active'));
+  
+  // Find matching menu item visually
+  const items = document.querySelectorAll('.module-item');
+  items.forEach(item => {
+    if (item.getAttribute('onclick').includes(tabId)) {
+      item.classList.add('active');
+    }
+  });
+
+  document.getElementById('outputArea').style.display = 'none';
+  renderForm();
+}
+
+function renderForm() {
+  const cfg = moduleConfigs[currentTab];
+  const container = document.getElementById('moduleContent');
+  
+  let fieldsHtml = cfg.fields.map(f => {
+    if (f.type === 'textarea') {
+      return `
+        <div class="form-group">
+          <label for="${f.id}">${f.label}</label>
+          <textarea class="form-control" id="${f.id}" placeholder="${f.placeholder}"></textarea>
+        </div>
+      `;
+    } else if (f.type === 'select') {
+      return `
+        <div class="form-group">
+          <label for="${f.id}">${f.label}</label>
+          <select class="form-control" id="${f.id}">
+            ${f.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+          </select>
+        </div>
+      `;
+    }
+    return `
+      <div class="form-group">
+        <label for="${f.id}">${f.label}</label>
+        <input type="text" class="form-control" id="${f.id}" placeholder="${f.placeholder}">
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="content-header">
+      <h1>${cfg.title}</h1>
+      <p>${cfg.description}</p>
+    </div>
+    <form id="moduleForm" onsubmit="executeAiAnalysis(event)">
+      ${fieldsHtml}
+      <button class="btn-ai" type="submit" id="submitBtn">
+        <span>✨ Invoke AI Analysis</span>
+      </button>
+    </form>
+  `;
+}
+
+async function executeAiAnalysis(event) {
+  event.preventDefault();
+  
+  const cfg = moduleConfigs[currentTab];
+  const payload = {};
+  
+  cfg.fields.forEach(f => {
+    payload[f.id] = document.getElementById(f.id).value;
+  });
+
+  const btn = document.getElementById('submitBtn');
+  const spinner = document.getElementById('spinner');
+  const outputArea = document.getElementById('outputArea');
+  
+  btn.disabled = true;
+  spinner.style.display = 'flex';
+  outputArea.style.display = 'none';
+
+  try {
+    const res = await fetch(cfg.api, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    if(!res.ok) throw new Error('API failed');
+    const data = await res.json();
+    
+    renderMarkdownReport(data.result);
+    outputArea.style.display = 'block';
+  } catch(e) {
+    alert("AI Analysis service failed. Configure NVIDIA APIs key.");
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+function renderMarkdownReport(md) {
+  const container = document.getElementById('outputBody');
+  
+  let html = md
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+    .replace(/^- (.*?)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.*?)$/gm, '<li>$1</li>')
+    .split('\n\n')
+    .map(p => {
+      p = p.trim();
+      if (p.startsWith('<li>')) return `<ul>${p}</ul>`;
+      if (p.startsWith('<h3>') || p.startsWith('<h2>') || p.startsWith('<h1>') || p.startsWith('<pre>')) return p;
+      return `<p>${p}</p>`;
+    })
+    .join('');
+
+  container.innerHTML = html;
+}
+
+// Init
+switchTab('visa');
+</script>
+</body>
+</html>
