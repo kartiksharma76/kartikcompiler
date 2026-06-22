@@ -22,4 +22,4 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY --from=build /app/target/terminal-1.0.0.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx300m", "-Xss512k", "-XX:+UseContainerSupport", "-Dserver.port=${PORT:8080}", "-jar", "app.jar"]
