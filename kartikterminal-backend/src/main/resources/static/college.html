@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- Chart.js for Advanced Analytics -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- html2pdf for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -346,7 +348,7 @@ async function renderTab() {
           <h1>Global College Analytics</h1>
           <p>Real-time performance metrics across all students.</p>
         </div>
-        <button class="btn-primary">Generate PDF Report</button>
+        <button class="btn-primary" onclick="generatePDFReport()">Generate PDF Report</button>
       </div>
       
       <div class="bento-grid">
@@ -875,6 +877,26 @@ async function fetchCheaterLog() {
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="5" style="color:var(--error)">Failed to load log.</td></tr>';
   }
+}
+
+window.generatePDFReport = function() {
+  const element = document.querySelector('.main-content');
+  const opt = {
+    margin:       0.5,
+    filename:     'kartikterminal_report.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+  };
+  
+  // Hide the Generate PDF button temporarily so it doesn't show up in the PDF
+  const btn = element.querySelector('.btn-primary');
+  if (btn) btn.style.display = 'none';
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    // Restore the button
+    if (btn) btn.style.display = 'block';
+  });
 }
 
 </script>
