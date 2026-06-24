@@ -568,6 +568,36 @@ async function submitQuiz() {
     `;
 
     document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+
+    // Highlight correct and wrong answers
+    currentQuestions.forEach(q => {
+      const correctText = q.correctAnswer;
+      const block = document.getElementById(`qb-${q.id}`);
+      if (!block) return;
+      
+      const optionMap = {
+        'optionA': q.optionA,
+        'optionB': q.optionB,
+        'optionC': q.optionC,
+        'optionD': q.optionD
+      };
+
+      block.querySelectorAll('.option-label').forEach(label => {
+        const input = label.querySelector('input');
+        const val = input.value;
+        const text = optionMap[val];
+
+        const isCorrect = (text === correctText || val === correctText || val.replace('option', '') === correctText || "option" + correctText === val);
+        
+        if (isCorrect) {
+          label.style.background = 'rgba(16, 185, 129, 0.2)';
+          label.style.border = '1px solid var(--success)';
+        } else if (input.checked) {
+          label.style.background = 'rgba(239, 68, 68, 0.2)';
+          label.style.border = '1px solid var(--error)';
+        }
+      });
+    });
   } catch(e) {
     document.getElementById('submitBtn').textContent = 'Submit Answers';
     document.getElementById('submitBtn').disabled = false;

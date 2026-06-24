@@ -125,8 +125,25 @@ public class QuizService {
                 .filter(question -> question.getId().equals(ansReq.getQuestionId()))
                 .findFirst().orElse(null);
             
-            if (q != null && q.getCorrectAnswer().equalsIgnoreCase(ansReq.getSelectedOption())) {
-                score++;
+            if (q != null) {
+                String correct = q.getCorrectAnswer();
+                String selected = ansReq.getSelectedOption(); // usually "optionA"
+                
+                String selectedText = "";
+                if ("optionA".equalsIgnoreCase(selected)) selectedText = q.getOptionA();
+                else if ("optionB".equalsIgnoreCase(selected)) selectedText = q.getOptionB();
+                else if ("optionC".equalsIgnoreCase(selected)) selectedText = q.getOptionC();
+                else if ("optionD".equalsIgnoreCase(selected)) selectedText = q.getOptionD();
+                else selectedText = selected;
+
+                if (correct != null && (
+                    correct.equalsIgnoreCase(selected) || 
+                    correct.equalsIgnoreCase(selectedText) || 
+                    correct.equalsIgnoreCase(selected.replace("option", "")) ||
+                    correct.equalsIgnoreCase("option" + selected)
+                )) {
+                    score++;
+                }
             }
         }
 
