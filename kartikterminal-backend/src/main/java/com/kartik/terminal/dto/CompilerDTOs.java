@@ -20,7 +20,7 @@ public class CompilerDTOs {
         private String code;
 
         @NotBlank(message = "Language is required")
-        @Pattern(regexp = "^(java|python|cpp|c|js|go)$", message = "Unsupported language")
+        @Pattern(regexp = "^(java|python|cpp|c|js|go|mysql|ts)$", message = "Unsupported language")
         private String language;
 
         @Size(max = 10000, message = "Input too large")

@@ -1,0 +1,394 @@
+/* ==========================================
+   KARTIKTERMINAL RESPONSIVE COMPLEMENT STYLES
+   ========================================== */
+
+/* ── 1. Focus Auto-Zoom Fix for Mobile Devices ── */
+@media screen and (max-width: 768px) {
+  input, textarea, select,
+  .field input, .form-group input, .form-group textarea,
+  .msg-input, .search-input, .goto-line-input,
+  #stdin, #messageInput,
+  .monaco-editor textarea.inputarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── 2. Responsive Common Navbar ── */
+@media (max-width: 768px) {
+  nav {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    height: auto !important;
+    padding: 12px 16px !important;
+    gap: 12px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  nav .brand {
+    order: 1 !important;
+    font-size: 18px !important;
+  }
+  nav .logout-btn {
+    order: 2 !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+  nav .nav-links {
+    order: 3 !important;
+    width: 100% !important;
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 4px 0 !important;
+    margin-top: 4px !important;
+    gap: 12px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  nav .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  nav .nav-links a {
+    margin-left: 0 !important;
+    font-size: 13px !important;
+    padding: 6px 12px !important;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    display: inline-block !important;
+    flex-shrink: 0;
+  }
+  nav .nav-links a.active {
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    color: #fff !important;
+  }
+  nav .nav-links a.active::after {
+    display: none !important;
+  }
+}
+
+/* ── 3. Bento Grid & Dashboard Responsive Stacking ── */
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .bento-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .bento-card, [class*="col-span-"] {
+    grid-column: span 12 !important;
+  }
+  .container {
+    padding: 16px 12px !important;
+  }
+  /* Double column elements stacking */
+  div[style*="grid-template-columns: 1fr 1fr"],
+  div[style*="grid-template-columns: 1fr 280px"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Responsive Tables */
+  .lb-card, .section {
+    overflow-x: auto !important;
+  }
+  table {
+    min-width: 600px !important;
+  }
+  
+  /* College ERP video grid */
+  .video-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .video-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── 4. Sidebar/Workspace Layouts (college, intelligence) ── */
+@media (max-width: 768px) {
+  .workspace-container {
+    flex-direction: column !important;
+    height: calc(100vh - 120px) !important;
+    overflow-y: auto !important;
+  }
+  .workspace-sidebar {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+  }
+  .workspace-sidebar .sidebar-header {
+    display: none !important;
+  }
+  .workspace-sidebar .module-list {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 10px 16px !important;
+    gap: 8px !important;
+    scrollbar-width: none;
+  }
+  .workspace-sidebar .module-list::-webkit-scrollbar {
+    display: none;
+  }
+  .workspace-sidebar .module-item {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    margin-bottom: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    border-left: none !important;
+    border-bottom: 2px solid transparent !important;
+  }
+  .workspace-sidebar .module-item.active {
+    border-bottom: 2px solid var(--accent, #8b5cf6) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+  .workspace-main {
+    padding: 16px !important;
+    overflow-y: visible !important;
+  }
+  .content-card {
+    padding: 20px !important;
+  }
+}
+
+/* ── 5. Responsive Chat Panel Layout ── */
+@media (max-width: 768px) {
+  .chat-container {
+    position: relative;
+    overflow: hidden;
+  }
+  .chat-container .sidebar {
+    width: 100% !important;
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .chat-container .chat-main {
+    width: 100% !important;
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex !important;
+  }
+  .chat-container .empty-state {
+    display: none !important; /* Hide empty state on mobile, default to show contact list */
+  }
+  
+  /* Slide logic */
+  .chat-container.chat-active .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  /* Chat bubbles responsiveness */
+  .chat-messages {
+    padding: 16px !important;
+  }
+  .chat-messages .msg {
+    max-width: 90% !important;
+  }
+  
+  /* Input area adjustments */
+  .chat-input-area {
+    padding: 12px 16px !important;
+    gap: 8px !important;
+  }
+}
+
+/* ── 6. Responsive Compiler/Editor Layout ── */
+@media (max-width: 900px) {
+  body {
+    overflow-x: hidden !important;
+  }
+
+  /* Hide extra editor buttons to prevent horizontal overflow */
+  .editor-stats > span, 
+  .editor-stats > .font-size-control, 
+  .editor-stats > button:not(.share-badge),
+  .editor-stats > .history-dropdown {
+    display: none !important;
+  }
+  
+  .navbar.navbar-mobile-header {
+    height: auto !important;
+    padding: 10px 16px !important;
+  }
+  .navbar .brand {
+    font-size: 16px !important;
+  }
+  .navbar .controls {
+    display: none !important; /* Will display simplified mobile tools instead */
+  }
+  
+  .main-container {
+    flex-direction: column !important;
+    height: calc(100vh - 50px - 22px) !important; /* accounting for compact header & footer */
+    padding: 8px !important;
+    gap: 8px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  .editor-section {
+    height: 420px !important;
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  #monaco-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .io-panel {
+    width: 100% !important;
+    flex: none !important;
+    gap: 8px !important;
+  }
+  
+  /* Floating Compiler Actions Bar at the bottom */
+  .mobile-compiler-bar {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(13, 15, 20, 0.95);
+    border: 1px solid #3b82f6;
+    border-radius: 30px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 2000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(59, 130, 246, 0.2);
+    backdrop-filter: blur(12px);
+    width: 90% !important;
+    max-width: 340px !important;
+    justify-content: space-between !important;
+  }
+  .mobile-compiler-bar select {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    border-radius: 20px !important;
+    background: #14171c !important;
+    color: white !important;
+  }
+  .mobile-compiler-bar button {
+    border-radius: 20px !important;
+    padding: 6px 16px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Mobile programming virtual keys helper row */
+.mobile-keyboard-helper {
+  background: #101216;
+  border-bottom: 1px solid #262b33;
+  display: none;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 6px 12px;
+  gap: 8px;
+  align-items: center;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-keyboard-helper::-webkit-scrollbar {
+  display: none;
+}
+.mobile-keyboard-helper span {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #262b33;
+  color: #e2e8f0;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.mobile-keyboard-helper span:active {
+  background: #2563eb;
+  color: white;
+}
+@media (max-width: 900px) {
+  .mobile-keyboard-helper {
+    display: flex !important;
+  }
+}
+
+/* UI Extra Feature: Auto-Save breathing light indicator */
+.autosave-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.autosave-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-success);
+  box-shadow: 0 0 8px var(--text-success);
+  animation: breathing 2s infinite ease-in-out;
+}
+@keyframes breathing {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* UI Extra Feature: Share Code Modal and details */
+.share-badge {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #6ee7b7 !important;
+}
+
+/* Mobile Settings Toggle inside header */
+.mobile-settings-toggle {
+  background: #14171c;
+  border: 1px solid #262b33;
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+@media (max-width: 900px) {
+  .mobile-settings-toggle {
+    display: inline-flex !important;
+  }
+}
+.mobile-settings-panel {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  width: 280px;
+  background: rgba(20, 23, 28, 0.95);
+  border: 1px solid #262b33;
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  backdrop-filter: blur(12px);
+}
+.mobile-settings-panel.active {
+  display: flex;
+}

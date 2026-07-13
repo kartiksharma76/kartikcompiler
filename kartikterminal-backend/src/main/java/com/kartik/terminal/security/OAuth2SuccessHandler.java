@@ -72,15 +72,27 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 )
         );
 
+        // Determine request base URL to avoid redirecting to hardcoded host/port
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        StringBuilder baseUrl = new StringBuilder();
+        baseUrl.append(scheme).append("://").append(serverName);
+        if (("http".equals(scheme) && serverPort != 80) || ("https".equals(scheme) && serverPort != 443)) {
+            baseUrl.append(":").append(serverPort);
+        }
+        
+        String targetUrl = successRedirectUrl.startsWith("http") ? successRedirectUrl : baseUrl.toString() + successRedirectUrl;
+
         // Redirect to frontend with token as query param
         // Frontend JS reads ?token=... and stores it in localStorage
         String redirectUrl = UriComponentsBuilder
-                .fromUriString(successRedirectUrl)
+                .fromUriString(targetUrl)
                 .queryParam("token", jwt)
                 .queryParam("username", user.getUsername())
                 .build().toUriString();
 
-        log.info("Redirecting user '{}' after OAuth2 login", user.getUsername());
+        log.info("Redirecting user '{}' after OAuth2 login to: {}", user.getUsername(), targetUrl);
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 

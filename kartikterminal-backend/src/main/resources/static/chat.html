@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 <script src="/auth.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/responsive.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -252,6 +253,7 @@ nav {
 
   <div class="chat-main" id="chatMain" style="display:none;">
     <div class="chat-header">
+      <span class="mobile-back-btn" onclick="goBackToSidebar()" style="display:none; cursor:pointer; margin-right:16px; font-size:20px; font-weight:800; color:var(--accent);">←</span>
       <span class="status-dot"></span> <span id="headerUserId">AI Assistant</span>
     </div>
     <div class="chat-messages" id="messageArea">
@@ -299,6 +301,14 @@ async function init() {
     const me = await res.json();
     currentUserId = me.id;
     connectWebSocket();
+    
+    // Check for pending code shared from compiler
+    const pendingCode = localStorage.getItem('pending_chat_code');
+    if (pendingCode) {
+      selectAIContact();
+      document.getElementById('messageInput').value = pendingCode;
+      localStorage.removeItem('pending_chat_code');
+    }
   } catch(e) {
     // fallback
   }
@@ -349,6 +359,9 @@ async function selectAIContact() {
   document.querySelectorAll('.contact-item').forEach(c => c.classList.remove('active'));
   document.getElementById('aiContact').classList.add('active');
   
+  const container = document.querySelector('.chat-container');
+  if (container) container.classList.add('chat-active');
+  
   loadHistory(0);
 }
 
@@ -363,7 +376,15 @@ async function startChat() {
   document.getElementById('messageArea').innerHTML = '';
   document.querySelectorAll('.contact-item').forEach(c => c.classList.remove('active'));
   
+  const container = document.querySelector('.chat-container');
+  if (container) container.classList.add('chat-active');
+  
   loadHistory(targetUserId);
+}
+
+function goBackToSidebar() {
+  const container = document.querySelector('.chat-container');
+  if (container) container.classList.remove('chat-active');
 }
 
 async function loadHistory(userId) {

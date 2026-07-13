@@ -22,6 +22,18 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
         log.error("OAuth2 login failed: {}", exception.getMessage());
-        getRedirectStrategy().sendRedirect(request, response, failureRedirectUrl);
+        
+        // Determine request base URL to avoid redirecting to hardcoded host/port
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        StringBuilder baseUrl = new StringBuilder();
+        baseUrl.append(scheme).append("://").append(serverName);
+        if (("http".equals(scheme) && serverPort != 80) || ("https".equals(scheme) && serverPort != 443)) {
+            baseUrl.append(":").append(serverPort);
+        }
+        
+        String targetUrl = failureRedirectUrl.startsWith("http") ? failureRedirectUrl : baseUrl.toString() + failureRedirectUrl;
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

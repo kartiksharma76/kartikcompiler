@@ -16,6 +16,14 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +39,15 @@ public class CompilerService {
 
     @Value("${app.compiler.timeout:10}")
     private int timeoutSeconds;
+
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
+
+    @Value("${spring.datasource.username}")
+    private String dbUser;
+
+    @Value("${spring.datasource.password}")
+    private String dbPassword;
 
     @Value("${app.compiler.max-output:50000}")
     private int maxOutputBytes;
@@ -106,6 +123,8 @@ public class CompilerService {
                 case "c"      -> runC(workDir, request.getCode(), request.getInput());
                 case "js"     -> runNode(workDir, request.getCode(), request.getInput());
                 case "go"     -> runGo(workDir, request.getCode(), request.getInput());
+                case "mysql"  -> runMySql(request.getCode());
+                case "ts"     -> runTypeScript(workDir, request.getCode(), request.getInput());
                 default       -> new ExecutionResult("", "Unsupported language: " + request.getLanguage(), 1);
             };
 
@@ -309,6 +328,144 @@ public class CompilerService {
     public void init() throws IOException {
         Files.createDirectories(Path.of(tempDir));
         log.info("Compiler temp directory: {}", tempDir);
+    }
+
+    // ========== MYSQL EXECUTOR ==========
+    private Connection getSandboxConnection() throws SQLException {
+        String sandboxUrl = dbUrl;
+        if (sandboxUrl.contains("/kartikterminal")) {
+            sandboxUrl = sandboxUrl.replace("/kartikterminal", "/kartik_sandbox");
+        } else {
+            int lastSlash = sandboxUrl.lastIndexOf('/');
+            int queryStart = sandboxUrl.indexOf('?', lastSlash);
+            if (queryStart != -1) {
+                sandboxUrl = sandboxUrl.substring(0, lastSlash + 1) + "kartik_sandbox" + sandboxUrl.substring(queryStart);
+            } else {
+                sandboxUrl = sandboxUrl.substring(0, lastSlash + 1) + "kartik_sandbox";
+            }
+        }
+        
+        String serverUrl = dbUrl.substring(0, dbUrl.lastIndexOf('/') + 1);
+        int queryIdx = dbUrl.indexOf('?');
+        if (queryIdx != -1) {
+            serverUrl += dbUrl.substring(queryIdx);
+        }
+        
+        try (Connection conn = DriverManager.getConnection(serverUrl, dbUser, dbPassword);
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS kartik_sandbox CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        } catch (Exception e) {
+            log.warn("Could not pre-create kartik_sandbox database: {}", e.getMessage());
+        }
+
+        return DriverManager.getConnection(sandboxUrl, dbUser, dbPassword);
+    }
+
+    private ExecutionResult runMySql(String code) {
+        StringBuilder stdout = new StringBuilder();
+        StringBuilder stderr = new StringBuilder();
+        int exitCode = 0;
+
+        try (Connection conn = getSandboxConnection()) {
+            // Basic SQL query splitter
+            String[] queries = code.split(";");
+            for (String query : queries) {
+                query = query.trim();
+                if (query.isEmpty()) continue;
+
+                stdout.append("mysql> ").append(query).append(";\n");
+
+                try (Statement stmt = conn.createStatement()) {
+                    boolean hasResultSet = stmt.execute(query);
+                    if (hasResultSet) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            formatResultSet(rs, stdout);
+                        }
+                    } else {
+                        int updateCount = stmt.getUpdateCount();
+                        stdout.append("Query OK, ").append(updateCount).append(" rows affected\n\n");
+                    }
+                } catch (SQLException e) {
+                    stderr.append("ERROR ").append(e.getErrorCode()).append(" (").append(e.getSQLState()).append("): ").append(e.getMessage()).append("\n\n");
+                    exitCode = 1;
+                }
+            }
+        } catch (SQLException e) {
+            stderr.append("Database Connection Error: ").append(e.getMessage()).append("\n");
+            exitCode = 1;
+        }
+
+        return new ExecutionResult(stdout.toString(), stderr.toString(), exitCode);
+    }
+
+    private void formatResultSet(ResultSet rs, StringBuilder out) throws SQLException {
+        ResultSetMetaData md = rs.getMetaData();
+        int columns = md.getColumnCount();
+        
+        int[] widths = new int[columns];
+        String[] headers = new String[columns];
+        for (int i = 0; i < columns; i++) {
+            headers[i] = md.getColumnLabel(i + 1);
+            widths[i] = headers[i].length();
+        }
+        
+        List<String[]> rows = new ArrayList<>();
+        while (rs.next()) {
+            String[] row = new String[columns];
+            for (int i = 0; i < columns; i++) {
+                Object val = rs.getObject(i + 1);
+                row[i] = val == null ? "NULL" : val.toString();
+                widths[i] = Math.max(widths[i], row[i].length());
+            }
+            rows.add(row);
+        }
+        
+        StringBuilder border = new StringBuilder("+");
+        for (int i = 0; i < columns; i++) {
+            border.append("-".repeat(widths[i] + 2)).append("+");
+        }
+        border.append("\n");
+        
+        out.append(border);
+        
+        out.append("|");
+        for (int i = 0; i < columns; i++) {
+            out.append(" ").append(padRight(headers[i], widths[i])).append(" |");
+        }
+        out.append("\n").append(border);
+        
+        for (String[] row : rows) {
+            out.append("|");
+            for (int i = 0; i < columns; i++) {
+                out.append(" ").append(padRight(row[i], widths[i])).append(" |");
+            }
+            out.append("\n");
+        }
+        out.append(border);
+        out.append(rows.size()).append(" rows in set\n\n");
+    }
+
+    private String padRight(String s, int n) {
+        return String.format("%-" + n + "s", s);
+    }
+
+    // ========== TYPESCRIPT EXECUTOR ==========
+    private ExecutionResult runTypeScript(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.ts");
+        Files.writeString(srcFile, code);
+        return runProcess(
+                new String[]{resolveCmd("npx"), "-y", "tsx", srcFile.toString()},
+                dir, input, timeoutSeconds + 15
+        );
+    }
+
+    private String resolveCmd(String cmd) {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            if ("npx".equals(cmd)) return "npx.cmd";
+            if ("npm".equals(cmd)) return "npm.cmd";
+        }
+        return cmd;
     }
 
     // ========== INNER RESULT CLASS ==========

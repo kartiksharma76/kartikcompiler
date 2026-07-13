@@ -9,6 +9,7 @@
 <script src="/auth.js"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/responsive.css">
 <style>
 :root {
 --bg-deep: #050505; --bg-editor: #0d0f14; --bg-panel: #14171c;
@@ -187,8 +188,9 @@ border-top: 1px solid var(--border);
 <div id="errorFlash"></div>
 <div class="toast-container" id="toastContainer"></div>
 
-<nav class="navbar">
+<nav class="navbar navbar-mobile-header">
   <div class="brand">KARTIKTERMINAL</div>
+  <div class="mobile-settings-toggle" onclick="toggleMobileSettings()">⚙️ Settings</div>
   <div class="controls">
     <div class="datetime-box">
       <span class="datetime-date" id="currentDate">--/--/----</span>
@@ -225,6 +227,8 @@ border-top: 1px solid var(--border);
       <option value="c">C11</option>
       <option value="js">Node.js</option>
       <option value="go">Go 1.21</option>
+      <option value="mysql">MySQL SQL</option>
+      <option value="ts">TypeScript</option>
     </select>
     <!-- auth.js injects user avatar + menu widget here -->
     <button id="collegeBtn" class="run-btn" style="background: #10b981;" onclick="window.location.href='/college.html'">🎓 COLLEGE ERP</button>
@@ -238,6 +242,12 @@ border-top: 1px solid var(--border);
     <div class="tab-bar">
       <div class="tab" id="file-name">Main.java</div>
       <div class="editor-stats">
+        <div class="autosave-indicator" title="Auto-saved to local session">
+          <div class="autosave-dot"></div>
+          <span>Synced</span>
+        </div>
+        <button class="icon-btn share-badge" onclick="shareCode()" title="Share Code & Output">🔗 Share</button>
+        <button class="icon-btn" onclick="sendToChat()" title="Send Code to Chat" style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2); color: #a5b4fc;">💬 Send to Chat</button>
         <span id="lineCount">Ln: 1</span>
         <span id="wordCount">W: 0</span>
         <span id="charCount">Ch: 0</span>
@@ -279,6 +289,24 @@ border-top: 1px solid var(--border);
       <div class="stat-row"><span class="label">Est. Read Time:</span><span class="value" id="statReadTime">0s</span></div>
     </div>
     <div class="system-breadcrumb">src > production > cloud-env > <span id="current-path">Main.java</span></div>
+    <div class="mobile-keyboard-helper" id="mobileKeyboardHelper">
+      <span onclick="insertSymbol('{')">{</span>
+      <span onclick="insertSymbol('}')">}</span>
+      <span onclick="insertSymbol('[')">[</span>
+      <span onclick="insertSymbol(']')">]</span>
+      <span onclick="insertSymbol('(')">(</span>
+      <span onclick="insertSymbol(')')">)</span>
+      <span onclick="insertSymbol(';')">;</span>
+      <span onclick="insertSymbol('=')">=</span>
+      <span onclick="insertSymbol('&quot;')">&quot;</span>
+      <span onclick="insertSymbol('&apos;')">&apos;</span>
+      <span onclick="insertSymbol('&lt;')">&lt;</span>
+      <span onclick="insertSymbol('&gt;')">&gt;</span>
+      <span onclick="insertSymbol('+')">+</span>
+      <span onclick="insertSymbol('-')">-</span>
+      <span onclick="insertSymbol('*')">*</span>
+      <span onclick="insertSymbol('/')">/</span>
+    </div>
     <div class="editor-wrapper" id="monaco-container" style="flex: 1; min-height: 0; overflow: hidden;"></div>
   </div>
 
@@ -325,6 +353,42 @@ border-top: 1px solid var(--border);
     </span>
   </div>
 </footer>
+
+<!-- Mobile settings panel -->
+<div class="mobile-settings-panel" id="mobileSettingsPanel">
+  <div style="font-weight:700; font-size:12px; color:var(--text-muted); border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px;">WORKSPACE SETTINGS</div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <span>Theme</span>
+    <button class="run-btn" style="padding: 4px 10px; font-size:11px;" onclick="toggleTheme(); toggleMobileSettings();">Toggle Theme</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <span>Eye Protection</span>
+    <button class="run-btn" style="padding: 4px 10px; font-size:11px;" onclick="toggleEyeProtect(); toggleMobileSettings();">Toggle Eye</button>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <span>Security Mode</span>
+    <button class="run-btn" style="padding: 4px 10px; font-size:11px;" onclick="toggleSecurity(); toggleMobileSettings();">Toggle Secure</button>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">
+    <button class="run-btn" style="background:#10b981; width:100%;" onclick="window.location.href='/college.html'">🎓 ERP Section</button>
+  </div>
+</div>
+
+<!-- Mobile compiler action bar -->
+<div class="mobile-compiler-bar" id="mobileCompilerBar">
+  <select id="language-mobile" onchange="syncLanguage(this)">
+    <option value="java">Java 17</option>
+    <option value="python">Python 3.10</option>
+    <option value="cpp">C++ 20</option>
+    <option value="c">C11</option>
+    <option value="js">Node.js</option>
+    <option value="go">Go 1.21</option>
+    <option value="mysql">MySQL SQL</option>
+    <option value="ts">TypeScript</option>
+  </select>
+  <button class="run-btn" style="background:#8b5cf6;" onclick="analyzeAI()">🧠 AI</button>
+  <button class="run-btn" onclick="runCode()">⚡ RUN</button>
+</div>
 
 <!-- Modals -->
 <div class="modal-overlay" id="securityModal">
@@ -551,14 +615,16 @@ function toggleSecurity() {
 }
 
 // ── Language ──
-const langExt={java:'java',python:'py',cpp:'cpp',c:'c',js:'js',go:'go'};
+const langExt={java:'java',python:'py',cpp:'cpp',c:'c',js:'js',go:'go',mysql:'sql',ts:'ts'};
 const defaultTemplates={
   java:'public class Main {\npublic static void main(String[] args) {\nSystem.out.println("Hello KartikTerminal");\n}\n}',
   python:'print("Hello Python Scripting")',
   cpp:'#include <iostream>\nusing namespace std;\nint main() {\ncout << "Hello Low-Level C++";\nreturn 0;\n}',
   c:'#include <stdio.h>\nint main() {\nprintf("Standard C Output\\n");\nreturn 0;\n}',
   js:'console.log("Node.js Runtime Ready");',
-  go:'package main\nimport "fmt"\nfunc main() {\nfmt.Println("Gopher Engine Start")\n}'
+  go:'package main\nimport "fmt"\nfunc main() {\nfmt.Println("Gopher Engine Start")\n}',
+  mysql:'-- MySQL Sandbox Database\nCREATE TABLE IF NOT EXISTS users (\n  id INT PRIMARY KEY,\n  name VARCHAR(50)\n);\n\nINSERT INTO users VALUES (1, "Kartik"), (2, "Sharma");\n\nSELECT * FROM users;\n\nDROP TABLE users;',
+  ts:'interface Developer {\n  name: string;\n  skills: string[];\n}\n\nconst dev: Developer = {\n  name: "Kartik Sharma",\n  skills: ["Java", "TypeScript", "MySQL"]\n};\n\nconsole.log(`Developer ${dev.name} excels in ${dev.skills.join(", ")}`);'
 };
 const languageTemplates={
   java:`import java.util.Scanner;\npublic class Main {\npublic static void main(String[] args) {\nScanner sc = new Scanner(System.in);\nSystem.out.println("Hello KartikTerminal");\nsc.close();\n}\n}`,
@@ -566,21 +632,38 @@ const languageTemplates={
   cpp:`#include <iostream>\nusing namespace std;\nint main() {\ncout << "Hello KartikTerminal" << endl;\nreturn 0;\n}`,
   c:`#include <stdio.h>\nint main() {\nprintf("Hello KartikTerminal\\n");\nreturn 0;\n}`,
   js:`console.log("Hello KartikTerminal");`,
-  go:`package main\nimport "fmt"\nfunc main() {\nfmt.Println("Hello KartikTerminal")\n}`
+  go:`package main\nimport "fmt"\nfunc main() {\nfmt.Println("Hello KartikTerminal")\n}`,
+  mysql:`-- Insert template\nCREATE TABLE IF NOT EXISTS temp_data (\n  id INT,\n  info VARCHAR(100)\n);\nINSERT INTO temp_data VALUES (101, "Quick SQL execution");\nSELECT * FROM temp_data;\nDROP TABLE temp_data;`,
+  ts:`const sayHello = (name: string): string => {\n  return \`Hello \${name}!\`;\n};\nconsole.log(sayHello("KartikTerminal"));`
 };
 function changeLanguage(showMessage=true) {
   const lang=document.getElementById('language').value;
+  const mobileSelect = document.getElementById('language-mobile');
+  if (mobileSelect) mobileSelect.value = lang;
   const fileName=`Main.${langExt[lang]}`;
   terminal.innerHTML=''; 
   if (window.monacoEditor) {
     const model = window.monacoEditor.getModel();
-    monaco.editor.setModelLanguage(model, lang === 'js' ? 'javascript' : lang);
+    monaco.editor.setModelLanguage(model, lang === 'js' ? 'javascript' : (lang === 'ts' ? 'typescript' : (lang === 'mysql' ? 'sql' : lang)));
     editor.value = defaultTemplates[lang]||'';
   } else { editor.value=defaultTemplates[lang]||''; }
   document.getElementById('file-name').innerText=fileName;
   document.getElementById('current-path').innerText=fileName;
   handleInput(); saveToLocalStorage();
   if(showMessage) logToTerminal(`🔄 Language changed to ${lang.toUpperCase()}`,"warning");
+}
+
+function insertTemplate() {
+  const lang = document.getElementById('language').value;
+  const template = languageTemplates[lang] || defaultTemplates[lang] || '';
+  if (window.monacoEditor) {
+    window.monacoEditor.setValue(template);
+  } else {
+    editor.value = template;
+  }
+  handleInput();
+  logToTerminal(`📄 Inserted ${lang.toUpperCase()} template`, "info");
+  showToast(`Inserted template`, "success");
 }
 
 // ── Editor ──
@@ -707,7 +790,17 @@ function nextMatch(){if(!searchMatches.length)return;currentMatchIndex=(currentM
 function prevMatch(){if(!searchMatches.length)return;currentMatchIndex=(currentMatchIndex-1+searchMatches.length)%searchMatches.length;highlightMatch(currentMatchIndex);searchInfo.textContent=`${currentMatchIndex+1}/${searchMatches.length}`;}
 
 // ── Snippets ──
-const codeSnippets={java:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'If-Else',desc:'Conditional statement',code:'if(condition) {\n// true\n} else {\n// false\n}'},{title:'Try-Catch',desc:'Exception handling',code:'try {\n// code\n} catch(Exception e) {\ne.printStackTrace();\n}'},{title:'Scanner Input',desc:'Read user input',code:'Scanner sc = new Scanner(System.in);\nString input = sc.nextLine();'}],python:[{title:'For Loop',desc:'Iterate over range',code:'for i in range(n):\n# code'},{title:'List Comprehension',desc:'Compact list creation',code:'result = [x*2 for x in items if x > 0]'},{title:'Try-Except',desc:'Exception handling',code:'try:\n# code\nexcept Exception as e:\nprint(e)'},{title:'Function',desc:'Define function',code:'def function_name(param):\n"""Docstring"""\nreturn result'}],cpp:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'Vector',desc:'STL vector usage',code:'vector<int> v = {1, 2, 3};\nv.push_back(4);'},{title:'If-Else',desc:'Conditional',code:'if(condition) {\n// true\n} else {\n// false\n}'}],js:[{title:'Arrow Function',desc:'ES6 arrow syntax',code:'const fn = (param) => {\nreturn result;\n}'},{title:'Async/Await',desc:'Async operation',code:'async function fetchData() {\nconst res = await fetch(url);\nreturn res.json();\n}'},{title:'Array Map',desc:'Transform array',code:'const result = arr.map(item => item * 2);'}],go:[{title:'For Loop',desc:'Go style loop',code:'for i := 0; i < n; i++ {\n// code\n}'},{title:'Defer',desc:'Deferred execution',code:'defer file.Close()'},{title:'Error Check',desc:'Common pattern',code:'if err != nil {\nreturn err\n}'}]};
+const codeSnippets={java:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'If-Else',desc:'Conditional statement',code:'if(condition) {\n// true\n} else {\n// false\n}'},{title:'Try-Catch',desc:'Exception handling',code:'try {\n// code\n} catch(Exception e) {\ne.printStackTrace();\n}'},{title:'Scanner Input',desc:'Read user input',code:'Scanner sc = new Scanner(System.in);\nString input = sc.nextLine();'}],python:[{title:'For Loop',desc:'Iterate over range',code:'for i in range(n):\n# code'},{title:'List Comprehension',desc:'Compact list creation',code:'result = [x*2 for x in items if x > 0]'},{title:'Try-Except',desc:'Exception handling',code:'try:\n# code\nexcept Exception as e:\nprint(e)'},{title:'Function',desc:'Define function',code:'def function_name(param):\n"""Docstring"""\nreturn result'}],cpp:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'Vector',desc:'STL vector usage',code:'vector<int> v = {1, 2, 3};\nv.push_back(4);'},{title:'If-Else',desc:'Conditional',code:'if(condition) {\n// true\n} else {\n// false\n}'}],js:[{title:'Arrow Function',desc:'ES6 arrow syntax',code:'const fn = (param) => {\nreturn result;\n}'},{title:'Async/Await',desc:'Async operation',code:'async function fetchData() {\nconst res = await fetch(url);\nreturn res.json();\n}'},{title:'Array Map',desc:'Transform array',code:'const result = arr.map(item => item * 2);'}],go:[{title:'For Loop',desc:'Go style loop',code:'for i := 0; i < n; i++ {\n// code\n}'},{title:'Defer',desc:'Deferred execution',code:'defer file.Close()'},{title:'Error Check',desc:'Common pattern',code:'if err != nil {\nreturn err\n}'}],
+  mysql:[
+    {title:'Create Table',desc:'Define custom schema table',code:'CREATE TABLE table_name (\n  id INT PRIMARY KEY,\n  name VARCHAR(100)\n);'},
+    {title:'Insert Row',desc:'Insert data into schema',code:'INSERT INTO table_name (id, name) VALUES (1, "Data");'},
+    {title:'Select All',desc:'Retrieve all records',code:'SELECT * FROM table_name;'}
+  ],
+  ts:[
+    {title:'Interface',desc:'Declare TypeScript interface structure',code:'interface User {\n  id: number;\n  name: string;\n}'},
+    {title:'Arrow Function',desc:'Strict typed function',code:'const add = (a: number, b: number): number => a + b;'}
+  ]
+};
 function toggleSnippets(){const lang=document.getElementById('language').value,snippets=codeSnippets[lang]||[];if(!snippets.length){logToTerminal("⚠️ No snippets for this language","warning");return;}snippetsPanel.innerHTML=snippets.map((s,i)=>`<div class="snippet-item" onclick="insertSnippet(${i})"><div class="snippet-title">${s.title}</div><div class="snippet-desc">${s.desc}</div></div>`).join('');snippetsPanel.classList.toggle('active');statsPanel.classList.remove('active');}
 function insertSnippet(index){const lang=document.getElementById('language').value,snippet=codeSnippets[lang][index];if(!snippet)return;const s=editor.selectionStart,e=editor.selectionEnd;editor.value=editor.value.substring(0,s)+snippet.code+editor.value.substring(e);editor.selectionStart=editor.selectionEnd=s+snippet.code.length;editor.focus();handleInput();snippetsPanel.classList.remove('active');logToTerminal(`📦 Inserted: ${snippet.title}`,"info");}
 function toggleStats(){updateDetailedStats();statsPanel.classList.toggle('active');snippetsPanel.classList.remove('active');}
@@ -719,7 +812,7 @@ function saveAppState(){localStorage.setItem('kartikTerminalAppState',JSON.strin
 function adjustFontSize(delta){fontSize=Math.max(10,Math.min(24,fontSize+delta));applyFontSize();saveToLocalStorage();updateLineHighlight();}
 function applyFontSize(){document.documentElement.style.setProperty('--editor-font-size',`${fontSize}px`);updateFontSizeDisplay();updateLineHighlight();}
 function updateFontSizeDisplay(){fontSizeDisplay.textContent=`${fontSize}px`;}
-function downloadCode(){const lang=document.getElementById('language').value,ext={java:'java',python:'py',cpp:'cpp',c:'c',js:'js',go:'go'}[lang]||'txt',filename=`Main.${ext}`,blob=new Blob([editor.value],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);logToTerminal(`💾 Downloaded ${filename}`,"info");}
+function downloadCode(){const lang=document.getElementById('language').value,ext={java:'java',python:'py',cpp:'cpp',c:'c',js:'js',go:'go',mysql:'sql',ts:'ts'}[lang]||'txt',filename=`Main.${ext}`,blob=new Blob([editor.value],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);logToTerminal(`💾 Downloaded ${filename}`,"info");}
 function toggleWordWrap(){wordWrap=!wordWrap;applyWordWrap();saveToLocalStorage();wrapBtn.innerText=wordWrap?'🔃':'🔤';}
 function applyWordWrap(){[editor,highlightLayer,highlightCode].forEach(el=>{wordWrap?el.classList.add('wrap'):el.classList.remove('wrap');});}
 function toggleZenMode(){zenMode=!zenMode;document.body.classList.toggle('zen-mode',zenMode);zenBtn.innerText=zenMode?'👁️':'🧘';saveAppState();logToTerminal(`🧘 Zen mode: ${zenMode?'ON':'OFF'}`,"info");}
@@ -917,6 +1010,60 @@ require(['vs/editor/editor.main'], function() {
     });
     window.monacoEditor.onDidChangeModelContent(() => { handleInput(); });
     window.monacoEditor.onDidPaste(() => { handlePaste(); });
+});
+
+// Mobile Action Helpers
+function toggleMobileSettings() {
+  const panel = document.getElementById('mobileSettingsPanel');
+  if (panel) {
+    panel.classList.toggle('active');
+  }
+}
+function syncLanguage(mobileSelect) {
+  const mainSelect = document.getElementById('language');
+  if (mainSelect) {
+    mainSelect.value = mobileSelect.value;
+    changeLanguage(true);
+  }
+}
+function shareCode() {
+  const code = editor.value;
+  const output = terminal.innerText;
+  const lang = document.getElementById('language').value;
+  const shareText = `### shared via KartikTerminal (${lang.toUpperCase()})\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n**Console Output:**\n\`\`\`\n${output}\n\`\`\``;
+  navigator.clipboard.writeText(shareText).then(() => {
+    showToast("🔗 Code sharing markdown copied to clipboard!", "success");
+  }).catch(() => {
+    showToast("Failed to copy code share link", "error");
+  });
+}
+function sendToChat() {
+  const code = editor.value;
+  const lang = document.getElementById('language').value;
+  const block = `\`\`\`${lang}\n${code}\n\`\`\``;
+  localStorage.setItem('pending_chat_code', block);
+  window.location.href = '/chat.html';
+}
+function insertSymbol(sym) {
+  if (window.monacoEditor) {
+    const position = window.monacoEditor.getPosition();
+    const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
+    const id = { major: 1, minor: 1 };
+    const op = { identifier: id, range: range, text: sym, forceMoveMarkers: true };
+    window.monacoEditor.executeEdits("mobile-helper", [op]);
+    window.monacoEditor.setPosition({
+      lineNumber: position.lineNumber,
+      column: position.column + sym.length
+    });
+    window.monacoEditor.focus();
+  }
+}
+// Close mobile settings panel when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#mobileSettingsPanel') && !e.target.closest('.mobile-settings-toggle')) {
+    const panel = document.getElementById('mobileSettingsPanel');
+    if (panel) panel.classList.remove('active');
+  }
 });
 </script>
 </body>
