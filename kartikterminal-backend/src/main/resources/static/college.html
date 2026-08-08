@@ -584,6 +584,17 @@ async function renderTab() {
            </div>
         </div>
 
+        <div class="bento-card col-span-12" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.02);">
+           <h3 style="margin-bottom:10px; color: var(--error);">Delete User Account</h3>
+           <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">
+             Completely delete a user account and all of their historical submissions, exams, resume, and associated records. <strong>This action is permanent and cannot be undone!</strong>
+           </p>
+           <div style="display:flex; align-items:center; gap:10px;">
+             <input type="number" id="deleteUserId" class="form-control" placeholder="Enter User ID to delete" style="max-width:300px; border-color: rgba(239, 68, 68, 0.2);">
+             <button class="btn-primary" style="background: var(--error); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);" onclick="adminDeleteUser()">Delete User Account</button>
+           </div>
+        </div>
+
         <div class="bento-card col-span-6">
            <h3 style="margin-bottom:10px;">Anti-Cheat Management</h3>
            <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">
@@ -870,7 +881,8 @@ async function fetchCheaterLog() {
           <td>${statusBadge}</td>
           <td>
             <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--success); color:var(--success)" onclick="adminAction(${c.id}, 'unlock')">Unlock</button>
-            <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--error); color:var(--error)" onclick="adminAction(${c.id}, 'disqualify')">Disqualify</button>
+            <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--warning); color:var(--warning)" onclick="adminAction(${c.id}, 'disqualify')">Disqualify</button>
+            <button class="btn-secondary" style="padding:4px 8px; font-size:10px; border-color:var(--error); color:var(--error)" onclick="adminDeleteUserById(${c.id})">Delete</button>
           </td>
         </tr>
       `;
@@ -880,24 +892,252 @@ async function fetchCheaterLog() {
   }
 }
 
-window.generatePDFReport = function() {
-  const element = document.querySelector('.workspace-main');
-  const opt = {
-    margin:       0.5,
-    filename:     'kartikterminal_report.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
-    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-  };
-  
-  // Hide the Generate PDF button temporarily so it doesn't show up in the PDF
-  const btn = element.querySelector('.btn-primary');
-  if (btn) btn.style.display = 'none';
+window.promoteToAdmin = async function() {
+  const userId = document.getElementById('promoteUserId').value.trim();
+  if(!userId) {
+    alert("Please enter a User ID");
+    return;
+  }
+  if(!confirm(`Are you sure you want to promote User ID ${userId} to ADMIN?`)) return;
+  try {
+    const res = await fetch(`/api/admin/users/${userId}/promote`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if(res.ok) {
+      alert(`User promoted to ADMIN successfully!`);
+      document.getElementById('promoteUserId').value = '';
+    } else {
+      alert("Failed. You might not have Admin permissions.");
+    }
+  } catch(e) {
+    alert("API Error");
+  }
+}
 
-  html2pdf().set(opt).from(element).save().then(() => {
-    // Restore the button
-    if (btn) btn.style.display = 'block';
-  });
+window.adminDeleteUser = async function() {
+  const userId = document.getElementById('deleteUserId').value.trim();
+  if(!userId) {
+    alert("Please enter a User ID");
+    return;
+  }
+  if(!confirm(`WARNING: Are you sure you want to permanently delete User ID ${userId}? This will delete all their code submissions, executions, exams, and plagiarism logs!`)) return;
+  try {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if(res.ok) {
+      alert(`User ID ${userId} deleted successfully!`);
+      document.getElementById('deleteUserId').value = '';
+      switchTab('admin'); // refresh
+    } else {
+      alert("Failed. User might not exist or you might not have Admin permissions.");
+    }
+  } catch(e) {
+    alert("API Error");
+  }
+}
+
+window.adminDeleteUserById = async function(userId) {
+  if(!confirm(`WARNING: Are you sure you want to permanently delete User ID ${userId}? This will delete all their code submissions, executions, exams, and plagiarism logs!`)) return;
+  try {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if(res.ok) {
+      alert(`User deleted successfully!`);
+      switchTab('admin'); // refresh
+    } else {
+      alert("Failed. You might not have Admin permissions.");
+    }
+  } catch(e) {
+    alert("API Error");
+  }
+}
+
+window.generatePDFReport = async function() {
+  const btn = document.querySelector('.btn-primary');
+  const originalText = btn ? btn.textContent : "Generate PDF Report";
+  if (btn) { btn.disabled = true; btn.textContent = "Generating Report..."; }
+
+  try {
+    const res = await fetch('/api/admin/reports/data', {
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if (!res.ok) {
+      alert("Failed to fetch report data. Make sure you are logged in as admin.");
+      return;
+    }
+    const data = await res.json();
+    
+    // Create a temporary element to hold the report HTML
+    const reportEl = document.createElement('div');
+    reportEl.style.cssText = `
+      padding: 30px;
+      color: #111827;
+      background: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      width: 760px;
+    `;
+
+    // 1. Report Title & Header
+    let reportHtml = `
+      <div style="border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 25px;">
+        <div style="font-size: 24px; font-weight: 800; color: #2563eb; letter-spacing: 1px;">KARTIKTERMINAL PERFORMANCE REPORT</div>
+        <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; margin-top: 4px;">System Analytics & Institution Assessment Report</div>
+        <div style="font-size: 12px; color: #374151; margin-top: 10px;">Generated On: <strong>${new Date().toLocaleString()}</strong></div>
+      </div>
+      
+      <!-- Executive Summary -->
+      <div style="margin-bottom: 30px;">
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e3a8a; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 15px;">1. Executive Summary</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%;">
+          <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; text-align: center; float: left; width: 30%; margin-right: 3%;">
+            <div style="font-size: 11px; color: #4b5563; text-transform: uppercase; font-weight: 600;">Total Users</div>
+            <div style="font-size: 24px; font-weight: 800; color: #2563eb; margin-top: 5px;">${data.stats.totalUsers}</div>
+          </div>
+          <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; text-align: center; float: left; width: 30%; margin-right: 3%;">
+            <div style="font-size: 11px; color: #4b5563; text-transform: uppercase; font-weight: 600;">Active Sessions</div>
+            <div style="font-size: 24px; font-weight: 800; color: #10b981; margin-top: 5px;">${data.stats.activeUsers}</div>
+          </div>
+          <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; text-align: center; float: left; width: 30%;">
+            <div style="font-size: 11px; color: #4b5563; text-transform: uppercase; font-weight: 600;">Total Executions</div>
+            <div style="font-size: 24px; font-weight: 800; color: #8b5cf6; margin-top: 5px;">${data.stats.totalRuns}</div>
+          </div>
+          <div style="clear: both;"></div>
+        </div>
+      </div>
+      
+      <!-- Language Stats -->
+      <div style="margin-bottom: 30px;">
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e3a8a; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 15px;">2. Language Adoption</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: #f3f4f6; text-align: left;">
+              <th style="padding: 10px; border-bottom: 1px solid #d1d5db;">Programming Language</th>
+              <th style="padding: 10px; border-bottom: 1px solid #d1d5db; text-align: right;">Total Executions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.stats.languageStats.map(ls => `
+              <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: 600;">${ls.language.toUpperCase()}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">${ls.count} runs</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      
+      <div style="page-break-before: always;"></div>
+      
+      <!-- Global Leaderboard (Individual/Normal Users) -->
+      <div style="margin-bottom: 40px;">
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e3a8a; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 15px;">3. Individual Coders Leaderboard (Global / General)</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <thead>
+            <tr style="background: #2563eb; color: #ffffff; text-align: left;">
+              <th style="padding: 8px 10px;">Rank</th>
+              <th style="padding: 8px 10px;">Coder Name</th>
+              <th style="padding: 8px 10px; text-align: right;">Total Points</th>
+              <th style="padding: 8px 10px; text-align: right;">Executions</th>
+              <th style="padding: 8px 10px; text-align: right;">Success Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.globalLeaderboard.map((u, index) => `
+              <tr style="background: ${index % 2 === 0 ? '#ffffff' : '#f9fafb'};">
+                <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-weight: 700;">#${index + 1}</td>
+                <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb;">
+                  <div style="font-weight: 600;">${u.fullName}</div>
+                  <div style="font-size: 10px; color: #6b7280;">@${u.username}</div>
+                </td>
+                <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 700; color: #2563eb;">${u.points}</td>
+                <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">${u.executions}</td>
+                <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #10b981; font-weight: 600;">${u.successRate.toFixed(1)}%</td>
+              </tr>
+            `).join('')}
+            ${data.globalLeaderboard.length === 0 ? '<tr><td colspan="5" style="padding: 20px; text-align: center; color: #6b7280;">No individual coders found.</td></tr>' : ''}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    // 4. College / Company Reports
+    if (data.collegeReports && data.collegeReports.length > 0) {
+      reportHtml += `
+        <div style="page-break-before: always;"></div>
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e3a8a; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 15px;">4. College & Company Reports (Institutional Sandboxes)</h2>
+      `;
+
+      data.collegeReports.forEach((cr, i) => {
+        if (i > 0) {
+          reportHtml += `<div style="page-break-before: always;"></div>`;
+        }
+        reportHtml += `
+          <div style="margin-bottom: 35px; border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden;">
+            <div style="background: #1e3a8a; color: #ffffff; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">🏢 ${cr.name}</span>
+              <span style="font-size: 10px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">License Code: ${cr.licenseKey.substring(0, 8)}...</span>
+            </div>
+            
+            <div style="padding: 15px; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+              <span style="font-size: 11px; color: #6b7280; text-transform: uppercase; margin-right: 15px;">Total Students: <strong style="color: #111827;">${cr.totalUsers}</strong></span>
+              <span style="font-size: 11px; color: #6b7280; text-transform: uppercase;">Total Runs: <strong style="color: #111827;">${cr.totalRuns}</strong></span>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+              <thead>
+                <tr style="background: #f3f4f6; text-align: left; border-bottom: 1px solid #d1d5db;">
+                  <th style="padding: 8px 10px;">Rank</th>
+                  <th style="padding: 8px 10px;">Student Name</th>
+                  <th style="padding: 8px 10px; text-align: right;">Points</th>
+                  <th style="padding: 8px 10px; text-align: right;">Runs</th>
+                  <th style="padding: 8px 10px; text-align: right;">Success Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${cr.leaderboard.map((subU, subIndex) => `
+                  <tr>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">#${subIndex + 1}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb;">
+                      <div style="font-weight: 600;">${subU.fullName}</div>
+                      <div style="font-size: 9px; color: #6b7280;">@${subU.username}</div>
+                    </td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 700; color: #1e3a8a;">${subU.points}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">${subU.executions}</td>
+                    <td style="padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #10b981; font-weight: 600;">${subU.successRate.toFixed(1)}%</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      });
+    }
+
+    reportEl.innerHTML = reportHtml;
+
+    // Run PDF generation
+    const opt = {
+      margin:       0.4,
+      filename:     'kartikterminal_comprehensive_report.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    await html2pdf().set(opt).from(reportEl).save();
+    
+  } catch(e) {
+    console.error(e);
+    alert("An error occurred while generating the comprehensive report PDF.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = originalText; }
+  }
 }
 
 </script>

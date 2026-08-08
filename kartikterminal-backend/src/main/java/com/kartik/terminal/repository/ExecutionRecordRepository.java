@@ -1,5 +1,6 @@
 package com.kartik.terminal.repository;
 
+import com.kartik.terminal.entity.Institution;
 import com.kartik.terminal.entity.ExecutionRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +44,10 @@ public interface ExecutionRecordRepository extends JpaRepository<ExecutionRecord
     // Total platform executions today
     @Query("SELECT COUNT(e) FROM ExecutionRecord e WHERE e.executedAt >= :today")
     long countPlatformExecutionsToday(@Param("today") LocalDateTime today);
+
+    // Total institution executions today
+    @Query("SELECT COUNT(e) FROM ExecutionRecord e WHERE e.user.institution = :institution AND e.executedAt >= :today")
+    long countInstitutionExecutionsToday(@Param("institution") Institution institution, @Param("today") LocalDateTime today);
 
     // Global language usage stats
     @Query("SELECT e.language, COUNT(e) FROM ExecutionRecord e GROUP BY e.language ORDER BY COUNT(e) DESC")

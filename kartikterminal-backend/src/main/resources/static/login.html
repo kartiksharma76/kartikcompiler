@@ -211,6 +211,16 @@ body::before {
       <label>Password</label>
       <input type="password" id="regPass" placeholder="Min 6 characters">
     </div>
+    <div class="field" style="margin-top: 18px; margin-bottom: 18px;">
+      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 13px; color: var(--text);">
+        <input type="checkbox" id="regIsCompany" onchange="toggleCompanyField()" style="width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;">
+        Register under a Company / College?
+      </label>
+    </div>
+    <div class="field" id="companyFieldContainer" style="display: none; opacity: 0; transform: translateY(-8px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+      <label>Company / College Name</label>
+      <input type="text" id="regCompany" placeholder="e.g. Google or MIT">
+    </div>
     <button class="submit-btn" id="registerBtn" onclick="handleRegister()">Create Account</button>
   </div>
 
@@ -281,15 +291,43 @@ async function handleLogin() {
   }
 }
 
+// ── Toggle Company Field UI ──
+function toggleCompanyField() {
+  const chk = document.getElementById('regIsCompany');
+  const container = document.getElementById('companyFieldContainer');
+  if (chk.checked) {
+    container.style.display = 'block';
+    // Small timeout to allow browser layout rendering before setting transition styles
+    setTimeout(() => {
+      container.style.opacity = '1';
+      container.style.transform = 'translateY(0)';
+    }, 10);
+  } else {
+    container.style.opacity = '0';
+    container.style.transform = 'translateY(-8px)';
+    setTimeout(() => {
+      container.style.display = 'none';
+      document.getElementById('regCompany').value = '';
+    }, 200);
+  }
+}
+
 // ── Register ──
 async function handleRegister() {
   const fullName = document.getElementById('regName').value.trim();
   const username = document.getElementById('regUser').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPass').value;
+  
+  const isCompany = document.getElementById('regIsCompany').checked;
+  const companyName = isCompany ? document.getElementById('regCompany').value.trim() : '';
 
   if (!username || !email || !password) {
     showMsg('registerMsg', 'Please fill in all required fields.', 'error'); return;
+  }
+  
+  if (isCompany && !companyName) {
+    showMsg('registerMsg', 'Please enter your Company / College Name.', 'error'); return;
   }
 
   const btn = document.getElementById('registerBtn');
@@ -299,7 +337,7 @@ async function handleRegister() {
     const res = await fetch(`${API}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, fullName })
+      body: JSON.stringify({ username, email, password, fullName, companyName })
     });
     const data = await res.json();
 

@@ -2,6 +2,7 @@ package com.kartik.terminal.controller;
 
 import com.kartik.terminal.entity.User;
 import com.kartik.terminal.repository.ExecutionRecordRepository;
+import com.kartik.terminal.repository.InstitutionRepository;
 import com.kartik.terminal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,61 @@ public class AdminController {
     private final UserRepository userRepository;
     private final ExecutionRecordRepository executionRecordRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final InstitutionRepository institutionRepository;
+
+    // ── Generate report data ──
+    @GetMapping("/reports/data")
+    public ResponseEntity<?> getReportData() {
+        // 1. General Stats
+        long totalUsers = userRepository.count();
+        long activeUsers = userRepository.countByIsActiveTrue();
+        long totalRuns = executionRecordRepository.count();
+        List<Object[]> langStats = executionRecordRepository.getGlobalLanguageStats();
+
+        // 2. Global Leaderboard (No Institution)
+        List<User> globalLeaderboard = userRepository.findTopUsersByPointsExcludingInstitutions();
+
+        // 3. College/Company-wise Leaderboards
+        List<Map<String, Object>> collegeReports = new java.util.ArrayList<>();
+        List<com.kartik.terminal.entity.Institution> institutions = institutionRepository.findAll();
+        for (com.kartik.terminal.entity.Institution inst : institutions) {
+            List<User> instLeaderboard = userRepository.findTopUsersByPointsAndInstitution(inst);
+            if (!instLeaderboard.isEmpty()) {
+                Map<String, Object> instData = new java.util.HashMap<>();
+                instData.put("name", inst.getName());
+                instData.put("licenseKey", inst.getLicenseKey());
+                instData.put("totalUsers", userRepository.countByInstitutionAndIsActiveTrue(inst));
+                instData.put("totalRuns", executionRecordRepository.countInstitutionExecutionsToday(inst, LocalDateTime.now().minusYears(10))); // All-time runs
+                instData.put("leaderboard", instLeaderboard.stream().map(u -> Map.of(
+                    "username", u.getUsername(),
+                    "fullName", u.getFullName() != null ? u.getFullName() : u.getUsername(),
+                    "points", u.getTotalPoints(),
+                    "executions", u.getTotalExecutions(),
+                    "successRate", u.getSuccessRate()
+                )).collect(java.util.stream.Collectors.toList()));
+                collegeReports.add(instData);
+            }
+        }
+
+        return ResponseEntity.ok(Map.of(
+            "stats", Map.of(
+                "totalUsers", totalUsers,
+                "activeUsers", activeUsers,
+                "totalRuns", totalRuns,
+                "languageStats", langStats.stream()
+                    .map(r -> Map.of("language", r[0], "count", r[1]))
+                    .collect(java.util.stream.Collectors.toList())
+            ),
+            "globalLeaderboard", globalLeaderboard.stream().map(u -> Map.of(
+                "username", u.getUsername(),
+                "fullName", u.getFullName() != null ? u.getFullName() : u.getUsername(),
+                "points", u.getTotalPoints(),
+                "executions", u.getTotalExecutions(),
+                "successRate", u.getSuccessRate()
+            )).collect(java.util.stream.Collectors.toList()),
+            "collegeReports", collegeReports
+        ));
+    }
 
     // ── All users ──
     @GetMapping("/users")
@@ -64,6 +120,32 @@ public class AdminController {
             user.setIsActive(false);
             userRepository.save(user);
             return ResponseEntity.ok(Map.of("success", true, "message", "User locked"));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // ── Delete a user completely (including all dependent data) ──
+    @DeleteMapping("/users/{id}")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        return userRepository.findById(id).map(user -> {
+            userRepository.deleteTeamMembersByUserId(id);
+            userRepository.deleteTeamsByUserId(id);
+            userRepository.deleteExamProblemsByUserId(id);
+            userRepository.deleteExamsByUserId(id);
+            userRepository.deleteAntiCheatLogsByUserId(id);
+            userRepository.deleteAiInterviewsByUserId(id);
+            userRepository.deletePlagiarismReportsByUserId(id);
+            userRepository.deleteProblemSubmissionsByUserId(id);
+            userRepository.deleteQuizSubmissionsByUserId(id);
+            userRepository.deleteAiAnalysisReportsByUserId(id);
+            userRepository.deleteExecutionRecordsByUserId(id);
+            userRepository.deleteChatMessagesByUserId(id);
+            userRepository.deleteEducationByUserId(id);
+            userRepository.deleteExperienceByUserId(id);
+            userRepository.deleteProjectsByUserId(id);
+            userRepository.deleteResumeByUserId(id);
+            userRepository.delete(user);
+            return ResponseEntity.ok(Map.of("success", true, "message", "User and all associated data deleted successfully!"));
         }).orElse(ResponseEntity.notFound().build());
     }
 

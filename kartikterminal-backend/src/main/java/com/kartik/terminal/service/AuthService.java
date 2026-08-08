@@ -1,5 +1,7 @@
 package com.kartik.terminal.service;
 
+import com.kartik.terminal.entity.Institution;
+import com.kartik.terminal.repository.InstitutionRepository;
 import com.kartik.terminal.dto.AuthDTOs.*;
 import com.kartik.terminal.entity.User;
 import com.kartik.terminal.repository.UserRepository;
@@ -27,6 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final InstitutionRepository institutionRepository;
 
     // ── Register (email/password fallback, optional) ──
     @Transactional
@@ -36,7 +39,7 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail()))
             throw new RuntimeException("Email '" + request.getEmail() + "' is already registered!");
 
-        User user = User.builder()
+        User.UserBuilder userBuilder = User.builder()
                 .username(request.getUsername().toLowerCase().trim())
                 .email(request.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -45,9 +48,23 @@ public class AuthService {
                 .isActive(true)
                 .totalExecutions(0).successfulExecutions(0)
                 .totalPoints(0).totalExecutionTimeMs(0L)
-                .favoriteLanguage("java")
-                .build();
+                .favoriteLanguage("java");
 
+        if (request.getCompanyName() != null && !request.getCompanyName().isBlank()) {
+            String compName = request.getCompanyName().trim();
+            Institution inst = institutionRepository.findByNameIgnoreCase(compName)
+                    .orElseGet(() -> {
+                        Institution newInst = Institution.builder()
+                                .name(compName)
+                                .licenseKey(java.util.UUID.randomUUID().toString())
+                                .status(Institution.Status.APPROVED)
+                                .build();
+                        return institutionRepository.save(newInst);
+                    });
+            userBuilder.institution(inst);
+        }
+
+        User user = userBuilder.build();
         User saved = userRepository.save(user);
         String token = jwtTokenProvider.generateTokenWithClaims(
                 saved.getUsername(),

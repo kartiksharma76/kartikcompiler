@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface InstitutionRepository extends JpaRepository<Institution, Long> {
     Optional<Institution> findByLicenseKey(String licenseKey);
+    Optional<Institution> findByNameIgnoreCase(String name);
 }

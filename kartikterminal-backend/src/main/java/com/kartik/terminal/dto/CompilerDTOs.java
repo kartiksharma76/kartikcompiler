@@ -149,6 +149,7 @@ public class CompilerDTOs {
         private LeaderboardEntry currentUserRank;
         private long totalUsers;
         private long totalExecutionsToday;
+        private String companyName;
     }
 
     // Helper: Get tier based on points

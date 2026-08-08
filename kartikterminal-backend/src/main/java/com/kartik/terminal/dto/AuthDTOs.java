@@ -30,6 +30,9 @@ public class AuthDTOs {
 
         @Size(max = 100, message = "Full name too long")
         private String fullName;
+
+        @Size(max = 100, message = "Company name too long")
+        private String companyName;
     }
 
     // --- Login Request ---

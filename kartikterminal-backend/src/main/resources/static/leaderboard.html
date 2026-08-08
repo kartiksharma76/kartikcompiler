@@ -111,7 +111,7 @@ tbody tr.is-me td { background: rgba(37,99,235,0.06); }
 
   <!-- Hero -->
   <div class="hero">
-    <h1>🏆 <span>Leaderboard</span></h1>
+    <h1>🏆 <span id="lbTitle">Leaderboard</span></h1>
     <p>Top coders ranked by points. Code more, earn more!</p>
     <div class="platform-stats" id="platformStats">
       <div class="pstat"><div class="pstat-value" id="totalUsers">—</div><div class="pstat-label">Total Coders</div></div>
@@ -156,6 +156,17 @@ async function loadLeaderboard() {
   try {
     const res = await fetch('/api/leaderboard');
     const d = await res.json();
+
+    // Custom leaderboard title based on companyName
+    if (d.companyName) {
+      document.getElementById('lbTitle').textContent = d.companyName + ' Leaderboard';
+      const labels = document.getElementsByClassName('pstat-label');
+      if (labels.length >= 2) {
+        labels[0].textContent = 'Company Coders';
+      }
+    } else {
+      document.getElementById('lbTitle').textContent = 'Global Leaderboard';
+    }
 
     // Platform stats
     document.getElementById('totalUsers').textContent = d.totalUsers || 0;

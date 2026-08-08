@@ -91,13 +91,31 @@ public class DashboardService {
     public LeaderboardResponse getLeaderboard() {
         User currentUser = authService.getCurrentUser();
         
-        List<User> topCodersRaw = userRepository.findTopUsersByPoints();
-        List<User> topQuizRaw = userRepository.findTopUsersByQuizPoints();
-        List<User> topAIRaw = userRepository.findTopUsersByAiPoints();
+        List<User> topCodersRaw;
+        List<User> topQuizRaw;
+        List<User> topAIRaw;
+        long totalUsers;
+        long todayExecutions;
+        String companyName = null;
 
-        // Get today's total executions
-        long todayExecutions = executionRecordRepository.countPlatformExecutionsToday(
-                LocalDateTime.now().toLocalDate().atStartOfDay());
+        LocalDateTime startOfToday = LocalDateTime.now().toLocalDate().atStartOfDay();
+
+        if (currentUser.getInstitution() != null) {
+            // Company/institution specific leaderboard
+            companyName = currentUser.getInstitution().getName();
+            topCodersRaw = userRepository.findTopUsersByPointsAndInstitution(currentUser.getInstitution());
+            topQuizRaw = userRepository.findTopUsersByQuizPointsAndInstitution(currentUser.getInstitution());
+            topAIRaw = userRepository.findTopUsersByAiPointsAndInstitution(currentUser.getInstitution());
+            totalUsers = userRepository.countByInstitutionAndIsActiveTrue(currentUser.getInstitution());
+            todayExecutions = executionRecordRepository.countInstitutionExecutionsToday(currentUser.getInstitution(), startOfToday);
+        } else {
+            // General/global leaderboard (excluding institutional users)
+            topCodersRaw = userRepository.findTopUsersByPointsExcludingInstitutions();
+            topQuizRaw = userRepository.findTopUsersByQuizPointsExcludingInstitutions();
+            topAIRaw = userRepository.findTopUsersByAiPointsExcludingInstitutions();
+            totalUsers = userRepository.countByInstitutionIsNullAndIsActiveTrue();
+            todayExecutions = executionRecordRepository.countPlatformExecutionsToday(startOfToday);
+        }
 
         List<LeaderboardEntry> topCoders = buildLeaderboardEntries(topCodersRaw, currentUser, "coding");
         List<LeaderboardEntry> topQuizTakers = buildLeaderboardEntries(topQuizRaw, currentUser, "quiz");
@@ -127,8 +145,9 @@ public class DashboardService {
                 .topQuizTakers(topQuizTakers)
                 .topAIUsers(topAIUsers)
                 .currentUserRank(currentUserEntry)
-                .totalUsers(userRepository.countByIsActiveTrue())
+                .totalUsers(totalUsers)
                 .totalExecutionsToday(todayExecutions)
+                .companyName(companyName)
                 .build();
     }
 
@@ -226,7 +245,12 @@ public class DashboardService {
     }
 
     private int getUserRank(User user) {
-        List<User> allUsers = userRepository.findTopUsersByPoints();
+        List<User> allUsers;
+        if (user.getInstitution() != null) {
+            allUsers = userRepository.findTopUsersByPointsAndInstitution(user.getInstitution());
+        } else {
+            allUsers = userRepository.findTopUsersByPointsExcludingInstitutions();
+        }
         for (int i = 0; i < allUsers.size(); i++) {
             if (allUsers.get(i).getId().equals(user.getId())) {
                 return i + 1;
