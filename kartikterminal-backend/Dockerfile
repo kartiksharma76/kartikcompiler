@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     golang-go \
+    && npm install -g esbuild typescript \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

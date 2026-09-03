@@ -623,7 +623,7 @@ const defaultTemplates={
   c:'#include <stdio.h>\nint main() {\nprintf("Standard C Output\\n");\nreturn 0;\n}',
   js:'console.log("Node.js Runtime Ready");',
   go:'package main\nimport "fmt"\nfunc main() {\nfmt.Println("Gopher Engine Start")\n}',
-  mysql:'-- MySQL Sandbox Database\nCREATE TABLE IF NOT EXISTS users (\n  id INT PRIMARY KEY,\n  name VARCHAR(50)\n);\n\nINSERT INTO users VALUES (1, "Kartik"), (2, "Sharma");\n\nSELECT * FROM users;\n\nDROP TABLE users;',
+  mysql:'-- MySQL Sandbox Database\nCREATE TABLE IF NOT EXISTS users (\n  id INT PRIMARY KEY,\n  name VARCHAR(50)\n);\n\nINSERT INTO users VALUES (1, \'Kartik\'), (2, \'Sharma\');\n\nSELECT * FROM users;\n\nDROP TABLE users;',
   ts:'interface Developer {\n  name: string;\n  skills: string[];\n}\n\nconst dev: Developer = {\n  name: "Kartik Sharma",\n  skills: ["Java", "TypeScript", "MySQL"]\n};\n\nconsole.log(`Developer ${dev.name} excels in ${dev.skills.join(", ")}`);'
 };
 const languageTemplates={
@@ -633,7 +633,7 @@ const languageTemplates={
   c:`#include <stdio.h>\nint main() {\nprintf("Hello KartikTerminal\\n");\nreturn 0;\n}`,
   js:`console.log("Hello KartikTerminal");`,
   go:`package main\nimport "fmt"\nfunc main() {\nfmt.Println("Hello KartikTerminal")\n}`,
-  mysql:`-- Insert template\nCREATE TABLE IF NOT EXISTS temp_data (\n  id INT,\n  info VARCHAR(100)\n);\nINSERT INTO temp_data VALUES (101, "Quick SQL execution");\nSELECT * FROM temp_data;\nDROP TABLE temp_data;`,
+  mysql:`-- Insert template\nCREATE TABLE IF NOT EXISTS temp_data (\n  id INT,\n  info VARCHAR(100)\n);\nINSERT INTO temp_data VALUES (101, 'Quick SQL execution');\nSELECT * FROM temp_data;\nDROP TABLE temp_data;`,
   ts:`const sayHello = (name: string): string => {\n  return \`Hello \${name}!\`;\n};\nconsole.log(sayHello("KartikTerminal"));`
 };
 function changeLanguage(showMessage=true) {
@@ -793,7 +793,7 @@ function prevMatch(){if(!searchMatches.length)return;currentMatchIndex=(currentM
 const codeSnippets={java:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'If-Else',desc:'Conditional statement',code:'if(condition) {\n// true\n} else {\n// false\n}'},{title:'Try-Catch',desc:'Exception handling',code:'try {\n// code\n} catch(Exception e) {\ne.printStackTrace();\n}'},{title:'Scanner Input',desc:'Read user input',code:'Scanner sc = new Scanner(System.in);\nString input = sc.nextLine();'}],python:[{title:'For Loop',desc:'Iterate over range',code:'for i in range(n):\n# code'},{title:'List Comprehension',desc:'Compact list creation',code:'result = [x*2 for x in items if x > 0]'},{title:'Try-Except',desc:'Exception handling',code:'try:\n# code\nexcept Exception as e:\nprint(e)'},{title:'Function',desc:'Define function',code:'def function_name(param):\n"""Docstring"""\nreturn result'}],cpp:[{title:'For Loop',desc:'Standard for loop',code:'for(int i = 0; i < n; i++) {\n// code\n}'},{title:'Vector',desc:'STL vector usage',code:'vector<int> v = {1, 2, 3};\nv.push_back(4);'},{title:'If-Else',desc:'Conditional',code:'if(condition) {\n// true\n} else {\n// false\n}'}],js:[{title:'Arrow Function',desc:'ES6 arrow syntax',code:'const fn = (param) => {\nreturn result;\n}'},{title:'Async/Await',desc:'Async operation',code:'async function fetchData() {\nconst res = await fetch(url);\nreturn res.json();\n}'},{title:'Array Map',desc:'Transform array',code:'const result = arr.map(item => item * 2);'}],go:[{title:'For Loop',desc:'Go style loop',code:'for i := 0; i < n; i++ {\n// code\n}'},{title:'Defer',desc:'Deferred execution',code:'defer file.Close()'},{title:'Error Check',desc:'Common pattern',code:'if err != nil {\nreturn err\n}'}],
   mysql:[
     {title:'Create Table',desc:'Define custom schema table',code:'CREATE TABLE table_name (\n  id INT PRIMARY KEY,\n  name VARCHAR(100)\n);'},
-    {title:'Insert Row',desc:'Insert data into schema',code:'INSERT INTO table_name (id, name) VALUES (1, "Data");'},
+    {title:'Insert Row',desc:'Insert data into schema',code:'INSERT INTO table_name (id, name) VALUES (1, \'Data\');'},
     {title:'Select All',desc:'Retrieve all records',code:'SELECT * FROM table_name;'}
   ],
   ts:[

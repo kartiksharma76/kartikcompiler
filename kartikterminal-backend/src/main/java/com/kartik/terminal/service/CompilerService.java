@@ -358,7 +358,13 @@ public class CompilerService {
             log.warn("Could not pre-create kartik_sandbox database: {}", e.getMessage());
         }
 
-        return DriverManager.getConnection(sandboxUrl, dbUser, dbPassword);
+        Connection sandboxConn = DriverManager.getConnection(sandboxUrl, dbUser, dbPassword);
+        try (Statement stmt = sandboxConn.createStatement()) {
+            stmt.execute("SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION'");
+        } catch (Exception e) {
+            log.warn("Could not set sql_mode: {}", e.getMessage());
+        }
+        return sandboxConn;
     }
 
     private ExecutionResult runMySql(String code) {
@@ -452,10 +458,39 @@ public class CompilerService {
     // ========== TYPESCRIPT EXECUTOR ==========
     private ExecutionResult runTypeScript(Path dir, String code, String input) throws IOException {
         Path srcFile = dir.resolve("main.ts");
+        Path jsFile = dir.resolve("main.js");
         Files.writeString(srcFile, code);
+
+        // 1. Attempt rapid transpilation with esbuild
+        ExecutionResult transpileResult = runProcess(
+                new String[]{resolveCmd("esbuild"), srcFile.toString(), "--outfile=" + jsFile.toString()},
+                dir, "", 15
+        );
+
+        // 2. If global esbuild is not found, fallback to npx esbuild
+        if (transpileResult.exitCode != 0 || !Files.exists(jsFile)) {
+            transpileResult = runProcess(
+                    new String[]{resolveCmd("npx"), "-y", "esbuild", srcFile.toString(), "--outfile=" + jsFile.toString()},
+                    dir, "", 25
+            );
+        }
+
+        // 3. Fallback to tsc if available
+        if (transpileResult.exitCode != 0 || !Files.exists(jsFile)) {
+            transpileResult = runProcess(
+                    new String[]{resolveCmd("tsc"), srcFile.toString(), "--outFile", jsFile.toString(), "--target", "es2020"},
+                    dir, "", 25
+            );
+        }
+
+        if (transpileResult.exitCode != 0 && !Files.exists(jsFile)) {
+            return new ExecutionResult("", "TypeScript Transpilation Error:\n" + transpileResult.error, 1);
+        }
+
+        // 4. Run compiled JavaScript using Node.js runtime
         return runProcess(
-                new String[]{resolveCmd("npx"), "-y", "tsx", srcFile.toString()},
-                dir, input, timeoutSeconds + 15
+                new String[]{"node", jsFile.toString()},
+                dir, input, timeoutSeconds
         );
     }
 
@@ -464,6 +499,8 @@ public class CompilerService {
         if (os.contains("win")) {
             if ("npx".equals(cmd)) return "npx.cmd";
             if ("npm".equals(cmd)) return "npm.cmd";
+            if ("esbuild".equals(cmd)) return "esbuild.cmd";
+            if ("tsc".equals(cmd)) return "tsc.cmd";
         }
         return cmd;
     }
