@@ -84,11 +84,31 @@ body.locked .modal, body.locked .modal * { pointer-events: auto !important; }
 select { background: var(--bg-editor); color: var(--text-main); border: 1px solid var(--border); padding: 8px 16px; border-radius: var(--radius-md); font-size: 13px; outline: none; font-weight: 600; }
 .system-breadcrumb { height: 28px; background: var(--bg-editor); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
 .system-status-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 22px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; z-index: 1000; }
-.main-container { display: flex; height: calc(100vh - var(--navbar-height) - 22px); padding: 12px; gap: 8px; position: relative; }
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--navbar-height) - 22px);
+  padding: 8px 12px;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+}
 body.zen-mode .io-panel, body.zen-mode .panel-resizer { display: none !important; }
-body.zen-mode .editor-section { width: 100% !important; }
+body.zen-mode .editor-section { height: 100% !important; flex: 1 !important; }
 body.zen-mode .system-breadcrumb, body.zen-mode .system-status-bar { display: none; }
-.editor-section { flex: 1; min-width: 320px; display: flex; flex-direction: column; background: var(--bg-editor); border-radius: var(--radius-xl); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-lux); transition: all 0.2s ease; }
+.editor-section {
+  flex: 1;
+  width: 100%;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-editor);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow-lux);
+  transition: all 0.2s ease;
+}
 .tab-bar { height: 40px; background: var(--bg-panel); display: flex; align-items: center; padding: 0 12px; gap: 8px; }
 .tab { background: var(--bg-editor); padding: 0 16px; height: 100%; display: flex; align-items: center; font-size: 12px; border-top: 2px solid var(--accent); font-family: 'JetBrains Mono', monospace; color: var(--text-main); }
 .editor-stats { font-size: 10px; color: var(--text-muted); margin-left: auto; display: flex; gap: 4px; align-items: center; }
@@ -113,20 +133,20 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
 .search-match { background: var(--search-match); border-radius: 2px; }
 .search-match.active { background: var(--accent); box-shadow: 0 0 0 2px var(--border-focus); }
 
-/* ── Resizable Splitter ── */
+/* ── Resizable Splitter (Horizontal for Bottom Terminal) ── */
 .panel-resizer {
-  width: 10px;
-  cursor: col-resize;
+  height: 8px;
+  width: 100%;
+  cursor: row-resize;
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   z-index: 25;
-  margin: 0 -4px;
+  margin: 0;
   user-select: none;
   touch-action: none;
-  border-radius: 4px;
   transition: background 0.2s, box-shadow 0.2s;
 }
 .panel-resizer:hover, .panel-resizer.dragging {
@@ -134,44 +154,46 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
 }
 .resizer-knob {
-  width: 4px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.2);
+  width: 48px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 4px;
-  transition: background 0.2s, height 0.2s;
+  transition: background 0.2s, width 0.2s;
 }
 .panel-resizer:hover .resizer-knob, .panel-resizer.dragging .resizer-knob {
   background: #3b82f6;
-  height: 48px;
+  width: 64px;
 }
 .panel-resizer.collapsed { display: none !important; }
 
-/* ── Output / IO Panel ── */
+/* ── Output / IO Panel (VS Code Bottom Terminal) ── */
 .io-panel {
-  width: 420px;
-  min-width: 280px;
-  max-width: 80vw;
+  width: 100%;
+  height: 250px;
+  min-height: 120px;
+  max-height: 75vh;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 8px;
   position: relative;
-  transition: width 0.15s ease, opacity 0.2s ease;
-  animation: slidePanelIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: height 0.15s ease, opacity 0.2s ease;
+  animation: slidePanelUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes slidePanelIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes slidePanelUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .io-panel.collapsed { display: none !important; }
-.panel-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lux); transition: border 0.3s ease; }
-.panel-header { padding: 10px 14px; font-size: 10px; font-weight: 800; color: var(--text-muted); background: rgba(0,0,0,0.25); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.panel-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lux); transition: border 0.3s ease; height: 100%; }
+.panel-header { padding: 8px 14px; font-size: 10.5px; font-weight: 800; color: var(--text-muted); background: rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
 .panel-actions { display: flex; gap: 4px; align-items: center; }
-#stdin { height: 120px; background: var(--bg-deep); color: var(--text-main); padding: 14px; border: none; font-family: 'JetBrains Mono', monospace; resize: none; outline: none; font-size: 13px; }
+#stdin { flex: 1; background: var(--bg-deep); color: var(--text-main); padding: 12px 14px; border: none; font-family: 'JetBrains Mono', monospace; resize: none; outline: none; font-size: 12.5px; }
 #terminal {
 flex: 1; background: #000; color: #10b981 !important;
-padding: 16px; font-family: 'JetBrains Mono', monospace;
+padding: 14px 16px; font-family: 'JetBrains Mono', monospace;
 font-size: 13px; overflow-y: auto; white-space: pre-wrap;
-border-top: 1px solid var(--border);
 }
 #terminal div { color: #10b981 !important; }
 #terminal .error, #terminal .warning, #terminal .security { color: #3b82f6 !important; }
@@ -502,14 +524,14 @@ border-top: 1px solid var(--border);
     <div class="editor-wrapper" id="monaco-container" style="flex: 1; min-height: 0; overflow: hidden;"></div>
   </div>
 
-  <!-- Draggable Resizer Gutter -->
-  <div class="panel-resizer collapsed" id="dragResizer" title="Drag left/right to resize terminal width">
+  <!-- Draggable Resizer Gutter (Horizontal for Bottom Terminal) -->
+  <div class="panel-resizer collapsed" id="dragResizer" title="Drag up/down to resize terminal height">
     <div class="resizer-knob"></div>
   </div>
 
-  <!-- Output / IO Panel (Generated on execution or manual toggle) -->
+  <!-- Output / IO Panel (VS Code Style Bottom Terminal) -->
   <aside class="io-panel collapsed" id="ioPanel">
-    <div class="panel-card" id="stdinCard" style="height: 160px;">
+    <div class="panel-card" id="stdinCard" style="width: 320px; max-width: 35%; flex-shrink: 0;">
       <div class="panel-header">
         <span>Standard Input</span>
         <div class="panel-actions">
@@ -911,9 +933,9 @@ function changeEditorTheme() {
   saveAppState(); 
 }
 
-// ── Terminal Visibility & Drag Resizing ──
+// ── Terminal Visibility & Drag Resizing (Bottom VS Code Terminal) ──
 let isTerminalOpen = false;
-let savedTerminalWidth = localStorage.getItem('terminalWidth') || '420px';
+let savedTerminalHeight = localStorage.getItem('terminalHeight') || '250px';
 let isTerminalMaximized = false;
 
 function openTerminalPanel() {
@@ -923,7 +945,7 @@ function openTerminalPanel() {
   if (!panel) return;
   panel.classList.remove('collapsed');
   if (resizer) resizer.classList.remove('collapsed');
-  panel.style.width = isTerminalMaximized ? '75vw' : savedTerminalWidth;
+  panel.style.height = isTerminalMaximized ? '65vh' : savedTerminalHeight;
   isTerminalOpen = true;
   if (toggleBtn) {
     toggleBtn.style.background = 'rgba(16, 185, 129, 0.35)';
@@ -965,11 +987,11 @@ function toggleMaximizeTerminal() {
   if (!panel) return;
   if (!isTerminalMaximized) {
     isTerminalMaximized = true;
-    panel.style.width = '75vw';
+    panel.style.height = '65vh';
     if (maxBtn) maxBtn.innerText = '🗗';
   } else {
     isTerminalMaximized = false;
-    panel.style.width = savedTerminalWidth;
+    panel.style.height = savedTerminalHeight;
     if (maxBtn) maxBtn.innerText = '⛶';
   }
   if (window.monacoEditor) {
@@ -988,18 +1010,18 @@ function initDraggableResizer() {
   const startDrag = (e) => {
     isDragging = true;
     resizer.classList.add('dragging');
-    document.body.style.cursor = 'col-resize';
+    document.body.style.cursor = 'row-resize';
     document.body.style.userSelect = 'none';
   };
 
   const onDrag = (e) => {
     if (!isDragging) return;
-    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-    if (!clientX) return;
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+    if (!clientY) return;
     const containerRect = container.getBoundingClientRect();
-    const newWidth = Math.max(260, Math.min(containerRect.right - clientX, containerRect.width - 280));
-    panel.style.width = newWidth + 'px';
-    savedTerminalWidth = newWidth + 'px';
+    const newHeight = Math.max(120, Math.min(containerRect.bottom - clientY, containerRect.height - 140));
+    panel.style.height = newHeight + 'px';
+    savedTerminalHeight = newHeight + 'px';
     isTerminalMaximized = false;
     const maxBtn = document.getElementById('maxTerminalBtn');
     if (maxBtn) maxBtn.innerText = '⛶';
@@ -1014,7 +1036,7 @@ function initDraggableResizer() {
       resizer.classList.remove('dragging');
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      localStorage.setItem('terminalWidth', savedTerminalWidth);
+      localStorage.setItem('terminalHeight', savedTerminalHeight);
       if (window.monacoEditor) {
         window.monacoEditor.layout();
       }

@@ -252,8 +252,15 @@
   .io-panel {
     width: 100% !important;
     max-width: 100% !important;
+    height: auto !important;
+    flex-direction: column !important;
     flex: none !important;
     gap: 8px !important;
+  }
+  #stdinCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 120px !important;
   }
   .panel-resizer {
     display: none !important;
