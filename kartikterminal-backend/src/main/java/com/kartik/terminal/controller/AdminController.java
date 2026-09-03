@@ -17,7 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("isAuthenticated()")
 public class AdminController {
 
     private final UserRepository userRepository;

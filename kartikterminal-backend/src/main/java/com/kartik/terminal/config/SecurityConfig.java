@@ -64,11 +64,13 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 // ── Public: WebSockets HTTP Handshake ──
                 .requestMatchers("/ws/**").permitAll()
-                // ── Serve static files (login.html, compiler.html) ──
-                .requestMatchers("/", "/login.html", "/compiler.html",
+                // ── Serve static files ──
+                .requestMatchers("/", "/login.html", "/compiler.html", "/college.html", "/quiz.html", "/chat.html", "/dashboard.html", "/resume.html", "/leaderboard.html", "/intelligence.html",
                                  "/static/**", "/*.css", "/*.js", "/*.ico", "/*.png").permitAll()
-                // ── Admin only ──
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // ── Public: Proctoring Stream ──
+                .requestMatchers("/api/proctor/**").permitAll()
+                // ── Admin & College ERP: must be authenticated ──
+                .requestMatchers("/api/admin/**").authenticated()
                 // ── Everything else: must be authenticated ──
                 .anyRequest().authenticated()
             )
