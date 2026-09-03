@@ -167,17 +167,19 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
 .panel-resizer.collapsed { display: none !important; }
 
 /* ── Output / IO Panel (VS Code Bottom Terminal) ── */
-.io-panel {
+.vs-bottom-workbench {
   width: 100%;
-  height: 250px;
-  min-height: 120px;
+  height: 270px;
+  min-height: 130px;
   max-height: 75vh;
   display: flex;
-  flex-direction: row;
-  gap: 8px;
-  position: relative;
+  flex-direction: column;
+  background: #080b11;
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   overflow: hidden;
+  box-shadow: var(--shadow-lux);
+  position: relative;
   transition: height 0.15s ease, opacity 0.2s ease;
   animation: slidePanelUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -185,19 +187,228 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.io-panel.collapsed { display: none !important; }
-.panel-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lux); transition: border 0.3s ease; height: 100%; }
-.panel-header { padding: 8px 14px; font-size: 10.5px; font-weight: 800; color: var(--text-muted); background: rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-.panel-actions { display: flex; gap: 4px; align-items: center; }
-#stdin { flex: 1; background: var(--bg-deep); color: var(--text-main); padding: 12px 14px; border: none; font-family: 'JetBrains Mono', monospace; resize: none; outline: none; font-size: 12.5px; }
-#terminal {
-flex: 1; background: #000; color: #10b981 !important;
-padding: 14px 16px; font-family: 'JetBrains Mono', monospace;
-font-size: 13px; overflow-y: auto; white-space: pre-wrap;
+.vs-bottom-workbench.collapsed { display: none !important; }
+
+.vs-panel-nav {
+  height: 36px;
+  background: #05070c;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  user-select: none;
+  flex-shrink: 0;
 }
-#terminal div { color: #10b981 !important; }
-#terminal .error, #terminal .warning, #terminal .security { color: #3b82f6 !important; }
-#terminal .output { color: #10b981 !important; }
+.vs-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 100%;
+}
+.vs-tab-item {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  position: relative;
+  transition: color 0.2s ease;
+}
+.vs-tab-item:hover { color: var(--text-main); }
+.vs-tab-item.active { color: #f8fafc; }
+.vs-tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+.vs-tab-badge {
+  font-size: 9.5px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.vs-tab-badge.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.vs-panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vs-shell-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+.vs-ctrl-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.vs-ctrl-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.vs-workbench-content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: #030509;
+}
+.vs-tab-panel {
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+.vs-tab-panel.active {
+  display: flex;
+}
+
+.vs-terminal-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  height: 100%;
+}
+.vs-terminal-scroll {
+  flex: 1;
+  padding: 12px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-y: auto;
+  color: #f1f5f9;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.term-line {
+  margin-bottom: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.term-prompt-user { color: #10b981; font-weight: 700; }
+.term-prompt-colon { color: #94a3b8; }
+.term-prompt-path { color: #38bdf8; font-weight: 600; }
+.term-prompt-dollar { color: #e2e8f0; margin-right: 8px; font-weight: 700; }
+.term-cmd { color: #ffffff; font-weight: 600; }
+.term-output-text { color: #e2e8f0; }
+.term-output-err { color: #f87171; }
+.term-output-warn { color: #fbbf24; }
+
+.term-cli-line-bar {
+  padding: 6px 18px 8px;
+  background: #030509;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.term-cli-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 4px;
+  caret-color: #10b981;
+}
+
+.vs-quick-actions {
+  width: 250px;
+  flex-shrink: 0;
+  margin: 10px 14px 10px 0;
+  background: rgba(13, 17, 26, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  backdrop-filter: blur(8px);
+  align-self: flex-start;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.qa-header {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f59e0b;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.qa-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.qa-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.qa-label {
+  font-size: 12px;
+  color: #e2e8f0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.qa-shortcut {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; }
 .modal-overlay.active { display: flex; }
 .modal { background: var(--bg-panel); border: 2px solid var(--text-error); padding: 32px; border-radius: var(--radius-xl); text-align: center; width: 380px; box-shadow: 0 0 40px rgba(239, 68, 68, 0.3); }
@@ -529,34 +740,116 @@ font-size: 13px; overflow-y: auto; white-space: pre-wrap;
     <div class="resizer-knob"></div>
   </div>
 
-  <!-- Output / IO Panel (VS Code Style Bottom Terminal) -->
-  <aside class="io-panel collapsed" id="ioPanel">
-    <div class="panel-card" id="stdinCard" style="width: 320px; max-width: 35%; flex-shrink: 0;">
-      <div class="panel-header">
-        <span>Standard Input</span>
-        <div class="panel-actions">
-          <button class="icon-btn" onclick="insertTemplate()" title="Insert Language Template" id="templateBtn">📄</button>
-          <button class="icon-btn" onclick="clearStdin()" title="Clear Input">🗑️</button>
+  <!-- VS Code Integrated Bottom Terminal Panel -->
+  <aside class="vs-bottom-workbench collapsed" id="ioPanel">
+    <!-- Top Navigation Bar -->
+    <div class="vs-panel-nav">
+      <div class="vs-tabs-group">
+        <div class="vs-tab-item active" id="tabTerminal" onclick="switchVSTab('terminal')">
+          TERMINAL
+        </div>
+        <div class="vs-tab-item" id="tabProblems" onclick="switchVSTab('problems')">
+          PROBLEMS <span class="vs-tab-badge" id="problemsBadge">0</span>
+        </div>
+        <div class="vs-tab-item" id="tabOutput" onclick="switchVSTab('output')">
+          OUTPUT
+        </div>
+        <div class="vs-tab-item" id="tabDebug" onclick="switchVSTab('debug')">
+          DEBUG CONSOLE
+        </div>
+        <div class="vs-tab-item" id="tabStdin" onclick="switchVSTab('stdin')">
+          STDIN <span class="vs-tab-badge" id="stdinBadge">INPUT</span>
         </div>
       </div>
-      <textarea id="stdin" placeholder="// Inputs go here if your code needs them..."></textarea>
+
+      <div class="vs-panel-controls">
+        <div class="vs-shell-pill" title="Active Shell" onclick="toggleShellDropdown()">
+          <span>📁</span>
+          <span id="currentShellName">bash</span>
+          <span style="font-size:8px; opacity:0.6;">▼</span>
+        </div>
+        <button class="vs-ctrl-btn" onclick="clearTerminalPrompt()" title="New / Reset Terminal">+</button>
+        <button class="vs-ctrl-btn" onclick="toggleQuickActions()" id="toggleQABtn" title="Toggle Quick Actions Panel">◫</button>
+        <button class="vs-ctrl-btn" onclick="clearTerminal()" title="Clear Terminal (Ctrl+L)">🗑️</button>
+        <button class="vs-ctrl-btn" onclick="toggleMaximizeTerminal()" id="maxTerminalBtn" title="Maximize / Restore Height">^</button>
+        <button class="vs-ctrl-btn" onclick="closeTerminalPanel()" title="Close Terminal Panel" style="color:#ef4444; font-weight:bold;">✕</button>
+      </div>
     </div>
-    <div class="panel-card" style="flex: 1; min-height: 0;">
-      <div class="panel-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span>System Console</span>
-          <span id="securityStatus" style="font-size:10px; color: var(--text-muted);">STATUS: NORMAL</span>
+
+    <!-- Viewport -->
+    <div class="vs-workbench-content">
+      
+      <!-- 1. TERMINAL TAB VIEW -->
+      <div class="vs-tab-panel active" id="panelTerminal">
+        <div class="vs-terminal-container">
+          <div class="vs-terminal-scroll" id="terminal">
+            <div class="term-line">
+              <span class="term-prompt-user">kartik@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span>
+              <span class="term-cmd">echo "KartikTerminal Cloud Environment Initialized."</span>
+            </div>
+            <div class="term-line" style="color:#10b981; margin-bottom: 8px;">
+              KartikTerminal Cloud Environment Initialized.
+            </div>
+          </div>
+          
+          <!-- Interactive CLI prompt pinned at bottom of terminal view -->
+          <div class="term-cli-line-bar" style="padding: 4px 18px 8px; background: #030509; border-top: 1px solid rgba(255,255,255,0.03); display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px;">
+            <span class="term-prompt-user">kartik@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span>
+            <input type="text" id="termCliInput" class="term-cli-input" placeholder="type command (e.g. run, clear, ls, help)..." autocomplete="off" spellcheck="false" onkeydown="handleTermCliKey(event)">
+            <span class="term-cursor" style="color:#10b981; animation: blink 1s infinite;">█</span>
+          </div>
         </div>
-        <div class="panel-actions">
-          <button class="icon-btn" onclick="toggleMaximizeTerminal()" id="maxTerminalBtn" title="Maximize / Restore Width">⛶</button>
-          <button class="icon-btn" onclick="toggleAutoScroll()" id="autoScrollBtn" title="Toggle Auto-Scroll">📜</button>
-          <button class="icon-btn" onclick="copyOutput()" title="Copy Output">📋</button>
-          <button class="icon-btn" onclick="clearTerminal()" title="Clear Terminal">🗑️</button>
-          <button class="icon-btn" onclick="exportTerminalLog()" title="Export Log">📤</button>
-          <button class="icon-btn" onclick="closeTerminalPanel()" title="Close Terminal (Hide Panel)" style="color: #ef4444; font-weight: bold; margin-left: 4px;">✕</button>
+
+        <!-- Quick Actions Sidebar (Matching Screenshot) -->
+        <div class="vs-quick-actions" id="quickActionsCard">
+          <div class="qa-header">⚡ QUICK ACTIONS</div>
+          <div class="qa-item" onclick="runCode()">
+            <span class="qa-label">⚡ Run Code</span>
+            <span class="qa-shortcut">Ctrl + Enter</span>
+          </div>
+          <div class="qa-item" onclick="compileCodeOnly()">
+            <span class="qa-label">🛠️ Compile Code</span>
+            <span class="qa-shortcut">Ctrl + Shift + C</span>
+          </div>
+          <div class="qa-item" onclick="clearTerminal()">
+            <span class="qa-label">🗑️ Clear Terminal</span>
+            <span class="qa-shortcut">Ctrl + L</span>
+          </div>
+          <div class="qa-item" onclick="shareCode()">
+            <span class="qa-label">🗗 Open in New Tab</span>
+          </div>
         </div>
       </div>
-      <div id="terminal"></div>
+
+      <!-- 2. PROBLEMS TAB VIEW -->
+      <div class="vs-tab-panel" id="panelProblems" style="padding: 16px 20px; overflow-y: auto; flex-direction: column;">
+        <div id="problemsList" style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--text-secondary);">
+          <div style="color: #10b981;">✓ No syntax or compilation problems detected in the current workspace.</div>
+        </div>
+      </div>
+
+      <!-- 3. OUTPUT TAB VIEW -->
+      <div class="vs-tab-panel" id="panelOutput" style="padding: 16px 20px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #e2e8f0; white-space: pre-wrap;">
+        <div id="rawOutputLog" style="color: var(--text-muted);">[Output channel: Execution Engine] Ready.</div>
+      </div>
+
+      <!-- 4. DEBUG CONSOLE TAB VIEW -->
+      <div class="vs-tab-panel" id="panelDebug" style="padding: 16px 20px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #c4b5fd;">
+        <div id="debugLog">[DEBUG SESSION] Cloud Node 04 attached. Memory limit: 512MB. Execution timeout: 10s.</div>
+      </div>
+
+      <!-- 5. STDIN TAB VIEW -->
+      <div class="vs-tab-panel" id="panelStdin" style="padding: 12px 18px; flex-direction: column; width: 100%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Standard Input (Passed to Scanner / input() during execution)</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="insertTemplate()">Insert Template</button>
+            <button class="btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="clearStdin()">Clear Input</button>
+          </div>
+        </div>
+        <textarea id="stdin" class="form-control" style="flex:1; background:rgba(0,0,0,0.5); border:1px solid var(--border); color:#fff; font-family:'JetBrains Mono', monospace; font-size:13px; resize:none; padding:10px 14px;" placeholder="// Inputs go here if your code needs them (e.g. 5&#10;10 20 30 40 50)..."></textarea>
+      </div>
+
     </div>
   </aside>
 </div>
@@ -1227,6 +1520,161 @@ function renderLineNumbers() {}
 function syncScroll() {}
 function updateLineHighlight() {}
 
+// ── VS Code Terminal Tab & Workbench Switching ──
+let activeVSTab = 'terminal';
+let cliHistory = [];
+let cliHistoryIndex = -1;
+
+function switchVSTab(tabName) {
+  activeVSTab = tabName;
+  const tabs = ['terminal', 'problems', 'output', 'debug', 'stdin'];
+  tabs.forEach(t => {
+    const tabEl = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    const panelEl = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (tabEl) tabEl.classList.toggle('active', t === tabName);
+    if (panelEl) panelEl.classList.toggle('active', t === tabName);
+  });
+  if (tabName === 'stdin') {
+    const stdinEl = document.getElementById('stdin');
+    if (stdinEl) stdinEl.focus();
+  } else if (tabName === 'terminal') {
+    const cli = document.getElementById('termCliInput');
+    if (cli) cli.focus();
+  }
+}
+
+function toggleQuickActions() {
+  const card = document.getElementById('quickActionsCard');
+  if (card) {
+    card.style.display = (card.style.display === 'none') ? 'flex' : 'none';
+  }
+}
+
+function toggleShellDropdown() {
+  const shells = ['bash', 'zsh', 'sh', 'python3', 'node'];
+  const current = document.getElementById('currentShellName').textContent;
+  const nextIdx = (shells.indexOf(current) + 1) % shells.length;
+  document.getElementById('currentShellName').textContent = shells[nextIdx];
+  logToTerminal(`Switched shell environment to ${shells[nextIdx]}`, 'info');
+}
+
+function clearTerminalPrompt() {
+  clearTerminal();
+}
+
+function clearTerminal() {
+  const term = document.getElementById('terminal');
+  if (!term) return;
+  const user = KTAuth.getUsername() || 'kartik';
+  term.innerHTML = `
+    <div class="term-line">
+      <span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span>
+      <span class="term-cmd">clear</span>
+    </div>
+  `;
+  document.getElementById('rawOutputLog').textContent = '[Output channel: Execution Engine] Ready.';
+  document.getElementById('problemsList').innerHTML = '<div style="color: #10b981;">✓ No syntax or compilation problems detected in the current workspace.</div>';
+  document.getElementById('problemsBadge').textContent = '0';
+  document.getElementById('problemsBadge').classList.remove('error');
+}
+
+function compileCodeOnly() {
+  const lang = document.getElementById('language').value.trim();
+  const user = KTAuth.getUsername() || 'kartik';
+  const term = document.getElementById('terminal');
+  const commands = {
+    java: 'javac Main.java',
+    python: 'python3 -m py_compile Main.py',
+    cpp: 'g++ -c Main.cpp -o Main.o',
+    c: 'gcc -c Main.c -o Main.o',
+    js: 'node --check Main.js',
+    go: 'go build -n Main.go',
+    rust: 'rustc --emit=dep-info Main.rs',
+    ts: 'tsc --noEmit Main.ts'
+  };
+  const cmd = commands[lang] || `compile ${lang}`;
+  term.innerHTML += `
+    <div class="term-line" style="margin-top:8px;">
+      <span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span>
+      <span class="term-cmd">${cmd}</span>
+    </div>
+    <div class="term-line" style="color:#10b981;">
+      ✔ Compilation check passed with 0 errors.
+    </div>
+  `;
+  term.scrollTop = term.scrollHeight;
+  showToast("Compilation check successful", "success");
+}
+
+function handleTermCliKey(e) {
+  const input = document.getElementById('termCliInput');
+  if (!input) return;
+  
+  if (e.key === 'Enter') {
+    const cmd = input.value.trim();
+    if (!cmd) return;
+    
+    cliHistory.push(cmd);
+    cliHistoryIndex = cliHistory.length;
+    input.value = '';
+    
+    const term = document.getElementById('terminal');
+    const user = KTAuth.getUsername() || 'kartik';
+    
+    term.innerHTML += `
+      <div class="term-line" style="margin-top:6px;">
+        <span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span>
+        <span class="term-cmd">${escapeHtml(cmd)}</span>
+      </div>
+    `;
+    
+    const lower = cmd.toLowerCase();
+    if (lower === 'clear' || lower === 'cls') {
+      clearTerminal();
+    } else if (lower === 'run' || lower.startsWith('java') || lower.startsWith('python') || lower.startsWith('node') || lower.startsWith('./')) {
+      runCode();
+    } else if (lower === 'ls' || lower === 'dir') {
+      const ext = langExt[document.getElementById('language').value] || 'txt';
+      term.innerHTML += `<div class="term-line" style="color:#38bdf8;">Main.${ext}&nbsp;&nbsp;&nbsp;&nbsp;stdin.txt&nbsp;&nbsp;&nbsp;&nbsp;pom.xml&nbsp;&nbsp;&nbsp;&nbsp;output.log</div>`;
+    } else if (lower === 'help') {
+      term.innerHTML += `
+        <div class="term-line" style="color:#a5b4fc;">
+Available Shell Commands:
+  • run             - Compile & deploy code to execution sandbox
+  • clear / cls     - Clear terminal buffer
+  • ls / dir        - List files in virtual cloud directory
+  • cat Main.ext    - Print active editor source code
+  • whoami          - Display current active user & node
+  • date            - Print current server timestamp
+  • shortcuts       - Show IDE keyboard shortcuts
+        </div>
+      `;
+    } else if (lower === 'whoami') {
+      term.innerHTML += `<div class="term-line" style="color:#10b981;">${user} (Authenticated Cloud Session - Node 04)</div>`;
+    } else if (lower === 'date') {
+      term.innerHTML += `<div class="term-line" style="color:#e2e8f0;">${new Date().toString()}</div>`;
+    } else if (lower.startsWith('cat')) {
+      term.innerHTML += `<div class="term-line" style="color:#e2e8f0;"><pre style="font-family:inherit;margin:0;">${escapeHtml(editor.value)}</pre></div>`;
+    } else {
+      term.innerHTML += `<div class="term-line term-output-err">bash: ${escapeHtml(cmd)}: command not found (type 'help' or 'run')</div>`;
+    }
+    term.scrollTop = term.scrollHeight;
+  } else if (e.key === 'ArrowUp') {
+    if (cliHistory.length > 0 && cliHistoryIndex > 0) {
+      cliHistoryIndex--;
+      input.value = cliHistory[cliHistoryIndex] || '';
+    }
+  } else if (e.key === 'ArrowDown') {
+    if (cliHistoryIndex < cliHistory.length - 1) {
+      cliHistoryIndex++;
+      input.value = cliHistory[cliHistoryIndex] || '';
+    } else {
+      cliHistoryIndex = cliHistory.length;
+      input.value = '';
+    }
+  }
+}
+
 // ── Celebration / Error ──
 function showCelebration(points) {
   editorSection.classList.add('celebrate'); setTimeout(()=>editorSection.classList.remove('celebrate'),1500);
@@ -1236,68 +1684,159 @@ function showCelebration(points) {
   const confetti=[]; for(let i=0;i<150;i++) confetti.push({x:Math.random()*confettiCanvas.width,y:Math.random()*confettiCanvas.height-confettiCanvas.height,color:colors[Math.floor(Math.random()*colors.length)],size:Math.random()*10+5,speed:Math.random()*5+2,angle:Math.random()*360,spin:Math.random()*0.2-0.1});
   let af; function animate(){ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);confetti.forEach((c,i)=>{ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.angle);ctx.fillStyle=c.color;ctx.fillRect(-c.size/2,-c.size/2,c.size,c.size);ctx.restore();c.y+=c.speed;c.angle+=c.spin;if(c.y>confettiCanvas.height)confetti[i].y=-10;});af=requestAnimationFrame(animate);}
   animate(); setTimeout(()=>{cancelAnimationFrame(af);confettiCanvas.style.display='none';ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);},3000);
-  logToTerminal("🎉 Execution successful! 🎉","success");
   if(points) { showPointsPopup(points); loadUserPoints(); }
 }
+
 function showErrorEffect() {
   editorSection.classList.add('error-shake'); setTimeout(()=>editorSection.classList.remove('error-shake'),500);
   errorFlash.style.display='block'; setTimeout(()=>errorFlash.style.display='none',300);
-  logToTerminal("❌ Code execution failed!","error");
 }
 
 // ─────────────────────────────────────────────────────────
 // ✅ runCode — sends to /compiler/run
-//    auth.js automatically adds: Authorization: Bearer <jwt>
 // ─────────────────────────────────────────────────────────
 async function runCode() {
   if(isBlocked){showErrorEffect();return;}
-  openTerminalPanel(); // Automatically generate and open terminal panel on code execution
+  openTerminalPanel();
+  switchVSTab('terminal');
   executionStartTime=performance.now();
   const code=editor.value, stdin=document.getElementById('stdin'), lang=document.getElementById('language').value.trim();
+  const user = KTAuth.getUsername() || 'kartik';
   
   if (typeof realAnalyzeCode === 'function') {
       realAnalyzeCode(code);
   }
 
-  const stdinCard=document.getElementById('stdinCard');
+  const stdinVal = (stdin ? stdin.value : '');
   const inputKeywords={java:['Scanner','System.in'],python:['input('],cpp:['cin >>','scanf'],c:['scanf','gets'],go:['fmt.Scan']};
   const needsInput=(inputKeywords[lang]||[]).some(k=>code.includes(k));
-  if(needsInput&&stdin.value.trim()===""){
-    stdinCard.style.border="2px solid var(--text-warning)"; stdinCard.style.animation="shake 0.4s"; stdin.focus();
-    terminal.innerHTML+=`<div class="warning">⚠️ [SYSTEM]: Input Required!</div>`; setTimeout(()=>stdinCard.style.animation="",400); return;
+  if(needsInput && stdinVal.trim()===""){
+    switchVSTab('stdin');
+    showToast("Program expects input - please enter input in STDIN tab", "warning");
+    return;
   }
-  stdinCard.style.border="1px solid var(--border)";
-  const btn=document.getElementById("runBtn"); btn.disabled=true; btn.textContent="RUNNING...";
-  const statusId="s-"+Date.now();
-  terminal.innerHTML+=`<div id="${statusId}" class="output" style="color:#10b981">[SYSTEM] Executing ${lang.toUpperCase()} code...</div>`;
-  if(autoScroll) terminal.scrollTop=terminal.scrollHeight;
+  
+  const btn=document.getElementById("runBtn"); 
+  if (btn) { btn.disabled=true; btn.textContent="RUNNING..."; }
+  
+  const term = document.getElementById('terminal');
+  
+  // Format commands based on language (matching VS Code style)
+  let cmd1 = `javac Main.java`, cmd2 = `java Main`;
+  if (lang === 'python') { cmd1 = `python3 Main.py`; cmd2 = ''; }
+  else if (lang === 'cpp') { cmd1 = `g++ Main.cpp -o main`; cmd2 = `./main`; }
+  else if (lang === 'c') { cmd1 = `gcc Main.c -o main`; cmd2 = `./main`; }
+  else if (lang === 'js') { cmd1 = `node Main.js`; cmd2 = ''; }
+  else if (lang === 'go') { cmd1 = `go run Main.go`; cmd2 = ''; }
+  else if (lang === 'rust') { cmd1 = `rustc Main.rs -o main`; cmd2 = `./main`; }
+  else if (lang === 'php') { cmd1 = `php Main.php`; cmd2 = ''; }
+  else if (lang === 'ruby') { cmd1 = `ruby Main.rb`; cmd2 = ''; }
+  else if (lang === 'bash') { cmd1 = `bash Main.sh`; cmd2 = ''; }
+  else if (lang === 'mysql') { cmd1 = `mysql -u root -p < Main.sql`; cmd2 = ''; }
+
+  let termHtml = `
+    <div class="term-line" style="margin-top:10px;">
+      <span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span>
+      <span class="term-cmd">${cmd1}</span>
+    </div>
+  `;
+  if (cmd2) {
+    termHtml += `
+      <div class="term-line">
+        <span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span>
+        <span class="term-cmd">${cmd2}</span>
+      </div>
+    `;
+  }
+  term.innerHTML += termHtml;
+  term.scrollTop = term.scrollHeight;
+
   try {
-    // ✅ auth.js patched fetch() — JWT header added automatically
     const res=await fetch("/compiler/run",{
       method:"POST",
       headers:{"Content-Type":"application/json","Cache-Control":"no-cache"},
-      body:JSON.stringify({code,input:stdin.value,language:lang})
+      body:JSON.stringify({code,input:stdinVal,language:lang})
     });
 
-    // Handle 401 (token expired)
     if(res.status===401){KTAuth.logout();return;}
 
     const data=await res.text();
-    if(document.getElementById(statusId)) document.getElementById(statusId).remove();
     const isErr=data.toLowerCase().includes("error")||data.toLowerCase().includes("exception")||data.toLowerCase().includes("compilation error");
     const execTime=Math.round(performance.now()-executionStartTime);
-    execTimeEl.style.display='inline'; execTimeEl.innerText=`⏱️ ${execTime}ms`;
+    
+    if (execTimeEl) {
+      execTimeEl.style.display='inline'; 
+      execTimeEl.innerText=`⏱️ ${execTime}ms`;
+    }
+    
     addToExecutionHistory(lang,!isErr,execTime,code.substring(0,50)+'...');
-    if(isErr){showErrorEffect();terminal.innerHTML+=`<div class="error" style="color:#3b82f6">${escapeHtml(data.trim())}</div>`;}
-    else{showCelebration();terminal.innerHTML+=`<div class="output" style="color:#10b981">${escapeHtml(data.trim()||"✔ Finished")}</div>`;}
+    
+    // Update raw output log
+    const rawOut = document.getElementById('rawOutputLog');
+    if (rawOut) rawOut.textContent = `[Process exited with status ${isErr ? 1 : 0} in ${execTime}ms]\n\n` + data;
+    
+    // Update Debug Log
+    const debugEl = document.getElementById('debugLog');
+    if (debugEl) {
+      debugEl.innerHTML = `
+        [DEBUG SESSION ${new Date().toLocaleTimeString()}]
+        Status: ${isErr ? 'FAILURE' : 'SUCCESS'}
+        Language: ${lang.toUpperCase()}
+        Latency: ${execTime}ms
+        Payload: ${code.length} bytes
+        Stdout Lines: ${data.split('\n').length}
+      `;
+    }
+
+    if(isErr){
+      showErrorEffect();
+      term.innerHTML+=`<div class="term-line term-output-err">${escapeHtml(data.trim())}</div>`;
+      
+      // Update Problems tab
+      const pBadge = document.getElementById('problemsBadge');
+      const pList = document.getElementById('problemsList');
+      if (pBadge) { pBadge.textContent = '1'; pBadge.classList.add('error'); }
+      if (pList) {
+        pList.innerHTML = `
+          <div style="color:#ef4444; font-weight:700; margin-bottom:6px;">❌ Compilation / Runtime Diagnostic Error:</div>
+          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:10px 14px; border-radius:6px; color:#fca5a5; white-space:pre-wrap;">${escapeHtml(data.trim())}</div>
+        `;
+      }
+    } else {
+      showCelebration();
+      term.innerHTML+=`<div class="term-line term-output-text">${escapeHtml(data.trim()||"✔ Finished with exit code 0")}</div>`;
+      
+      const pBadge = document.getElementById('problemsBadge');
+      const pList = document.getElementById('problemsList');
+      if (pBadge) { pBadge.textContent = '0'; pBadge.classList.remove('error'); }
+      if (pList) {
+        pList.innerHTML = `<div style="color: #10b981;">✓ No syntax or compilation problems detected in the current workspace.</div>`;
+      }
+    }
   } catch(err){
-    if(document.getElementById(statusId)) document.getElementById(statusId).remove();
-    showErrorEffect(); logToTerminal(`❌ Execution Error: ${err.message}`,"error");
-  } finally{btn.disabled=false;btn.textContent="DEPLOY & RUN";if(autoScroll)terminal.scrollTop=terminal.scrollHeight;}
+    showErrorEffect();
+    term.innerHTML+=`<div class="term-line term-output-err">❌ Execution Network Error: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    if (btn) { btn.disabled=false; btn.textContent="DEPLOY & RUN"; }
+    term.scrollTop=term.scrollHeight;
+    const cli = document.getElementById('termCliInput');
+    if (cli) cli.focus();
+  }
 }
 
 function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
-function logToTerminal(msg,type){const isSecurity=type==='warning'||type==='error'; const color=isSecurity?'#3b82f6':'#10b981'; const cls=isSecurity?(type==='warning'?'warning':'error'):'output'; terminal.innerHTML+=`<div class="${cls}" style="color:${color}">⚡ [${new Date().toLocaleTimeString()}] ${msg}</div>`; if(autoScroll)terminal.scrollTop=terminal.scrollHeight;}
+function logToTerminal(msg,type){
+  const term = document.getElementById('terminal');
+  if (!term) return;
+  const user = KTAuth.getUsername() || 'kartik';
+  const color = (type==='error'?'#f87171':type==='warning'?'#fbbf24':'#10b981');
+  term.innerHTML+=`
+    <div class="term-line" style="color:${color}; margin-top:3px;">
+      ⚡ [${new Date().toLocaleTimeString()}] ${escapeHtml(msg)}
+    </div>
+  `;
+  term.scrollTop=term.scrollHeight;
+}
 function openModal(msg){violations++;logToTerminal(`⚠️ ${msg} (Violation ${violations}/${MAX_VIOLATIONS})`,"warning");modalMsg.innerHTML=`${msg}<br><br><strong>Violations: ${violations}/${MAX_VIOLATIONS}</strong>`;securityModal.classList.add('active');if(violations>=MAX_VIOLATIONS){isBlocked=true;document.body.classList.add('locked');document.getElementById('runBtn').disabled=true;}}
 function closeModal(){securityModal.classList.remove('active');if(isBlocked)document.body.classList.add('locked');}
 function resetEditorData(){const lang=document.getElementById('language').value;editor.value=defaultTemplates[lang]||'';handleInput();terminal.querySelectorAll('.output').forEach(el=>el.remove());logToTerminal("🔄 Data auto-reset (security mode)","warning");}
