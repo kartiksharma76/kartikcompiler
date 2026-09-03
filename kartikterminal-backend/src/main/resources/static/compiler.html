@@ -800,7 +800,7 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
           
           <!-- Interactive CLI prompt pinned at bottom of terminal view -->
           <div class="term-cli-line-bar">
-            <span class="term-prompt-prefix"><span class="term-prompt-user">kartik@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span></span>
+            <span class="term-prompt-prefix"><span class="term-prompt-user" id="cliPromptUser">kartik@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span></span>
             <input type="text" id="termCliInput" class="term-cli-input" placeholder="type command (e.g. run, clear, ls, help)..." autocomplete="off" spellcheck="false" onkeydown="handleTermCliKey(event)">
             <span class="term-cursor" style="color:#10b981; animation: blink 1s infinite; margin-left: 2px;">█</span>
           </div>
@@ -1709,24 +1709,24 @@ async function runCode() {
   
   const term = document.getElementById('terminal');
   
-  // Format commands based on language (matching VS Code style)
-  let cmd1 = `javac Main.java`, cmd2 = `java Main`;
-  if (lang === 'python') { cmd1 = `python3 Main.py`; cmd2 = ''; }
-  else if (lang === 'cpp') { cmd1 = `g++ Main.cpp -o main`; cmd2 = `./main`; }
-  else if (lang === 'c') { cmd1 = `gcc Main.c -o main`; cmd2 = `./main`; }
-  else if (lang === 'js') { cmd1 = `node Main.js`; cmd2 = ''; }
-  else if (lang === 'go') { cmd1 = `go run Main.go`; cmd2 = ''; }
-  else if (lang === 'rust') { cmd1 = `rustc Main.rs -o main`; cmd2 = `./main`; }
-  else if (lang === 'php') { cmd1 = `php Main.php`; cmd2 = ''; }
-  else if (lang === 'ruby') { cmd1 = `ruby Main.rb`; cmd2 = ''; }
-  else if (lang === 'bash') { cmd1 = `bash Main.sh`; cmd2 = ''; }
-  else if (lang === 'mysql') { cmd1 = `mysql -u root -p < Main.sql`; cmd2 = ''; }
+  // Format commands based on language (matching clean VS Code single execution)
+  const commands = {
+    java: 'javac Main.java && java Main',
+    python: 'python3 Main.py',
+    cpp: 'g++ Main.cpp -o main && ./main',
+    c: 'gcc Main.c -o main && ./main',
+    js: 'node Main.js',
+    go: 'go run Main.go',
+    rust: 'rustc Main.rs -o main && ./main',
+    php: 'php Main.php',
+    ruby: 'ruby Main.rb',
+    bash: 'bash Main.sh',
+    mysql: 'mysql -u root -p < Main.sql',
+    ts: 'ts-node Main.ts'
+  };
+  const cmd = commands[lang] || `run ${lang}`;
 
-  let termHtml = `<div class="term-line" style="margin-top:2px;"><span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span> <span class="term-cmd">${cmd1}</span></div>`;
-  if (cmd2) {
-    termHtml += `<div class="term-line"><span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span> <span class="term-cmd">${cmd2}</span></div>`;
-  }
-  term.innerHTML += termHtml;
+  term.innerHTML += `<div class="term-line" style="margin-top:2px;"><span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span> <span class="term-cmd">${cmd}</span></div>`;
   term.scrollTop = term.scrollHeight;
 
   try {
@@ -1882,7 +1882,10 @@ window.onload = () => {
   if(eyePref==='true') document.documentElement.setAttribute('data-eye-protect','true');
   changeLanguage(false); updateStats(); loadFromLocalStorage(); updateFontSizeDisplay(); updateDateTime();
   initDraggableResizer();
-  logToTerminal(`🚀 KartikTerminal Ready — Logged in as ${KTAuth.getUsername()}!`,"success");
+  const user = KTAuth.getUsername() || 'kartik';
+  const cliUser = document.getElementById('cliPromptUser');
+  if (cliUser) cliUser.textContent = `${user}@cloud-node-04`;
+  logToTerminal(`🚀 KartikTerminal Ready — Logged in as ${user}!`, "success");
   setTimeout(loadUserPoints, 1000);
 };
 setInterval(()=>{saveToLocalStorage();saveAppState();},30000);
