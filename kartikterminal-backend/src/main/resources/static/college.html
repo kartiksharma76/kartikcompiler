@@ -1636,6 +1636,10 @@ window.generatePDFReport = async function() {
     console.error(e);
     alert("Report generated successfully!");
   } finally {
+    if (btn) { btn.disabled = false; btn.textContent = originalText; }
+  }
+};
+
 // ── Real Live Data Fetchers ──
 async function loadAnalyticsData() {
   try {
