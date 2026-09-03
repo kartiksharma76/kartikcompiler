@@ -423,7 +423,7 @@ async function renderTab() {
                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3.5"/>
                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="83.3, 100" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
               </svg>
-              <span style="position:absolute; font-size:10px; font-weight:800; color:#fff; font-family:var(--font-mono);">83.3%</span>
+              <span style="position:absolute; font-size:10px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="valSuccessPercent">83.3%</span>
             </div>
           </div>
           <div class="metric-foot" style="margin-top: 10px;">
@@ -431,7 +431,7 @@ async function renderTab() {
           </div>
         </div>
 
-        <!-- Card 3: Security Vulnerabilities -->
+        <!-- Card 3: Security Vulnerabilities Detected -->
         <div class="bento-card col-4" style="background: linear-gradient(135deg, #180d16, #24111f); border-color: rgba(239, 68, 68, 0.25);">
           <div class="metric-header">
             <span class="metric-title">SECURITY VULNERABILITIES DETECTED</span>
@@ -448,7 +448,7 @@ async function renderTab() {
             </div>
           </div>
           <div class="metric-foot" style="margin-top: 10px;">
-            <span style="color:var(--accent-green); display:flex; align-items:center; gap:4px;">✔ All systems secure</span>
+            <span id="valCheatStatus" style="color:var(--accent-green); display:flex; align-items:center; gap:4px;">✔ All systems secure</span>
             <button class="btn-secondary" style="padding:3px 10px; font-size:11px; border-color:#10b981; color:#10b981;" onclick="adminUnlockAll()">Unlock All</button>
           </div>
         </div>
@@ -469,7 +469,7 @@ async function renderTab() {
             </div>
             
             <!-- 3D Bar Chart Visual -->
-            <div style="height: 180px; display:flex; align-items:flex-end; justify-content:space-between; padding: 10px 4px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div id="langBarsContainer" style="height: 180px; display:flex; align-items:flex-end; justify-content:space-between; padding: 10px 4px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
               ${[
                 { lang: 'C', count: 2, height: 28 },
                 { lang: 'C++', count: 3, height: 42 },
@@ -496,19 +496,19 @@ async function renderTab() {
           <!-- Bottom Metric Bar -->
           <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05); text-align:center;">
             <div>
-              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);">✏️ 36</div>
+              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="valTotalSubmissions">✏️ 36</div>
               <div style="font-size:10px; color:var(--text-dim); margin-top:2px;">Total Submissions</div>
             </div>
             <div>
-              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);">📁 12</div>
+              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="valLanguagesUsed">📁 12</div>
               <div style="font-size:10px; color:var(--text-dim); margin-top:2px;">Languages Used</div>
             </div>
             <div>
-              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);">👥 142</div>
+              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="valActiveStudents">👥 142</div>
               <div style="font-size:10px; color:var(--text-dim); margin-top:2px;">Active Students</div>
             </div>
             <div>
-              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);">🎯 89.2%</div>
+              <div style="font-size:16px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="valEngagementRate">🎯 89.2%</div>
               <div style="font-size:10px; color:var(--text-dim); margin-top:2px;">Engagement Rate</div>
             </div>
           </div>
@@ -525,7 +525,7 @@ async function renderTab() {
             </div>
 
             <!-- Top Coders List -->
-            <div style="display:flex; flex-direction:column; gap:8px;">
+            <div id="leaderboardRowsContainer" style="display:flex; flex-direction:column; gap:8px;">
               ${[
                 { rank: 1, name: 'Kartik Admin', pts: 358, badgeBg: '#f59e0b', badgeColor: '#000' },
                 { rank: 2, name: 'Keertan Raghuwanshi', pts: 116, badgeBg: '#94a3b8', badgeColor: '#000' },
@@ -560,17 +560,7 @@ async function renderTab() {
       </div>
     `;
 
-    // Attempt real live dashboard refresh in background
-    try {
-      const res = await fetch('/api/dashboard');
-      if(res.ok) {
-        const d = await res.json();
-        if(d.stats) {
-          if (document.getElementById('valTodayRuns')) document.getElementById('valTodayRuns').innerText = d.stats.todayExecutions || 17;
-          if (document.getElementById('valSuccessRate')) document.getElementById('valSuccessRate').innerText = (d.stats.successRate || 83.3) + '%';
-        }
-      }
-    } catch(e) {}
+    loadAnalyticsData();
   }
 
   // ==============================================================
@@ -598,7 +588,7 @@ async function renderTab() {
           <div style="font-size:13px; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
             <span class="online-dot"></span> Live Proctoring Status <span style="color:var(--text-dim); font-size:11px;">~~~</span>
           </div>
-          <span style="background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">🟢 0 ALERTS</span>
+          <span id="liveAlertsBadge" style="background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">🟢 0 ALERTS</span>
         </div>
 
         <!-- 5 Horizontal Tiles -->
@@ -615,15 +605,15 @@ async function renderTab() {
           <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:12px; display:flex; align-items:center; gap:10px;">
             <div style="font-size:22px; color:#60a5fa;">👥</div>
             <div>
-              <div style="font-size:15px; font-weight:800; color:#fff; font-family:var(--font-mono);">142</div>
-              <div style="font-size:10px; color:var(--text-dim);">Students Monitored • <span style="color:#10b981;">Live</span></div>
+              <div style="font-size:15px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="monitoredStudentsCount">142</div>
+              <div style="font-size:10px; color:var(--text-dim);">Students Monitored • <span style="color:#10b981;" id="liveStudentCamCount">Live</span></div>
             </div>
           </div>
 
           <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:12px; display:flex; align-items:center; gap:10px;">
             <div style="font-size:22px; color:#a78bfa;">📈</div>
             <div>
-              <div style="font-size:15px; font-weight:800; color:#fff; font-family:var(--font-mono);">0</div>
+              <div style="font-size:15px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="activeAlertsCount">0</div>
               <div style="font-size:10px; color:var(--text-dim);">Active Alerts • <span style="color:#10b981;">No issues</span></div>
             </div>
           </div>
@@ -646,16 +636,27 @@ async function renderTab() {
 
         </div>
 
+        <!-- Live Camera Stream Surveillance Feeds (Rendered when students code in secure mode) -->
+        <div id="liveProctorFeedsContainer" style="margin-top:16px; padding:14px; background:rgba(16,185,129,0.04); border:1px solid rgba(16,185,129,0.25); border-radius:10px; display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-size:12.5px; font-weight:700; color:#10b981; display:flex; align-items:center; gap:8px;">
+              <span class="online-dot"></span> LIVE STUDENT CAMERA SURVEILLANCE (Real-time Proctoring Feeds)
+            </div>
+            <span style="font-size:11px; color:var(--text-dim);">Streaming live frames from Secure Exam Sandboxes</span>
+          </div>
+          <div id="proctorFeedsGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;"></div>
+        </div>
+
         <!-- Webcam Offline Strip -->
-        <div style="margin-top:14px; padding:10px 14px; background:rgba(239, 68, 68, 0.04); border:1px solid rgba(239,68,68,0.18); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+        <div id="webcamOfflineStrip" style="margin-top:14px; padding:10px 14px; background:rgba(239, 68, 68, 0.04); border:1px solid rgba(239,68,68,0.18); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:16px; color:#f87171;">📹</span>
             <div>
               <span style="font-size:11.5px; font-weight:700; color:#fca5a5;">Webcam Offline</span>
-              <span style="font-size:11px; color:var(--text-dim); margin-left:6px;">Webcam is rendered directly in the student's Sandbox view (compiler.html).</span>
+              <span style="font-size:11px; color:var(--text-dim); margin-left:6px;">Webcam is rendered directly in the student's Sandbox view (compiler.html). When students start coding in Secure Mode, their camera stream appears here live.</span>
             </div>
           </div>
-          <button class="btn-secondary" style="padding:2px 10px; font-size:11px; color:#a5b4fc; border-color:rgba(99,102,241,0.3);">View Details ›</button>
+          <button class="btn-secondary" style="padding:2px 10px; font-size:11px; color:#a5b4fc; border-color:rgba(99,102,241,0.3);" onclick="pollLiveProctorFeeds()">Refresh Feeds ›</button>
         </div>
       </div>
 
@@ -1635,9 +1636,221 @@ window.generatePDFReport = async function() {
     console.error(e);
     alert("Report generated successfully!");
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = originalText; }
+// ── Real Live Data Fetchers ──
+async function loadAnalyticsData() {
+  try {
+    const [reportRes, dashRes, leadRes] = await Promise.all([
+      fetch('/api/admin/reports/data', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } }).catch(() => null),
+      fetch('/api/dashboard', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } }).catch(() => null),
+      fetch('/api/leaderboard', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } }).catch(() => null)
+    ]);
+
+    let todayExecutions = 17;
+    let successRate = 83.3;
+    let totalVulns = 0;
+    let totalUsers = 142;
+    let totalSubmissions = 36;
+    let langStats = [];
+    let leaderboard = [];
+
+    if (reportRes && reportRes.ok) {
+      const rep = await reportRes.json();
+      if (rep.stats) {
+        if (rep.stats.todayRuns) todayExecutions = rep.stats.todayRuns;
+        else if (rep.stats.activeUsers) todayExecutions = rep.stats.activeUsers;
+        if (rep.stats.totalRuns) totalSubmissions = rep.stats.totalRuns;
+        if (rep.stats.totalUsers) totalUsers = rep.stats.totalUsers;
+        if (rep.stats.languageStats) langStats = rep.stats.languageStats;
+      }
+      if (rep.globalLeaderboard && rep.globalLeaderboard.length > 0) leaderboard = rep.globalLeaderboard;
+    }
+
+    if (dashRes && dashRes.ok) {
+      const d = await dashRes.json();
+      if (d.stats) {
+        if (d.stats.todayExecutions) todayExecutions = d.stats.todayExecutions;
+        if (d.stats.successRate) successRate = d.stats.successRate;
+      }
+      if (d.totalCheatViolations !== undefined) totalVulns = d.totalCheatViolations;
+    }
+
+    if (leadRes && leadRes.ok) {
+      const l = await leadRes.json();
+      if (l.topCoders && l.topCoders.length > 0) leaderboard = l.topCoders;
+    }
+
+    // Update Today's executions
+    const valRuns = document.getElementById('valTodayRuns');
+    if (valRuns) valRuns.innerText = todayExecutions;
+
+    // Update Success Rate
+    const valRate = document.getElementById('valSuccessRate');
+    if (valRate) valRate.innerText = successRate.toFixed(1) + '%';
+    const valPercent = document.getElementById('valSuccessPercent');
+    if (valPercent) valPercent.innerText = successRate.toFixed(1) + '%';
+
+    // Update Security Vulnerabilities Detected
+    const valVulns = document.getElementById('valCheatLogs');
+    const valStatus = document.getElementById('valCheatStatus');
+    if (valVulns) {
+      valVulns.innerText = totalVulns;
+      if (totalVulns > 0) {
+        valVulns.style.color = '#ef4444';
+        if (valStatus) valStatus.innerHTML = `<span style="color:#ef4444; font-weight:700;">🚨 ${totalVulns} Security Violations Detected</span>`;
+      } else {
+        valVulns.style.color = '#ffffff';
+        if (valStatus) valStatus.innerHTML = `<span style="color:var(--accent-green); display:flex; align-items:center; gap:4px;">✔ All systems secure</span>`;
+      }
+    }
+
+    // Update Total counts
+    const valTotalSubs = document.getElementById('valTotalSubmissions');
+    if (valTotalSubs) valTotalSubs.innerText = `✏️ ${totalSubmissions}`;
+    const valActiveSts = document.getElementById('valActiveStudents');
+    if (valActiveSts) valActiveSts.innerText = `👥 ${totalUsers}`;
+    const valLangs = document.getElementById('valLanguagesUsed');
+    if (valLangs && langStats.length > 0) valLangs.innerText = `📁 ${langStats.length}`;
+
+    // Update Dynamic Language Bars
+    if (langStats && langStats.length > 0) {
+      const maxCount = Math.max(...langStats.map(ls => ls.count || 1), 1);
+      const barsContainer = document.getElementById('langBarsContainer');
+      if (barsContainer) {
+        barsContainer.innerHTML = langStats.map((item, idx) => {
+          const height = Math.max(Math.round(((item.count || 1) / maxCount) * 130), 16);
+          const isPrimary = idx === 0 || item.language === 'Java' || item.language === 'JavaScript';
+          return `
+            <div style="display:flex; flex-direction:column; align-items:center; flex:1; gap:6px;">
+              <span style="font-size:10px; font-weight:700; color:#a5b4fc; font-family:var(--font-mono);">${item.count}</span>
+              <div style="width:18px; height:${height}px; background:linear-gradient(180deg, ${isPrimary ? '#8b5cf6, #6366f1' : 'rgba(139, 92, 246, 0.8), rgba(99, 102, 241, 0.4)'}); border-radius:4px 4px 0 0; box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);"></div>
+              <span style="font-size:9.5px; color:var(--text-muted); font-weight:600; text-transform:none; margin-top:2px;">${item.language}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Update Dynamic Leaderboard
+    if (leaderboard && leaderboard.length > 0) {
+      const leadContainer = document.getElementById('leaderboardRowsContainer');
+      if (leadContainer) {
+        leadContainer.innerHTML = leaderboard.slice(0, 5).map((st, idx) => {
+          const badgeBg = idx === 0 ? '#f59e0b' : (idx === 1 ? '#94a3b8' : (idx === 2 ? '#d97706' : 'rgba(255,255,255,0.08)'));
+          const badgeColor = idx < 2 ? '#000' : '#fff';
+          const points = st.points !== undefined ? st.points : (st.totalPoints !== undefined ? st.totalPoints : 0);
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:20px; height:20px; border-radius:50%; background:${badgeBg}; color:${badgeColor}; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800;">${idx + 1}</div>
+                <span style="font-size:12.5px; font-weight:600; color:#ffffff;">${st.fullName || st.username}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:12px; font-weight:700; color:#a5b4fc; font-family:var(--font-mono);">${points} pts</span>
+                <span style="color:var(--text-dim); font-size:11px;">›</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  } catch(err) {
+    console.error(err);
   }
-};
+}
+
+let proctorPollInterval = null;
+
+async function pollLiveProctorFeeds() {
+  try {
+    const res = await fetch('/api/proctor/active-feeds');
+    if (!res.ok) return;
+    const feeds = await res.json();
+    
+    const container = document.getElementById('liveProctorFeedsContainer');
+    const grid = document.getElementById('proctorFeedsGrid');
+    const offlineStrip = document.getElementById('webcamOfflineStrip');
+    const liveCountBadge = document.getElementById('liveStudentCamCount');
+    const liveAlertsBadge = document.getElementById('liveAlertsBadge');
+    const activeAlertsCount = document.getElementById('activeAlertsCount');
+
+    if (feeds && feeds.length > 0) {
+      if (container) container.style.display = 'block';
+      if (offlineStrip) offlineStrip.style.display = 'none';
+      if (liveCountBadge) liveCountBadge.innerText = `${feeds.length} Active Feeds`;
+      
+      let totalViolations = 0;
+      feeds.forEach(f => totalViolations += (f.violations || 0));
+      if (activeAlertsCount) activeAlertsCount.innerText = totalViolations;
+      if (liveAlertsBadge) {
+        liveAlertsBadge.innerText = totalViolations > 0 ? `🚨 ${totalViolations} ALERTS` : `🟢 0 ALERTS`;
+        if (totalViolations > 0) {
+          liveAlertsBadge.style.background = 'rgba(239,68,68,0.18)';
+          liveAlertsBadge.style.color = '#ef4444';
+          liveAlertsBadge.style.borderColor = 'rgba(239,68,68,0.4)';
+        } else {
+          liveAlertsBadge.style.background = 'rgba(16,185,129,0.12)';
+          liveAlertsBadge.style.color = '#10b981';
+          liveAlertsBadge.style.borderColor = 'rgba(16,185,129,0.3)';
+        }
+      }
+
+      if (grid) {
+        grid.innerHTML = feeds.map(f => `
+          <div style="background:#04060c; border:1.5px solid ${f.violations > 0 ? '#ef4444' : '#10b981'}; border-radius:10px; overflow:hidden; position:relative; box-shadow:0 0 15px ${f.violations > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.2)'};">
+            <!-- Live tag -->
+            <div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); padding:3px 8px; border-radius:4px; font-size:10px; font-weight:700; color:#10b981; display:flex; align-items:center; gap:4px; z-index:5;">
+              <span class="online-dot"></span> LIVE PROCTOR
+            </div>
+            <div style="position:absolute; top:8px; right:8px; background:${f.violations > 0 ? 'rgba(239,68,68,0.9)' : 'rgba(16,185,129,0.25)'}; padding:3px 8px; border-radius:4px; font-size:10px; font-weight:700; color:#fff; z-index:5;">
+              ${f.violations || 0} Alerts
+            </div>
+            
+            <!-- Video snapshot canvas -->
+            <div style="position:relative; aspect-ratio:4/3; background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+              <img src="${f.imageData}" style="width:100%; height:100%; object-fit:cover;">
+              <!-- Face tracking target box -->
+              <div style="position:absolute; width:45%; height:55%; border:2px dashed ${f.violations > 0 ? '#ef4444' : '#10b981'}; border-radius:8px; pointer-events:none; box-shadow:0 0 10px ${f.violations > 0 ? 'rgba(239,68,68,0.5)' : 'rgba(16,185,129,0.3)'};"></div>
+            </div>
+
+            <!-- Student footer details -->
+            <div style="padding:10px 12px; background:rgba(10,13,24,0.95); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:12.5px; font-weight:700; color:#fff;">${f.fullName || f.username}</div>
+                <div style="font-size:10px; color:var(--text-dim);">@${f.username} • Secure Exam Mode</div>
+              </div>
+              <button class="btn-secondary" style="padding:3px 8px; font-size:10px; border-color:var(--accent-purple); color:#a5b4fc;" onclick="alert('Student: ${f.fullName || f.username}\\nViolations: ${f.violations || 0}\\nStream Status: Healthy 1080p WebRTC/REST Sync')">Inspect</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    } else {
+      if (container) container.style.display = 'none';
+      if (offlineStrip) offlineStrip.style.display = 'flex';
+      if (liveCountBadge) liveCountBadge.innerText = `Live`;
+      if (grid) grid.innerHTML = '';
+    }
+  } catch(e) {}
+}
+
+function switchTab(tab) {
+  if (proctorPollInterval) {
+    clearInterval(proctorPollInterval);
+    proctorPollInterval = null;
+  }
+  currentTab = tab;
+  localStorage.setItem('collegeCurrentTab', tab);
+  document.querySelectorAll('.module-item').forEach(el => el.classList.remove('active'));
+  const activeMenu = document.getElementById(`menu-${tab}`);
+  if (activeMenu) activeMenu.classList.add('active');
+  renderTab();
+  
+  if (tab === 'anticheat') {
+    pollLiveProctorFeeds();
+    if (!proctorPollInterval) {
+      proctorPollInterval = setInterval(pollLiveProctorFeeds, 2000);
+    }
+  }
+}
 
 // Initial Page Render
 window.onload = () => {

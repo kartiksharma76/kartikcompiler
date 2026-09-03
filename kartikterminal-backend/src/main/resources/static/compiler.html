@@ -1417,24 +1417,66 @@ Est. Space:      ${mockReport.spaceComplexity}
 const webcamVideo = document.createElement('video');
 webcamVideo.id = "realWebcamFeed";
 webcamVideo.autoplay = true; webcamVideo.muted = true;
-webcamVideo.style.cssText = "width: 150px; position: fixed; bottom: 20px; right: 20px; border-radius: 8px; border: 2px solid #ef4444; z-index: 1000; display: none;";
+webcamVideo.style.cssText = "width: 150px; position: fixed; bottom: 20px; right: 20px; border-radius: 8px; border: 2px solid #ef4444; z-index: 1000; display: none; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);";
 document.body.appendChild(webcamVideo);
 
 let globalWebcamStream = null;
+let proctorStreamInterval = null;
+const proctorCanvas = document.createElement('canvas');
+proctorCanvas.width = 320;
+proctorCanvas.height = 240;
+
+function reportCheatToServer() {
+  try {
+    fetch('/api/dashboard/log-cheat', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+  } catch(e) {}
+}
 
 function startWebcam() {
   if (globalWebcamStream) return;
-  navigator.mediaDevices.getUserMedia({ video: true })
+  navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
     .then(stream => { 
       globalWebcamStream = stream;
       webcamVideo.srcObject = stream; 
       webcamVideo.style.display = 'block';
       localStorage.setItem('webcamActive', 'true'); 
+      
+      // Real-time broadcast frame snapshots to Admin Live Monitor
+      if (!proctorStreamInterval) {
+        proctorStreamInterval = setInterval(() => {
+          if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended) return;
+          try {
+            const ctx = proctorCanvas.getContext('2d');
+            ctx.drawImage(webcamVideo, 0, 0, 320, 240);
+            const dataUrl = proctorCanvas.toDataURL('image/jpeg', 0.5);
+            const user = KTAuth.getUser() || {};
+            fetch('/api/proctor/stream-frame', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+              body: JSON.stringify({
+                userId: user.id || 1,
+                username: user.username || KTAuth.getUsername() || 'Student',
+                fullName: user.fullName || user.username || 'Student',
+                frame: dataUrl,
+                violations: violations || 0,
+                securityMode: securityMode
+              })
+            }).catch(() => {});
+          } catch(err) {}
+        }, 1500);
+      }
     })
     .catch(err => { console.error("Webcam denied", err); localStorage.setItem('webcamActive', 'false'); });
 }
 
 function stopWebcam() {
+  if (proctorStreamInterval) {
+    clearInterval(proctorStreamInterval);
+    proctorStreamInterval = null;
+  }
   if (globalWebcamStream) {
     globalWebcamStream.getTracks().forEach(track => track.stop());
     globalWebcamStream = null;
@@ -1442,6 +1484,12 @@ function stopWebcam() {
   webcamVideo.srcObject = null;
   webcamVideo.style.display = 'none';
   localStorage.setItem('webcamActive', 'false');
+  try {
+    const user = KTAuth.getUser() || {};
+    if (user.id) {
+      fetch(`/api/proctor/stop-feed/${user.id}`, { method: 'POST', headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } });
+    }
+  } catch(e) {}
 }
 
 // Start webcam if security mode is on by default
