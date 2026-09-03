@@ -141,7 +141,7 @@ const KTAuth = (() => {
         display: flex; align-items: center; gap: 8px;
         background: var(--bg-panel); padding: 5px 12px 5px 8px;
         border: 1px solid var(--border); border-radius: var(--radius-md);
-        font-size: 12px; cursor: pointer; position: relative;
+        font-size: 12px; cursor: pointer; position: relative; z-index: 10000;
       `;
 
       const initials = fullName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -156,8 +156,8 @@ const KTAuth = (() => {
         <div id="kt-user-menu" style="
           display:none; position:absolute; top:110%; right:0;
           background:var(--bg-panel); border:1px solid var(--border);
-          border-radius:var(--radius-md); min-width:160px; z-index:200;
-          box-shadow:0 8px 24px rgba(0,0,0,0.4); overflow:hidden;
+          border-radius:var(--radius-md); min-width:170px; z-index:99999;
+          box-shadow:0 8px 30px rgba(0,0,0,0.6); overflow:hidden;
         ">
           <div style="padding:10px 14px 6px; font-size:11px; color:var(--text-muted);">Signed in as</div>
           <div style="padding:0 14px 10px; font-size:13px; font-weight:600;">${fullName}</div>
