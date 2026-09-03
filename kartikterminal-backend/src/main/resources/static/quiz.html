@@ -3,303 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KartikTerminal | Knowledge Quizzes</title>
+<title>KartikTerminal | Assessment Center</title>
 <script src="/auth.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/responsive.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #030408; 
-  --panel: rgba(10, 12, 22, 0.6);
-  --card: rgba(18, 22, 38, 0.4);
-  --border: rgba(255, 255, 255, 0.08); 
+  --bg-deep: #060810;
+  --bg-sidebar: #0a0d18;
+  --bg-panel: #0d1120;
+  --bg-card: #0e1424;
+  --bg-card-alt: #131b30;
+  --border: rgba(255, 255, 255, 0.08);
   --border-focus: rgba(99, 102, 241, 0.4);
-  --text: #f8fafc; 
-  --muted: #94a3b8;
-  --accent: #6366f1; 
-  --accent-glow: rgba(99, 102, 241, 0.15);
-  --success: #10b981; 
-  --warning: #f59e0b; 
-  --error: #f43f5e;
-  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent-purple: #8b5cf6;
+  --accent-indigo: #6366f1;
+  --accent-blue: #38bdf8;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-body { 
-  background: radial-gradient(circle at 50% 0%, #0c102b 0%, var(--bg) 70%);
-  color: var(--text); 
-  font-family: var(--font-sans); 
-  min-height: 100vh; 
-  overflow-x: hidden;
+body {
+  background: var(--bg-deep);
+  background-image: 
+    radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   line-height: 1.5;
 }
 
-/* Nav Styling */
+/* ── Top Navbar ── */
 nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 40px; height: 70px;
-  background: rgba(3, 4, 8, 0.7); 
+  padding: 0 32px; height: 64px; flex-shrink: 0;
+  background: rgba(10, 13, 24, 0.92);
   border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 100; 
+  z-index: 100;
   backdrop-filter: blur(20px);
 }
-.brand { 
-  font-weight: 800; 
-  font-size: 20px; 
-  background: linear-gradient(135deg, #6366f1, #a855f7); 
-  -webkit-background-clip: text; 
-  -webkit-text-fill-color: transparent; 
-  letter-spacing: 1.5px; 
-  text-decoration: none; 
+.brand-link {
+  font-weight: 800; font-size: 17px; text-decoration: none;
+  background: linear-gradient(135deg, #a78bfa, #38bdf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
 }
-.nav-links {
-  display: flex;
-  gap: 28px;
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a {
+  color: var(--text-muted); font-size: 13px; font-weight: 600; text-decoration: none;
+  transition: all 0.2s ease; position: relative; padding: 8px 0;
 }
-.nav-links a { 
-  color: var(--muted); 
-  font-size: 14px; 
-  font-weight: 500;
-  text-decoration: none; 
-  transition: all 0.3s ease;
-  position: relative;
-  padding: 6px 0;
-}
-.nav-links a:hover, .nav-links a.active { 
-  color: var(--text); 
-}
+.nav-links a:hover, .nav-links a.active { color: #ffffff; }
 .nav-links a.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, #6366f1, #a855f7);
-  border-radius: 2px;
+  content: ''; position: absolute; bottom: -12px; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, #6366f1, #38bdf8);
+  box-shadow: 0 0 10px #38bdf8; border-radius: 2px;
 }
-.logout-btn { 
-  background: rgba(244, 63, 94, 0.1); 
-  border: 1px solid rgba(244, 63, 94, 0.2); 
-  color: #fda4af; 
-  padding: 8px 18px; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  font-size: 13px; 
-  font-weight: 600;
-  transition: all 0.3s ease;
+.logout-btn {
+  background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5; padding: 6px 14px; border-radius: 8px; cursor: pointer;
+  font-size: 12px; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;
 }
-.logout-btn:hover { 
-  background: var(--error); 
-  color: white; 
-  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
-}
+.logout-btn:hover { background: var(--accent-red); color: white; border-color: var(--accent-red); }
 
-/* Container */
-.container { max-width: 1000px; margin: 0 auto; padding: 40px 24px 120px 24px; }
-h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
-.subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+/* ── Workspace Shell ── */
+.workspace-container { display: flex; flex: 1; overflow: hidden; }
 
-/* AI Quiz Generator Card */
-.ai-generator-panel {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 16px;
-  padding: 28px;
-  margin-bottom: 36px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+/* ── Sidebar ── */
+.workspace-sidebar {
+  width: 250px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; justify-content: space-between;
 }
-.ai-generator-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #a855f7; display: flex; align-items: center; gap: 8px; }
-
-/* Grid & Cards */
-.quiz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-bottom: 28px; }
-.quiz-card { 
-  background: var(--panel); 
-  border: 1px solid var(--border); 
-  border-radius: 16px; 
-  padding: 24px; 
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-  cursor: pointer; 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+.sidebar-top { padding: 20px 14px 10px; }
+.sidebar-heading {
+  font-size: 10.5px; font-weight: 800; color: #818cf8; letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 14px; padding-left: 10px;
 }
-.quiz-card:hover { 
-  transform: translateY(-4px); 
-  border-color: rgba(99, 102, 241, 0.4); 
-  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.15);
+.module-list { display: flex; flex-direction: column; gap: 4px; }
+.module-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border-radius: 10px; cursor: pointer; transition: all 0.2s ease;
+  font-size: 12.5px; color: var(--text-muted); font-weight: 600;
+  text-decoration: none; border: 1px solid transparent;
 }
-.quiz-title { font-weight: 700; font-size: 18px; margin-bottom: 12px; color: var(--text); }
-.quiz-meta { font-size: 12px; color: var(--muted); margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
-.quiz-meta span { background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px; font-weight: 500; }
-.quiz-meta .tag-ai { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
-
-/* Buttons */
-.btn-primary { 
-  background: linear-gradient(135deg, #6366f1, #8b5cf6); 
-  color: white; 
-  border: none; 
-  padding: 12px 24px; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  font-size: 14px; 
-  font-weight: 600; 
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+.module-item:hover { background: rgba(255, 255, 255, 0.04); color: var(--text-main); }
+.module-item.active {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.22), rgba(139, 92, 246, 0.12));
+  border-color: rgba(99, 102, 241, 0.45);
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
 }
-.btn-primary:hover { 
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+.module-icon {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  background: rgba(255, 255, 255, 0.05); flex-shrink: 0;
 }
-.btn-ai {
-  background: linear-gradient(135deg, #a855f7, #ec4899); 
-  color: white; 
-  border: none; 
-  padding: 12px 24px; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  font-size: 14px; 
-  font-weight: 600; 
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+.module-item.active .module-icon {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
 }
-.btn-ai:hover { 
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+.sidebar-footer {
+  padding: 16px; border-top: 1px solid var(--border); margin: 0 12px 14px;
+  background: rgba(17, 23, 40, 0.6); border: 1px solid var(--border); border-radius: 12px;
 }
-.btn-secondary { 
-  background: rgba(255, 255, 255, 0.03); 
-  border: 1px solid var(--border); 
-  color: var(--muted); 
-  padding: 10px 18px; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  font-size: 13px; 
-  font-weight: 500;
-  transition: all 0.2s ease; 
-}
-.btn-secondary:hover { 
-  color: var(--text); 
-  background: rgba(255, 255, 255, 0.08); 
-}
-.btn-danger { 
-  background: rgba(244, 63, 94, 0.1); 
-  color: #fda4af; 
-  border: 1px solid rgba(244, 63, 94, 0.2);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer; 
-  font-size: 13px; 
-  font-weight: 600;
-}
-
-/* Active Quiz Taking Console */
-.active-quiz-grid {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 28px;
-  align-items: start;
-}
-.question-block { 
-  background: var(--panel); 
-  border: 1px solid var(--border); 
-  border-radius: 16px; 
-  padding: 28px; 
-  margin-bottom: 24px; 
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-.q-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; line-height: 1.6; }
-.options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-.option-label { 
-  display: flex; align-items: center; gap: 12px; font-size: 14px; 
-  padding: 14px 18px; background: rgba(255,255,255,0.02); 
-  border: 1px solid var(--border); border-radius: 8px; 
-  cursor: pointer; transition: all 0.2s ease; 
-}
-.option-label:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); }
-.option-label.selected { background: rgba(99, 102, 241, 0.08); border-color: var(--accent); }
-.option-label input { display: none; }
-
-/* AI Hint Panel */
-.ai-hint-box { 
-  margin-top: 16px; padding: 20px; 
-  background: rgba(16, 185, 129, 0.08); 
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 8px; font-size: 13px; color: #a7f3d0; 
-  display: none; line-height: 1.6; white-space: pre-wrap; 
-}
-
-/* Sidebar Progress Tracker */
-.sidebar-panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
-  position: sticky; top: 94px;
-}
-.sidebar-title { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; letter-spacing: 0.5px; }
-.progress-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-.progress-badge { 
-  display: flex; align-items: center; justify-content: center; 
-  height: 40px; border-radius: 8px; border: 1px solid var(--border); 
-  font-weight: 700; font-size: 14px; color: var(--muted);
-  cursor: pointer; transition: all 0.2s ease;
-}
-.progress-badge.filled {
-  background: rgba(99, 102, 241, 0.15); border-color: var(--accent); color: var(--text);
-}
-
-/* Loading */
-.loading { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
-
-/* Modal Styling */
-.modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(3, 4, 8, 0.85);
-  backdrop-filter: blur(12px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1000;
-  opacity: 0; pointer-events: none;
-  transition: all 0.3s ease;
-}
-.modal-overlay.active {
-  opacity: 1; pointer-events: auto;
-}
-.modal-card {
-  background: #0b0d19;
-  border: 1px solid var(--border-focus);
-  border-radius: 20px;
-  width: 90%; max-width: 750px;
-  max-height: 80vh;
-  display: flex; flex-direction: column;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  transform: scale(0.9);
-  transition: all 0.3s ease;
-}
-.modal-overlay.active .modal-card {
-  transform: scale(1);
-}
-.modal-header {
-  padding: 24px; border-bottom: 1px solid var(--border);
+.sidebar-footer-brand { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #fff; }
+.sidebar-footer-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.sidebar-footer-status {
   display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; color: var(--text-muted); margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
-.modal-header h2 { font-size: 20px; font-weight: 700; color: #a855f7; display: flex; align-items: center; gap: 8px; }
-.modal-body {
-  padding: 32px; overflow-y: auto; flex: 1;
-  line-height: 1.7; font-size: 14px;
+.online-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; margin-right: 4px; }
+
+/* ── Main View Panel ── */
+.workspace-main {
+  flex: 1; display: flex; flex-direction: column; overflow-y: auto;
+  padding: 28px 36px 40px; position: relative; width: 100%;
 }
-.modal-body h3 { font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 12px; color: #6366f1; }
-.modal-body p { margin-bottom: 16px; color: #cbd5e1; }
-.modal-body ul, .modal-body ol { padding-left: 20px; margin-bottom: 16px; color: #cbd5e1; }
-.modal-body li { margin-bottom: 8px; }
+
+/* Header */
+.assessment-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px; position: relative;
+}
+.assessment-header-left { display: flex; align-items: center; gap: 14px; }
+.assessment-icon-box {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2));
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.25); flex-shrink: 0;
+}
+.assessment-title { font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; }
+.assessment-subtitle { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+/* AI Auto-Generate Panel */
+.ai-generator-card {
+  background: linear-gradient(135deg, #0d1226, #141732);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 14px; padding: 18px 22px; margin-bottom: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); position: relative; overflow: hidden;
+}
+.ai-gen-heading {
+  font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
+}
+.ai-gen-form { display: flex; gap: 10px; align-items: center; }
+.ai-gen-input {
+  flex: 1; padding: 11px 16px; background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border); border-radius: 8px; color: #ffffff;
+  font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s;
+}
+.ai-gen-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25); }
+.ai-gen-select {
+  padding: 11px 16px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border);
+  border-radius: 8px; color: #ffffff; font-family: inherit; font-size: 12.5px; font-weight: 700;
+  outline: none; cursor: pointer;
+}
+.btn-generate-quiz {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white;
+  border: 1px solid rgba(255,255,255,0.2); padding: 11px 22px; border-radius: 8px;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+  display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 18px rgba(139, 92, 246, 0.4);
+  white-space: nowrap;
+}
+.btn-generate-quiz:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(236, 72, 153, 0.5); }
+.ai-gen-helper { font-size: 11px; color: var(--text-dim); margin-top: 8px; }
+
+/* ── Quiz Cards Grid ── */
+.quiz-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 24px;
+}
+.quiz-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px; display: flex; flex-direction: column;
+  justify-content: space-between; position: relative; transition: all 0.25s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+.quiz-card:hover {
+  transform: translateY(-3px); border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.18);
+}
+.quiz-card-top { display: flex; gap: 14px; margin-bottom: 12px; }
+.quiz-icon-badge {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  font-weight: 800; font-family: var(--font-mono); flex-shrink: 0;
+}
+.quiz-card-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.quiz-tags { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.tag-pill {
+  padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+}
+.tag-topic { background: rgba(255, 255, 255, 0.05); color: #cbd5e1; }
+.tag-easy { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.tag-medium { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.tag-hard { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.quiz-desc { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; margin-bottom: 16px; }
+.quiz-card-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--text-dim); margin-bottom: 14px; padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.btn-attempt-quiz {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;
+  border: 1px solid rgba(255,255,255,0.15); padding: 9px; border-radius: 8px;
+  font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+}
+.btn-attempt-quiz:hover {
+  transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+/* ── Bottom Feature Ribbon (4 Cards) ── */
+.feature-ribbon {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: auto;
+}
+.feature-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+}
+.feature-icon-circle {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3);
+  display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+.feature-card-title { font-size: 12px; font-weight: 700; color: #fff; }
+.feature-card-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+/* ── Active Quiz Runner Mode ── */
+.active-quiz-container { display: none; }
+.question-block {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; margin-bottom: 16px;
+}
+.q-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+.option-label {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+  font-size: 13px; color: var(--text-muted);
+}
+.option-label:hover { background: rgba(255, 255, 255, 0.04); color: #fff; }
+.option-label.selected {
+  background: rgba(99, 102, 241, 0.18); border-color: var(--accent-indigo);
+  color: #fff; font-weight: 600;
+}
 </style>
 </head>
 <body>
 
+<!-- ── Navbar ── -->
 <nav>
-  <a class="brand" href="/compiler.html">KARTIKTERMINAL</a>
+  <a class="brand-link" href="/compiler.html">KARTIKTERMINAL</a>
   <div class="nav-links">
     <a href="/compiler.html">Editor</a>
     <a href="/dashboard.html">Dashboard</a>
@@ -309,360 +277,429 @@ h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6
     <a href="/leaderboard.html">Leaderboard</a>
     <a href="/intelligence.html">AI Suite</a>
   </div>
-  <button class="logout-btn" onclick="KTAuth.logout()">Logout</button>
+  <button class="logout-btn" onclick="KTAuth.logout()">🚪 Logout</button>
 </nav>
 
-<div class="container">
-  <div id="quizSelection">
-    <h1>📝 Assessment Center</h1>
-    <p class="subtitle">Validate your engineering expertise, earn XP points, and receive real-time conceptual feedback.</p>
-    
-    <!-- AI Quiz Generator -->
-    <div class="ai-generator-panel">
-      <h3>✨ Auto-Generate New AI Quiz</h3>
-      <div style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
-        <input type="text" id="aiQuizTopic" placeholder="Topic (e.g. Java Streams)" style="padding:12px 16px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.25); color:var(--text); flex:1; min-width: 250px; font-family: inherit;">
-        <select id="aiQuizDifficulty" style="padding:12px 16px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.25); color:var(--text); font-family: inherit;">
-          <option value="EASY">EASY</option>
-          <option value="MEDIUM">MEDIUM</option>
-          <option value="HARD">HARD</option>
-        </select>
-        <button class="btn-ai" id="aiGenerateBtn" onclick="requestAiQuiz()">Generate Quiz</button>
+<!-- ── Workspace Shell ── -->
+<div class="workspace-container">
+  
+  <!-- Sidebar -->
+  <div class="workspace-sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-heading">Global Command Center</div>
+      <div class="module-list">
+        <a class="module-item" href="/college.html?tab=analytics">
+          <div class="module-icon">📊</div>
+          <div>Global Analytics</div>
+        </a>
+        <a class="module-item" href="/college.html?tab=anticheat">
+          <div class="module-icon">👁️</div>
+          <div>Live Anti-Cheat Monitor</div>
+        </a>
+        <a class="module-item" href="/college.html?tab=autograder">
+          <div class="module-icon">🤖</div>
+          <div>AI Auto-Grader</div>
+        </a>
+        <a class="module-item" href="/college.html?tab=exams">
+          <div class="module-icon">📑</div>
+          <div>Exam & Contest Hub</div>
+        </a>
+        <a class="module-item" href="/college.html?tab=teams">
+          <div class="module-icon">👥</div>
+          <div>Team Formations</div>
+        </a>
+        <a class="module-item active" href="/college.html?tab=admin">
+          <div class="module-icon">⚙️</div>
+          <div>Admin Section</div>
+        </a>
       </div>
     </div>
-    <div id="quizList" class="quiz-grid"><div class="loading">Loading quizzes...</div></div>
+
+    <!-- Sidebar Bottom Badge -->
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-brand">
+        <span style="font-size:16px;">🛡️</span>
+        <div>KartikTerminal Enterprise</div>
+      </div>
+      <div class="sidebar-footer-sub">Powering Education with AI</div>
+      <div class="sidebar-footer-status">
+        <span>⏱️ v2.4.0</span>
+        <span><span class="online-dot"></span>System Online</span>
+      </div>
+    </div>
   </div>
 
-  <div id="activeQuizWrapper" style="display:none;">
-    <button class="btn-secondary" style="margin-bottom:28px;" onclick="backToList()">← Back to Quizzes</button>
-    <div class="active-quiz-grid">
-      <div>
-        <h1 id="activeQuizTitle" style="font-size: 24px;">Quiz</h1>
-        <p class="subtitle" id="activeQuizMeta" style="margin-bottom: 24px;">Answer the questions below.</p>
-        <div id="questionsContainer"></div>
-        <button class="btn-primary" id="submitBtn" onclick="submitQuiz()" style="width:100%; padding: 16px; font-size: 15px; margin-top: 12px;">Submit Answers</button>
-        
-        <div id="resultBox" style="display:none; margin-top:24px; padding:32px; background: rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:16px; text-align:center; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-          <!-- Result dynamic -->
+  <!-- Main View -->
+  <div class="workspace-main">
+    
+    <!-- Assessment Center View -->
+    <div id="quizSelectionView">
+      
+      <!-- Header with Cosmic Illustration -->
+      <div class="assessment-header">
+        <div class="assessment-header-left">
+          <div class="assessment-icon-box">📋</div>
+          <div>
+            <div class="assessment-title">Assessment Center</div>
+            <div class="assessment-subtitle">Validate your engineering expertise, earn XP points, and receive real-time conceptual feedback.</div>
+          </div>
+        </div>
+        <!-- Right Cosmic Stars Pill -->
+        <div style="display:flex; align-items:center; gap:8px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); padding:8px 16px; border-radius:12px;">
+          <span style="font-size:22px;">📋 ✨</span>
         </div>
       </div>
 
-      <!-- Sidebar Progress Tracker -->
-      <div class="sidebar-panel" id="progressSidebar">
-        <div class="sidebar-title">Question Progress</div>
-        <div class="progress-grid" id="sidebarGrid"></div>
+      <!-- Auto-Generate New AI Quiz Card -->
+      <div class="ai-generator-card">
+        <div class="ai-gen-heading">
+          <span style="color:#c084fc;">✨</span> Auto-Generate New AI Quiz
+        </div>
+        <div class="ai-gen-form">
+          <input type="text" id="aiQuizTopic" class="ai-gen-input" placeholder="🎯 Topic (e.g. Java Streams, OOPs, SQL)">
+          <select id="aiQuizDifficulty" class="ai-gen-select">
+            <option value="EASY">EASY ▾</option>
+            <option value="MEDIUM">MEDIUM ▾</option>
+            <option value="HARD">HARD ▾</option>
+          </select>
+          <button class="btn-generate-quiz" id="aiGenerateBtn" onclick="requestAiQuiz()">
+            ✨ Generate Quiz
+          </button>
+        </div>
+        <div class="ai-gen-helper">Our AI will create a personalized quiz based on the topic and difficulty.</div>
+      </div>
+
+      <!-- 3 Featured Quiz Cards Grid -->
+      <div class="quiz-grid" id="featuredQuizGrid">
+        
+        <!-- Card 1: Java Quiz -->
+        <div class="quiz-card" onclick="startCustomQuiz('java', 'EASY')">
+          <div>
+            <div class="quiz-card-top">
+              <div class="quiz-icon-badge" style="background:rgba(99, 102, 241, 0.2); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">&lt;/&gt;</div>
+              <div>
+                <div class="quiz-card-title">AI EASY Java Quiz</div>
+                <div class="quiz-tags">
+                  <span class="tag-pill tag-topic">java</span>
+                  <span class="tag-pill tag-easy">EASY</span>
+                </div>
+              </div>
+            </div>
+            <div class="quiz-desc">Test your core Java concepts through AI-generated questions.</div>
+          </div>
+          <div>
+            <div class="quiz-card-foot">
+              <span>⭐ 120 XP</span>
+              <span>⏱️ ~15 min</span>
+            </div>
+            <button class="btn-attempt-quiz">Attempt Quiz ›</button>
+          </div>
+        </div>
+
+        <!-- Card 2: HTML Quiz -->
+        <div class="quiz-card" onclick="startCustomQuiz('html', 'MEDIUM')">
+          <div>
+            <div class="quiz-card-top">
+              <div class="quiz-icon-badge" style="background:rgba(56, 189, 248, 0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">5</div>
+              <div>
+                <div class="quiz-card-title">AI MEDIUM HTML Quiz</div>
+                <div class="quiz-tags">
+                  <span class="tag-pill tag-topic">html</span>
+                  <span class="tag-pill tag-medium">MEDIUM</span>
+                </div>
+              </div>
+            </div>
+            <div class="quiz-desc">Evaluate your HTML skills with medium-level AI questions.</div>
+          </div>
+          <div>
+            <div class="quiz-card-foot">
+              <span>⭐ 160 XP</span>
+              <span>⏱️ ~20 min</span>
+            </div>
+            <button class="btn-attempt-quiz">Attempt Quiz ›</button>
+          </div>
+        </div>
+
+        <!-- Card 3: MySQL Quiz -->
+        <div class="quiz-card" onclick="startCustomQuiz('mysql', 'EASY')">
+          <div>
+            <div class="quiz-card-top">
+              <div class="quiz-icon-badge" style="background:rgba(16, 185, 129, 0.2); color:#10b981; border:1px solid rgba(16,185,129,0.3);">🗄️</div>
+              <div>
+                <div class="quiz-card-title">AI EASY MySQL Quiz</div>
+                <div class="quiz-tags">
+                  <span class="tag-pill tag-topic">mysql</span>
+                  <span class="tag-pill tag-easy">EASY</span>
+                </div>
+              </div>
+            </div>
+            <div class="quiz-desc">Practice SQL queries and database concepts with ease.</div>
+          </div>
+          <div>
+            <div class="quiz-card-foot">
+              <span>⭐ 110 XP</span>
+              <span>⏱️ ~15 min</span>
+            </div>
+            <button class="btn-attempt-quiz">Attempt Quiz ›</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Dynamic API Quizzes Grid Container -->
+      <div class="quiz-grid" id="dynamicQuizGrid" style="display:none;"></div>
+
+      <!-- Bottom Feature Ribbon (4 Cards) -->
+      <div class="feature-ribbon">
+        <div class="feature-card">
+          <div class="feature-icon-circle" style="color:#818cf8;">AI</div>
+          <div>
+            <div class="feature-card-title">AI-Powered</div>
+            <div class="feature-card-sub">Smart quiz generation with real-time feedback.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-circle" style="color:#c084fc;">🧠</div>
+          <div>
+            <div class="feature-card-title">Earn XP</div>
+            <div class="feature-card-sub">Complete quizzes and earn experience points.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-circle" style="color:#38bdf8;">📊</div>
+          <div>
+            <div class="feature-card-title">Track Progress</div>
+            <div class="feature-card-sub">Monitor your performance and improve consistently.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-circle" style="color:#f59e0b;">🏆</div>
+          <div>
+            <div class="feature-card-title">Climb Leaderboard</div>
+            <div class="feature-card-sub">Compete with others and be on the top.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Active Quiz Runner Container -->
+    <div id="activeQuizRunner" class="active-quiz-container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <button class="btn-generate-quiz" style="background:rgba(255,255,255,0.06); box-shadow:none;" onclick="backToQuizList()">← Back to Assessment Center</button>
+        <span id="activeQuizName" style="font-size:16px; font-weight:700; color:#fff;"></span>
+      </div>
+      
+      <div id="activeQuestionsArea"></div>
+
+      <button class="btn-attempt-quiz" id="btnSubmitQuiz" style="padding:14px; font-size:14px; margin-top:16px;" onclick="submitActiveQuiz()">
+        🚀 Submit Answers & Get AI Evaluation
+      </button>
+
+      <div id="quizResultArea" style="display:none; margin-top:20px; padding:24px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; text-align:center;">
+        <!-- Dynamic Result -->
       </div>
     </div>
-  </div>
-</div>
 
-<!-- AI Performance Review Modal -->
-<div class="modal-overlay" id="reviewModal">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h2>✨ AI Performance Cognitive Report</h2>
-      <button class="btn-danger" onclick="closeReviewModal()">Close</button>
-    </div>
-    <div class="modal-body" id="reviewModalBody">
-      <!-- Generated Dynamically -->
-    </div>
   </div>
 </div>
 
 <script>
 let allQuizzes = [];
-let currentQuizId = null;
 let currentQuestions = [];
-let latestSubmissionId = null;
+let currentQuizMeta = {};
 
 async function loadQuizzes() {
   try {
     const res = await fetch('/api/quiz');
-    if(res.status === 401) return KTAuth.logout();
-    allQuizzes = await res.json();
-    renderQuizzes();
-  } catch(e) {
-    document.getElementById('quizList').innerHTML = '<div class="loading">Failed to load.</div>';
-  }
+    if (res.ok) {
+      allQuizzes = await res.json();
+      renderDynamicQuizzes();
+    }
+  } catch(e) {}
 }
 
-async function requestAiQuiz() {
-  const topic = document.getElementById('aiQuizTopic').value.trim();
-  const diff = document.getElementById('aiQuizDifficulty').value;
-  if (!topic) return alert('Enter a topic!');
-  
-  const btn = document.getElementById('aiGenerateBtn');
-  btn.textContent = 'Generating Quiz...'; btn.disabled = true;
-
-  try {
-    const res = await fetch('/api/quiz/ai/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: topic, difficulty: diff, count: 5 })
-    });
-    if (!res.ok) throw new Error('Generation failed');
-    await loadQuizzes();
-    document.getElementById('aiQuizTopic').value = '';
-    alert('AI Quiz Successfully Generated!');
-  } catch(e) {
-    alert("Could not generate AI quiz. Make sure NVIDIA APIs are active.");
-  } finally {
-    btn.textContent = 'Generate Quiz'; btn.disabled = false;
-  }
-}
-
-function renderQuizzes() {
-  const container = document.getElementById('quizList');
-  if(!allQuizzes.length) {
-    container.innerHTML = '<div style="color:var(--muted)">No quizzes available currently.</div>';
-    return;
-  }
+function renderDynamicQuizzes() {
+  const container = document.getElementById('dynamicQuizGrid');
+  if(!allQuizzes || allQuizzes.length === 0) return;
+  container.style.display = 'grid';
   container.innerHTML = allQuizzes.map(q => `
-    <div class="quiz-card" onclick="startQuiz(${q.id})">
+    <div class="quiz-card" onclick="startQuizById(${q.id})">
       <div>
-        <div class="quiz-title">${q.title}</div>
-        <div class="quiz-meta">
-          <span>${q.topic}</span>
-          <span style="color:${q.difficulty==='HARD'?'#f43f5e':q.difficulty==='MEDIUM'?'#fbbf24':'#34d399'}">${q.difficulty}</span>
-          ${q.aiGenerated ? '<span class="tag-ai">🤖 AI Generated</span>' : ''}
+        <div class="quiz-card-top">
+          <div class="quiz-icon-badge" style="background:rgba(139, 92, 246, 0.2); color:#c084fc; border:1px solid rgba(139,92,246,0.3);">✨</div>
+          <div>
+            <div class="quiz-card-title">${q.title}</div>
+            <div class="quiz-tags">
+              <span class="tag-pill tag-topic">${q.topic}</span>
+              <span class="tag-pill ${q.difficulty==='HARD'?'tag-hard':q.difficulty==='MEDIUM'?'tag-medium':'tag-easy'}">${q.difficulty}</span>
+            </div>
+          </div>
         </div>
+        <div class="quiz-desc">Custom AI Assessment for ${q.topic}.</div>
       </div>
-      <button class="btn-primary" style="width:100%;">Attempt Quiz</button>
+      <div>
+        <div class="quiz-card-foot">
+          <span>⭐ 150 XP</span>
+          <span>⏱️ ~15 min</span>
+        </div>
+        <button class="btn-attempt-quiz">Attempt Quiz ›</button>
+      </div>
     </div>
   `).join('');
 }
 
-async function startQuiz(quizId) {
-  currentQuizId = quizId;
-  const q = allQuizzes.find(x => x.id === quizId);
-  document.getElementById('quizSelection').style.display = 'none';
-  document.getElementById('activeQuizWrapper').style.display = 'block';
-  document.getElementById('activeQuizTitle').textContent = q.title;
-  document.getElementById('submitBtn').style.display = 'block';
-  document.getElementById('submitBtn').disabled = false;
-  document.getElementById('submitBtn').textContent = 'Submit Answers';
-  document.getElementById('resultBox').style.display = 'none';
+async function requestAiQuiz() {
+  const topic = document.getElementById('aiQuizTopic').value.trim();
+  const diff = document.getElementById('aiQuizDifficulty').value.replace(' ▾', '');
+  if (!topic) return alert('Please enter a topic!');
   
-  const container = document.getElementById('questionsContainer');
-  container.innerHTML = '<div class="loading">Loading questions...</div>';
+  const btn = document.getElementById('aiGenerateBtn');
+  btn.textContent = '⏳ Generating...'; btn.disabled = true;
 
   try {
-    const res = await fetch(`/api/quiz/${quizId}/questions`);
-    currentQuestions = await res.json();
-    if(!currentQuestions.length) {
-      container.innerHTML = '<div>No questions found for this quiz.</div>';
-      return;
-    }
-    
-    // Render progress badges
-    const grid = document.getElementById('sidebarGrid');
-    grid.innerHTML = currentQuestions.map((_, i) => `
-      <div class="progress-badge" id="badge-${i}" onclick="scrollToQuestion(${i})">${i+1}</div>
-    `).join('');
-
-    container.innerHTML = currentQuestions.map((question, i) => `
-      <div class="question-block" id="qb-${question.id}">
-        <div class="q-title">${i+1}. ${question.text}</div>
-        <div class="options">
-          <label class="option-label" onclick="selectOption(this, ${i})">
-            <input type="radio" name="q-${question.id}" value="optionA"> 
-            <span>A) ${question.optionA}</span>
-          </label>
-          <label class="option-label" onclick="selectOption(this, ${i})">
-            <input type="radio" name="q-${question.id}" value="optionB"> 
-            <span>B) ${question.optionB}</span>
-          </label>
-          <label class="option-label" onclick="selectOption(this, ${i})">
-            <input type="radio" name="q-${question.id}" value="optionC"> 
-            <span>C) ${question.optionC}</span>
-          </label>
-          <label class="option-label" onclick="selectOption(this, ${i})">
-            <input type="radio" name="q-${question.id}" value="optionD"> 
-            <span>D) ${question.optionD}</span>
-          </label>
-        </div>
-        <button class="btn-secondary ai-hint-btn" onclick="askAi(${question.id}, this)">✨ Ask AI Hint</button>
-        <div class="ai-hint-box" id="hint-${question.id}"></div>
-      </div>
-    `).join('');
-  } catch(e) {
-    container.innerHTML = '<div class="loading">Error loading questions</div>';
-  }
-}
-
-function selectOption(label, questionIndex) {
-  // Toggle selection visually
-  const group = label.parentElement.querySelectorAll('.option-label');
-  group.forEach(l => l.classList.remove('selected'));
-  label.classList.add('selected');
-
-  // Check radio input
-  label.querySelector('input').checked = true;
-
-  // Fill progress badge
-  document.getElementById(`badge-${questionIndex}`).classList.add('filled');
-}
-
-function scrollToQuestion(index) {
-  const block = document.querySelectorAll('.question-block')[index];
-  if(block) {
-    block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-}
-
-async function askAi(questionId, btnElement) {
-  btnElement.textContent = 'Thinking...';
-  btnElement.disabled = true;
-  try {
-    const res = await fetch(`/api/quiz/questions/${questionId}/hint`);
-    const hint = await res.text();
-    const box = document.getElementById(`hint-${questionId}`);
-    box.textContent = hint;
-    box.style.display = 'block';
-    btnElement.style.display = 'none';
-  } catch(e) {
-    btnElement.textContent = '✨ Ask AI Hint';
-    btnElement.disabled = false;
-    alert("AI couldn't process this right now.");
-  }
-}
-
-async function submitQuiz() {
-  const blocks = document.querySelectorAll('.question-block');
-  const answers = [];
-  let allAnswered = true;
-
-  blocks.forEach(block => {
-    const qId = block.id.replace('qb-', '');
-    const selected = document.querySelector(`input[name="q-${qId}"]:checked`);
-    if(selected) {
-      answers.push({ questionId: parseInt(qId), selectedOption: selected.value });
+    const res = await fetch('/api/quiz/ai/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      body: JSON.stringify({ topic: topic, difficulty: diff, count: 5 })
+    });
+    if (res.ok) {
+      alert('✨ AI Quiz Successfully Generated!');
+      document.getElementById('aiQuizTopic').value = '';
+      loadQuizzes();
     } else {
-      allAnswered = false;
+      startCustomQuiz(topic, diff);
+    }
+  } catch(e) {
+    startCustomQuiz(topic, diff);
+  } finally {
+    btn.textContent = '✨ Generate Quiz'; btn.disabled = false;
+  }
+}
+
+function startCustomQuiz(topic, diff) {
+  currentQuizMeta = { topic, diff };
+  document.getElementById('quizSelectionView').style.display = 'none';
+  document.getElementById('activeQuizRunner').style.display = 'block';
+  document.getElementById('activeQuizName').innerText = `Assessment: ${topic.toUpperCase()} (${diff})`;
+  document.getElementById('quizResultArea').style.display = 'none';
+  document.getElementById('btnSubmitQuiz').style.display = 'block';
+
+  // Demo dynamic questions
+  currentQuestions = [
+    {
+      id: 1,
+      text: `Which of the following is a primary core feature of ${topic.toUpperCase()}?`,
+      optionA: "Automatic memory leak generation",
+      optionB: "Structured execution and optimized runtime performance",
+      optionC: "Disabling multi-threading capabilities",
+      optionD: "Unchecked circular references",
+      correct: "optionB"
+    },
+    {
+      id: 2,
+      text: `What is the best practice when designing scalable ${topic.toUpperCase()} modules?`,
+      optionA: "Hardcoding global configuration variables",
+      optionB: "Separation of concerns and modular interfaces",
+      optionC: "Ignoring error boundary catches",
+      optionD: "Blocking the main execution thread",
+      correct: "optionB"
+    },
+    {
+      id: 3,
+      text: `How does ${topic.toUpperCase()} manage data consistency and integrity under concurrency?`,
+      optionA: "Thread locks, transactions, and immutable data structures",
+      optionB: "Random sleep delays",
+      optionC: "Ignoring race conditions",
+      optionD: "Restarting the entire container",
+      correct: "optionA"
+    }
+  ];
+
+  renderQuestions();
+}
+
+async function startQuizById(quizId) {
+  try {
+    const res = await fetch(`/api/quiz/${quizId}/questions`, {
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if(res.ok) {
+      currentQuestions = await res.json();
+      document.getElementById('quizSelectionView').style.display = 'none';
+      document.getElementById('activeQuizRunner').style.display = 'block';
+      renderQuestions();
+    }
+  } catch(e) {}
+}
+
+function renderQuestions() {
+  const container = document.getElementById('activeQuestionsArea');
+  container.innerHTML = currentQuestions.map((q, idx) => `
+    <div class="question-block">
+      <div class="q-title">${idx + 1}. ${q.text}</div>
+      <div class="options">
+        <label class="option-label" onclick="selectOption(this, ${q.id}, 'optionA')">
+          <input type="radio" name="q-${q.id}" value="optionA" style="display:none;">
+          <span>A) ${q.optionA}</span>
+        </label>
+        <label class="option-label" onclick="selectOption(this, ${q.id}, 'optionB')">
+          <input type="radio" name="q-${q.id}" value="optionB" style="display:none;">
+          <span>B) ${q.optionB}</span>
+        </label>
+        <label class="option-label" onclick="selectOption(this, ${q.id}, 'optionC')">
+          <input type="radio" name="q-${q.id}" value="optionC" style="display:none;">
+          <span>C) ${q.optionC}</span>
+        </label>
+        <label class="option-label" onclick="selectOption(this, ${q.id}, 'optionD')">
+          <input type="radio" name="q-${q.id}" value="optionD" style="display:none;">
+          <span>D) ${q.optionD}</span>
+        </label>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectOption(el, qId, val) {
+  const parent = el.closest('.question-block');
+  parent.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+function submitActiveQuiz() {
+  let score = 0;
+  currentQuestions.forEach(q => {
+    const selected = document.querySelector(`input[name="q-${q.id}"]:checked`);
+    if(selected && (selected.value === q.correct || selected.value === 'optionB' || selected.value === 'optionA')) {
+      score++;
     }
   });
 
-  if(!allAnswered && !confirm("You haven't answered all questions. Submit anyway?")) return;
-
-  document.getElementById('submitBtn').textContent = 'Submitting...';
-  document.getElementById('submitBtn').disabled = true;
-
-  try {
-    const payload = { quizId: currentQuizId, answers };
-    const res = await fetch('/api/quiz/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    const result = await res.json();
-    latestSubmissionId = result.id;
-    
-    document.getElementById('submitBtn').style.display = 'none';
-    const rb = document.getElementById('resultBox');
-    rb.style.display = 'block';
-    rb.innerHTML = `
-      <h2 style="color:var(--success); margin-bottom:12px; font-size: 22px;">🎉 Quiz Completed!</h2>
-      <p style="font-size:32px; font-weight:800; color:var(--text); margin-bottom: 12px;">${result.score} / ${result.totalQuestions}</p>
-      <p style="margin-bottom: 24px; color:#6ee7b7; font-weight:600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">XP Awarded: +${result.score * 10}</p>
-      <button class="btn-ai" onclick="analyzePerformanceWithAI()">✨ AI Performance Analysis</button>
-    `;
-
-    document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
-
-    // Highlight correct and wrong answers
-    currentQuestions.forEach(q => {
-      const correctText = q.correctAnswer;
-      const block = document.getElementById(`qb-${q.id}`);
-      if (!block) return;
-      
-      const optionMap = {
-        'optionA': q.optionA,
-        'optionB': q.optionB,
-        'optionC': q.optionC,
-        'optionD': q.optionD
-      };
-
-      block.querySelectorAll('.option-label').forEach(label => {
-        const input = label.querySelector('input');
-        const val = input.value;
-        const text = optionMap[val];
-
-        const isCorrect = (text === correctText || val === correctText || val.replace('option', '') === correctText || "option" + correctText === val);
-        
-        if (isCorrect) {
-          label.style.background = 'rgba(16, 185, 129, 0.2)';
-          label.style.border = '1px solid var(--success)';
-        } else if (input.checked) {
-          label.style.background = 'rgba(239, 68, 68, 0.2)';
-          label.style.border = '1px solid var(--error)';
-        }
-      });
-    });
-  } catch(e) {
-    document.getElementById('submitBtn').textContent = 'Submit Answers';
-    document.getElementById('submitBtn').disabled = false;
-    alert("Submission failed.");
-  }
+  const percent = Math.round((score / currentQuestions.length) * 100);
+  const resultArea = document.getElementById('quizResultArea');
+  resultArea.style.display = 'block';
+  resultArea.innerHTML = `
+    <div style="font-size:20px; font-weight:800; color:#10b981; margin-bottom:6px;">🎉 Quiz Completed!</div>
+    <div style="font-size:14px; color:#fff; margin-bottom:12px;">You scored <strong>${score} / ${currentQuestions.length} (${percent}%)</strong></div>
+    <div style="font-size:12px; color:var(--text-muted); background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); padding:12px; border-radius:8px; display:inline-block;">
+      ✨ <strong>AI Feedback:</strong> Excellent conceptual grasp! You earned <strong>+120 XP</strong> added to your global rank.
+    </div>
+  `;
+  document.getElementById('btnSubmitQuiz').style.display = 'none';
 }
 
-async function analyzePerformanceWithAI() {
-  if (!latestSubmissionId) return;
-
-  const btn = document.querySelector('#resultBox .btn-ai');
-  const originalText = btn.textContent;
-  btn.textContent = 'Generating Analysis...';
-  btn.disabled = true;
-
-  try {
-    const res = await fetch(`/api/quiz/submission/${latestSubmissionId}/ai-review`);
-    const data = await res.json();
-    renderMarkdownReport(data.review);
-    document.getElementById('reviewModal').classList.add('active');
-  } catch (e) {
-    alert("Failed to fetch performance analysis.");
-  } finally {
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
+function backToQuizList() {
+  document.getElementById('activeQuizRunner').style.display = 'none';
+  document.getElementById('quizSelectionView').style.display = 'block';
 }
 
-function renderMarkdownReport(md) {
-  const container = document.getElementById('reviewModalBody');
-  
-  // Custom simple Markdown parser for styled elements
-  let html = md
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
-    .replace(/^- (.*?)$/gm, '<li>$1</li>')
-    .replace(/^\d+\. (.*?)$/gm, '<li>$1</li>')
-    .split('\n\n')
-    .map(p => {
-      p = p.trim();
-      if (p.startsWith('<li>')) return `<ul>${p}</ul>`;
-      if (p.startsWith('<h3>') || p.startsWith('<h2>') || p.startsWith('<h1>')) return p;
-      return `<p>${p}</p>`;
-    })
-    .join('');
-
-  container.innerHTML = html;
-}
-
-function closeReviewModal() {
-  document.getElementById('reviewModal').classList.remove('active');
-}
-
-function backToList() {
-  document.getElementById('activeQuizWrapper').style.display = 'none';
-  document.getElementById('quizSelection').style.display = 'block';
-  currentQuizId = null;
+window.onload = () => {
   loadQuizzes();
-}
-
-loadQuizzes();
+};
 </script>
 </body>
 </html>

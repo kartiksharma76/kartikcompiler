@@ -79,6 +79,20 @@ public class ChatController {
         }
     }
 
+    @org.springframework.web.bind.annotation.PostMapping("/api/chat/ai/direct")
+    public ResponseEntity<?> askAiDirect(@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, String> body) {
+        String prompt = body.getOrDefault("message", "");
+        if (prompt.isBlank()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Message cannot be empty"));
+        }
+        String aiReply = aiService.callNvidiaAI(prompt);
+        return ResponseEntity.ok(java.util.Map.of(
+            "sender", "AI Assistant (Nvidia Llama)",
+            "content", aiReply,
+            "timestamp", LocalDateTime.now().toString()
+        ));
+    }
+
     @GetMapping("/api/chat/history/{userId1}/{userId2}")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getChatHistory(@PathVariable Long userId1, @PathVariable Long userId2) {
