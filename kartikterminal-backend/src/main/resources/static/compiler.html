@@ -623,24 +623,30 @@ border-top: 1px solid var(--border);
       <div class="ps-web-container">
         <div class="ps-web-editor">
           <div class="ps-web-toolbar">
-            <span style="font-size:11px; font-weight:700; color:var(--text-muted);">HTML / CSS / JS</span>
-            <div style="display:flex; gap:6px;">
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted);">HTML / CSS / JS CODE</span>
+            <div style="display:flex; gap:6px; align-items:center;">
               <select id="psWebTemplateSelect" onchange="loadWebTemplate()" style="padding:4px 8px; font-size:11px;">
                 <option value="card">Glassmorphism Card</option>
                 <option value="button">Neon Glow Button</option>
                 <option value="clock">Live Digital Clock</option>
               </select>
-              <button class="run-btn" style="padding:4px 10px; font-size:11px;" onclick="renderWebPreview()">▶ RUN PREVIEW</button>
+              <button class="icon-btn" style="padding:3px 8px; font-size:11px;" onclick="importFromMainEditor()" title="Import code from Monaco Editor">📥 Import</button>
+              <button class="icon-btn" style="padding:3px 8px; font-size:11px;" onclick="clearWebPlayground()" title="Clear editor to paste new code">🧹 Clear</button>
+              <button class="run-btn" style="padding:4px 10px; font-size:11px;" onclick="renderWebPreview()">▶ RUN</button>
             </div>
           </div>
-          <textarea id="psWebCode" spellcheck="false" class="ps-textarea" placeholder="Enter HTML/CSS/JS code..."></textarea>
+          <textarea id="psWebCode" spellcheck="false" class="ps-textarea" placeholder="Paste or type any HTML, CSS, JavaScript code here to preview in real-time..." oninput="renderWebPreview()"></textarea>
         </div>
         <div class="ps-web-preview">
           <div class="ps-web-toolbar">
-            <span style="font-size:11px; font-weight:700; color:var(--text-muted);">LIVE BROWSER RENDER</span>
-            <button class="icon-btn" style="padding:3px 8px; font-size:11px;" onclick="renderWebPreview()">🔄 Refresh</button>
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted);">LIVE BROWSER PREVIEW</span>
+            <div style="display:flex; gap:6px;">
+              <button class="icon-btn" style="padding:3px 8px; font-size:11px;" onclick="openWebPreviewNewTab()" title="Open preview in full new window">🚀 Full Window</button>
+              <button class="icon-btn" style="padding:3px 8px; font-size:11px;" onclick="exportWebToMainEditor()" title="Export code back to main editor">📤 Export</button>
+              <button class="icon-btn" style="padding:3px 8px; font-size:11px;" onclick="renderWebPreview()">🔄 Refresh</button>
+            </div>
           </div>
-          <iframe id="psWebFrame" sandbox="allow-scripts allow-modals" class="ps-iframe"></iframe>
+          <iframe id="psWebFrame" sandbox="allow-scripts allow-modals allow-same-origin allow-forms" class="ps-iframe"></iframe>
         </div>
       </div>
     </div>
@@ -650,6 +656,15 @@ border-top: 1px solid var(--border);
       <div style="display:flex; flex-direction:column; gap:12px;">
         <div style="display:flex; gap:8px; align-items:center;">
           <input type="text" id="regexPattern" placeholder="Regular Expression pattern (e.g. ([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))" style="flex:1; padding:10px 14px; background:var(--bg-editor); border:1px solid var(--border); border-radius:8px; color:var(--text-main); font-family:'JetBrains Mono',monospace; font-size:13px;" oninput="testRegex()">
+          <select id="regexPresetSelect" onchange="loadRegexPreset()" style="padding:6px 10px; font-size:11px; max-width:140px;">
+            <option value="">Quick Presets...</option>
+            <option value="email">Email Address</option>
+            <option value="url">Web URL</option>
+            <option value="phone">Phone Number</option>
+            <option value="ip">IPv4 Address</option>
+            <option value="hex">HEX Color</option>
+            <option value="date">Date YYYY-MM-DD</option>
+          </select>
           <div style="display:flex; gap:8px; align-items:center; background:var(--bg-editor); padding:6px 12px; border-radius:8px; border:1px solid var(--border); font-size:12px;">
             <label style="cursor:pointer;"><input type="checkbox" id="regexFlagG" checked onchange="testRegex()"> g</label>
             <label style="cursor:pointer;"><input type="checkbox" id="regexFlagI" checked onchange="testRegex()"> i</label>
@@ -1750,14 +1765,80 @@ function loadWebTemplate() {
 }
 
 function renderWebPreview() {
-  const code = document.getElementById('psWebCode').value;
+  const code = document.getElementById('psWebCode').value || '';
   const frame = document.getElementById('psWebFrame');
-  if (frame) {
+  if (!frame) return;
+  
+  try {
+    const doc = frame.contentDocument || (frame.contentWindow ? frame.contentWindow.document : null);
+    if (doc) {
+      doc.open();
+      doc.write(code);
+      doc.close();
+    } else {
+      frame.srcdoc = code;
+    }
+  } catch (e) {
     frame.srcdoc = code;
   }
 }
 
+function importFromMainEditor() {
+  const code = (window.monacoEditor ? window.monacoEditor.getValue() : editor.value) || '';
+  if (!code.trim()) { showToast("Main editor is empty", "warning"); return; }
+  document.getElementById('psWebCode').value = code;
+  renderWebPreview();
+  showToast("📥 Imported code from main editor", "success");
+}
+
+function clearWebPlayground() {
+  document.getElementById('psWebCode').value = '';
+  renderWebPreview();
+  showToast("Cleared playground. Paste your custom code now!", "info");
+}
+
+function exportWebToMainEditor() {
+  const code = document.getElementById('psWebCode').value;
+  if (!code.trim()) { showToast("Playground is empty", "warning"); return; }
+  if (window.monacoEditor) {
+    window.monacoEditor.setValue(code);
+  } else {
+    editor.value = code;
+  }
+  handleInput();
+  showToast("📤 Exported to main editor", "success");
+}
+
+function openWebPreviewNewTab() {
+  const code = document.getElementById('psWebCode').value;
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.open();
+    win.document.write(code);
+    win.document.close();
+  }
+}
+
 // 2. RegEx Studio
+const regexPresets = {
+  email: { pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}', test: 'Contact support@kartikterminal.com or dev.team@cloud-sandbox.org' },
+  url: { pattern: 'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)', test: 'Visit https://github.com/kartiksharma76/kartikcompiler or http://localhost:8080' },
+  phone: { pattern: '(\\+?\\d{1,3}[- ]?)?\\(?\\d{3}\\)?[- ]?\\d{3}[- ]?\\d{4}', test: 'Call us at +1 (555) 234-5678 or 9876543210' },
+  ip: { pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', test: 'Server running at 192.168.1.1 and gateway 10.0.0.254' },
+  hex: { pattern: '#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})\\b', test: 'Theme colors: #3b82f6, #10b981, and #ef4444' },
+  date: { pattern: '\\b\\d{4}-\\d{2}-\\d{2}\\b', test: 'Release dates: 2026-09-04 and scheduled deadline 2026-12-31' }
+};
+
+function loadRegexPreset() {
+  const sel = document.getElementById('regexPresetSelect').value;
+  const p = regexPresets[sel];
+  if (p) {
+    document.getElementById('regexPattern').value = p.pattern;
+    document.getElementById('regexTestStr').value = p.test;
+    testRegex();
+  }
+}
+
 function testRegex() {
   const pattern = document.getElementById('regexPattern').value;
   const testStr = document.getElementById('regexTestStr').value;
