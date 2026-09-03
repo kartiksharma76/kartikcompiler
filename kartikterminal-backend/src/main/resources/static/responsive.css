@@ -251,8 +251,12 @@
   }
   .io-panel {
     width: 100% !important;
+    max-width: 100% !important;
     flex: none !important;
     gap: 8px !important;
+  }
+  .panel-resizer {
+    display: none !important;
   }
   
   /* Floating Compiler Actions Bar at the bottom */
