@@ -117,15 +117,19 @@ public class CompilerService {
             workDir.toFile().setWritable(true);
 
             return switch (request.getLanguage().toLowerCase()) {
-                case "java"   -> runJava(workDir, request.getCode(), request.getInput());
-                case "python" -> runPython(workDir, request.getCode(), request.getInput());
-                case "cpp"    -> runCpp(workDir, request.getCode(), request.getInput());
-                case "c"      -> runC(workDir, request.getCode(), request.getInput());
-                case "js"     -> runNode(workDir, request.getCode(), request.getInput());
-                case "go"     -> runGo(workDir, request.getCode(), request.getInput());
-                case "mysql"  -> runMySql(request.getCode());
-                case "ts"     -> runTypeScript(workDir, request.getCode(), request.getInput());
-                default       -> new ExecutionResult("", "Unsupported language: " + request.getLanguage(), 1);
+                case "java"       -> runJava(workDir, request.getCode(), request.getInput());
+                case "python", "py" -> runPython(workDir, request.getCode(), request.getInput());
+                case "cpp", "c++" -> runCpp(workDir, request.getCode(), request.getInput());
+                case "c"          -> runC(workDir, request.getCode(), request.getInput());
+                case "js", "node" -> runNode(workDir, request.getCode(), request.getInput());
+                case "go", "golang" -> runGo(workDir, request.getCode(), request.getInput());
+                case "mysql", "sql" -> runMySql(request.getCode());
+                case "ts", "typescript" -> runTypeScript(workDir, request.getCode(), request.getInput());
+                case "rust", "rs" -> runRust(workDir, request.getCode(), request.getInput());
+                case "php"        -> runPhp(workDir, request.getCode(), request.getInput());
+                case "ruby", "rb" -> runRuby(workDir, request.getCode(), request.getInput());
+                case "bash", "sh" -> runBash(workDir, request.getCode(), request.getInput());
+                default           -> new ExecutionResult("", "Unsupported language: " + request.getLanguage(), 1);
             };
 
         } catch (IOException e) {
@@ -228,6 +232,63 @@ public class CompilerService {
                 new String[]{"go", "run", srcFile.toString()},
                 dir, input, timeoutSeconds
         );
+    }
+
+    // ========== RUST ==========
+    private ExecutionResult runRust(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.rs");
+        boolean isWin = System.getProperty("os.name").toLowerCase().contains("win");
+        Path binFile = dir.resolve(isWin ? "main_out.exe" : "main_out");
+        Files.writeString(srcFile, code);
+
+        ExecutionResult compileResult = runProcess(
+                new String[]{"rustc", srcFile.toString(), "-o", binFile.toString()},
+                dir, "", 30
+        );
+        if (compileResult.exitCode != 0) {
+            return new ExecutionResult("", "Rust Compilation Error:\n" + compileResult.error, 1);
+        }
+        return runProcess(new String[]{binFile.toString()}, dir, input, timeoutSeconds);
+    }
+
+    // ========== PHP ==========
+    private ExecutionResult runPhp(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.php");
+        Files.writeString(srcFile, code);
+        return runProcess(
+                new String[]{"php", "-f", srcFile.toString()},
+                dir, input, timeoutSeconds
+        );
+    }
+
+    // ========== RUBY ==========
+    private ExecutionResult runRuby(Path dir, String code, String input) throws IOException {
+        Path srcFile = dir.resolve("main.rb");
+        Files.writeString(srcFile, code);
+        return runProcess(
+                new String[]{"ruby", srcFile.toString()},
+                dir, input, timeoutSeconds
+        );
+    }
+
+    // ========== BASH / SHELL ==========
+    private ExecutionResult runBash(Path dir, String code, String input) throws IOException {
+        boolean isWin = System.getProperty("os.name").toLowerCase().contains("win");
+        if (isWin) {
+            Path srcFile = dir.resolve("main.bat");
+            Files.writeString(srcFile, code);
+            return runProcess(
+                    new String[]{"cmd.exe", "/c", srcFile.toString()},
+                    dir, input, timeoutSeconds
+            );
+        } else {
+            Path srcFile = dir.resolve("main.sh");
+            Files.writeString(srcFile, code);
+            return runProcess(
+                    new String[]{"bash", srcFile.toString()},
+                    dir, input, timeoutSeconds
+            );
+        }
     }
 
     // ========== PROCESS RUNNER ==========

@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     golang-go \
+    rustc \
+    php-cli \
+    ruby-full \
     && npm install -g esbuild typescript \
     && rm -rf /var/lib/apt/lists/*
 

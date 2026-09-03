@@ -231,6 +231,141 @@ border-top: 1px solid var(--border);
 }
 .points-pop { position: fixed; font-size: 18px; font-weight: 800; color: #3b82f6;
   pointer-events: none; z-index: 9999; animation: pointsPop 1.5s ease-out forwards; }
+
+/* ── ⚡ Kartik Power Suite Modal Styles ── */
+.power-suite-modal {
+  width: 920px !important;
+  max-width: 95vw !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 24px !important;
+  border: 1px solid rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 0 50px rgba(99, 102, 241, 0.25) !important;
+  overflow: hidden !important;
+  text-align: left !important;
+}
+.ps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.ps-badge {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.ps-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+}
+.ps-tab {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.ps-tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+}
+.ps-tab.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: #6366f1;
+  color: #a5b4fc;
+}
+.ps-tab-content {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+}
+.ps-tab-content.active {
+  display: flex;
+  flex-direction: column;
+}
+.ps-web-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  height: 380px;
+}
+.ps-web-editor, .ps-web-preview {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-deep);
+}
+.ps-web-toolbar {
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ps-textarea {
+  flex: 1;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  resize: none;
+  outline: none;
+}
+.ps-iframe {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+}
+.ps-stat-card {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.ps-stat-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.ps-stat-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 6px 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.ps-stat-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
 </style>
 </head>
 <body>
@@ -279,8 +414,13 @@ border-top: 1px solid var(--border);
       <option value="go">Go 1.21</option>
       <option value="mysql">MySQL SQL</option>
       <option value="ts">TypeScript</option>
+      <option value="rust">Rust 1.75</option>
+      <option value="php">PHP 8.2</option>
+      <option value="ruby">Ruby 3.2</option>
+      <option value="bash">Bash / Shell</option>
     </select>
     <!-- auth.js injects user avatar + menu widget here -->
+    <button id="powerSuiteBtn" class="run-btn" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);" onclick="togglePowerSuite()">⚡ POWER SUITE</button>
     <button id="collegeBtn" class="run-btn" style="background: #10b981;" onclick="window.location.href='/college.html'">🎓 COLLEGE ERP</button>
     <button id="aiBtn" class="run-btn" style="background: #8b5cf6;" onclick="analyzeAI()">🧠 AI ANALYSIS</button>
     <button id="runBtn" class="run-btn" onclick="runCode()">DEPLOY & RUN</button>
@@ -446,9 +586,145 @@ border-top: 1px solid var(--border);
     <option value="go">Go 1.21</option>
     <option value="mysql">MySQL SQL</option>
     <option value="ts">TypeScript</option>
+    <option value="rust">Rust 1.75</option>
+    <option value="php">PHP 8.2</option>
+    <option value="ruby">Ruby 3.2</option>
+    <option value="bash">Bash / Shell</option>
   </select>
+  <button class="run-btn" style="background:linear-gradient(135deg, #6366f1, #8b5cf6); padding: 6px 10px;" onclick="togglePowerSuite()">⚡ SUITE</button>
   <button class="run-btn" style="background:#8b5cf6;" onclick="analyzeAI()">🧠 AI</button>
   <button class="run-btn" onclick="runCode()">⚡ RUN</button>
+</div>
+
+<!-- ============================================== -->
+<!-- ⚡ KARTIK POWER SUITE MODAL (DEVELOPER HUB)    -->
+<!-- ============================================== -->
+<div class="modal-overlay" id="powerSuiteModal">
+  <div class="modal power-suite-modal">
+    <div class="ps-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="ps-badge">⚡ POWER STUDIO</span>
+        <h3 style="margin:0; font-size:18px; color:var(--text-main); font-weight:800; letter-spacing:0.5px;">Developer Tools & Web Hub</h3>
+      </div>
+      <button class="icon-btn" onclick="closePowerSuite()" style="font-size:14px; font-weight:bold; color:#ef4444; border-color:rgba(239,68,68,0.3); padding: 4px 10px;">✕</button>
+    </div>
+
+    <!-- Power Suite Tab Navigation -->
+    <div class="ps-tabs">
+      <button class="ps-tab active" id="psBtn-web" onclick="switchPSTab('web')">🌐 Web Live Sandbox</button>
+      <button class="ps-tab" id="psBtn-regex" onclick="switchPSTab('regex')">🔍 RegEx Studio</button>
+      <button class="ps-tab" id="psBtn-profiler" onclick="switchPSTab('profiler')">📊 Code & AST Profiler</button>
+      <button class="ps-tab" id="psBtn-formatter" onclick="switchPSTab('formatter')">✨ Universal Transformer</button>
+    </div>
+
+    <!-- Tab 1: Live Web Playground -->
+    <div class="ps-tab-content active" id="psTab-web">
+      <div class="ps-web-container">
+        <div class="ps-web-editor">
+          <div class="ps-web-toolbar">
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted);">HTML / CSS / JS</span>
+            <div style="display:flex; gap:6px;">
+              <select id="psWebTemplateSelect" onchange="loadWebTemplate()" style="padding:4px 8px; font-size:11px;">
+                <option value="card">Glassmorphism Card</option>
+                <option value="button">Neon Glow Button</option>
+                <option value="clock">Live Digital Clock</option>
+              </select>
+              <button class="run-btn" style="padding:4px 10px; font-size:11px;" onclick="renderWebPreview()">▶ RUN PREVIEW</button>
+            </div>
+          </div>
+          <textarea id="psWebCode" spellcheck="false" class="ps-textarea" placeholder="Enter HTML/CSS/JS code..."></textarea>
+        </div>
+        <div class="ps-web-preview">
+          <div class="ps-web-toolbar">
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted);">LIVE BROWSER RENDER</span>
+            <button class="icon-btn" style="padding:3px 8px; font-size:11px;" onclick="renderWebPreview()">🔄 Refresh</button>
+          </div>
+          <iframe id="psWebFrame" sandbox="allow-scripts allow-modals" class="ps-iframe"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: RegEx Studio -->
+    <div class="ps-tab-content" id="psTab-regex">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="regexPattern" placeholder="Regular Expression pattern (e.g. ([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))" style="flex:1; padding:10px 14px; background:var(--bg-editor); border:1px solid var(--border); border-radius:8px; color:var(--text-main); font-family:'JetBrains Mono',monospace; font-size:13px;" oninput="testRegex()">
+          <div style="display:flex; gap:8px; align-items:center; background:var(--bg-editor); padding:6px 12px; border-radius:8px; border:1px solid var(--border); font-size:12px;">
+            <label style="cursor:pointer;"><input type="checkbox" id="regexFlagG" checked onchange="testRegex()"> g</label>
+            <label style="cursor:pointer;"><input type="checkbox" id="regexFlagI" checked onchange="testRegex()"> i</label>
+            <label style="cursor:pointer;"><input type="checkbox" id="regexFlagM" onchange="testRegex()"> m</label>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">TEST STRING</div>
+            <textarea id="regexTestStr" class="ps-textarea" style="height:200px; background:var(--bg-deep); border:1px solid var(--border); border-radius:8px;" placeholder="Paste test text here..." oninput="testRegex()">Contact admin at support@kartikterminal.com or sales@enterprise.io for inquiries.</textarea>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:flex; justify-content:space-between;">
+              <span>MATCH RESULT & CAPTURES</span>
+              <span id="regexMatchCount" style="color:var(--accent);">0 matches</span>
+            </div>
+            <div id="regexOutput" style="height:200px; background:var(--bg-deep); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:'JetBrains Mono',monospace; font-size:12px; overflow-y:auto; color:#10b981; white-space:pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: AST & Code Profiler -->
+    <div class="ps-tab-content" id="psTab-profiler">
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+        <div class="ps-stat-card">
+          <div class="ps-stat-title">Cyclomatic Complexity</div>
+          <div class="ps-stat-val" id="profComplexity">Low (1)</div>
+          <div class="ps-stat-desc">Branching & conditional density</div>
+        </div>
+        <div class="ps-stat-card">
+          <div class="ps-stat-title">Maintainability Index</div>
+          <div class="ps-stat-val" id="profMaintainability" style="color:#10b981;">94/100</div>
+          <div class="ps-stat-desc">Clean code & structure rating</div>
+        </div>
+        <div class="ps-stat-card">
+          <div class="ps-stat-title">Token & AST Size</div>
+          <div class="ps-stat-val" id="profTokens">128 tokens</div>
+          <div class="ps-stat-desc">Parsed language syntax symbols</div>
+        </div>
+      </div>
+      <div style="background:var(--bg-deep); border:1px solid var(--border); border-radius:10px; padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-weight:700; font-size:12px; color:var(--text-main);">Deep Syntax & Resource Breakdown</span>
+          <button class="run-btn" style="padding:4px 10px; font-size:11px;" onclick="analyzeProfiler()">🔄 Refresh from Active Editor</button>
+        </div>
+        <div id="profDetails" style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-muted); line-height:1.7;"></div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Universal Transformer -->
+    <div class="ps-tab-content" id="psTab-formatter">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="run-btn" style="padding:6px 12px; font-size:11px;" onclick="transformData('formatJson')">{ } Format JSON</button>
+          <button class="run-btn" style="padding:6px 12px; font-size:11px; background:#475569;" onclick="transformData('minifyJson')">⚡ Minify JSON</button>
+          <button class="run-btn" style="padding:6px 12px; font-size:11px; background:#0ea5e9;" onclick="transformData('formatSql')">🗄️ Format SQL</button>
+          <button class="run-btn" style="padding:6px 12px; font-size:11px; background:#8b5cf6;" onclick="transformData('base64Encode')">🔒 Base64 Encode</button>
+          <button class="run-btn" style="padding:6px 12px; font-size:11px; background:#8b5cf6;" onclick="transformData('base64Decode')">🔓 Base64 Decode</button>
+          <button class="icon-btn" onclick="copyTransformerResult()" style="margin-left:auto;">📋 Copy Output</button>
+          <button class="icon-btn" onclick="sendToMainEditor()">📥 Load into Main Editor</button>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">RAW INPUT DATA</div>
+            <textarea id="transformerInput" class="ps-textarea" style="height:200px; background:var(--bg-deep); border:1px solid var(--border); border-radius:8px;" placeholder='Paste JSON (e.g. {"name":"Kartik","skills":["Java","TypeScript"]}) or SQL query...'></textarea>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">TRANSFORMED OUTPUT</div>
+            <textarea id="transformerOutput" class="ps-textarea" style="height:200px; color:#10b981; background:var(--bg-deep); border:1px solid var(--border); border-radius:8px;" readonly placeholder="Result will appear here..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- Modals -->
@@ -795,7 +1071,10 @@ function toggleSecurity() {
 }
 
 // ── Language ──
-const langExt={java:'java',python:'py',cpp:'cpp',c:'c',js:'js',go:'go',mysql:'sql',ts:'ts'};
+const langExt={
+  java:'java', python:'py', cpp:'cpp', c:'c', js:'js', go:'go', mysql:'sql', ts:'ts',
+  rust:'rs', php:'php', ruby:'rb', bash:'sh'
+};
 const defaultTemplates={
   java:'public class Main {\npublic static void main(String[] args) {\nSystem.out.println("Hello KartikTerminal");\n}\n}',
   python:'print("Hello Python Scripting")',
@@ -804,7 +1083,11 @@ const defaultTemplates={
   js:'console.log("Node.js Runtime Ready");',
   go:'package main\nimport "fmt"\nfunc main() {\nfmt.Println("Gopher Engine Start")\n}',
   mysql:'-- MySQL Sandbox Database\nCREATE TABLE IF NOT EXISTS users (\n  id INT PRIMARY KEY,\n  name VARCHAR(50)\n);\n\nINSERT INTO users VALUES (1, \'Kartik\'), (2, \'Sharma\');\n\nSELECT * FROM users;\n\nDROP TABLE users;',
-  ts:'interface Developer {\n  name: string;\n  skills: string[];\n}\n\nconst dev: Developer = {\n  name: "Kartik Sharma",\n  skills: ["Java", "TypeScript", "MySQL"]\n};\n\nconsole.log(`Developer ${dev.name} excels in ${dev.skills.join(", ")}`);'
+  ts:'interface Developer {\n  name: string;\n  skills: string[];\n}\n\nconst dev: Developer = {\n  name: "Kartik Sharma",\n  skills: ["Java", "TypeScript", "MySQL"]\n};\n\nconsole.log(`Developer ${dev.name} excels in ${dev.skills.join(", ")}`);',
+  rust:'fn main() {\n    let tech_stack = ["Rust Engine", "Spring Boot Backend", "MySQL Sandbox"];\n    println!("🚀 Hello from High-Performance Rust Sandbox!");\n    for (i, tech) in tech_stack.iter().enumerate() {\n        println!("  {}. Tech Component: {}", i + 1, tech);\n    }\n}',
+  php:'<?php\n$engine = "KartikTerminal";\n$version = phpversion();\necho "🐘 Running on PHP {$version}\\n";\necho "🔥 Welcome to {$engine} Polyglot Cloud Sandbox!\\n";\n?>',
+  ruby:'class Developer\n  def initialize(name, role)\n    @name = name\n    @role = role\n  end\n  def greet\n    puts "💎 Ruby Sandbox: #{@name} (#{@role}) engine active!"\n  end\nend\n\ndev = Developer.new("Kartik Sharma", "Architect")\ndev.greet',
+  bash:'#!/bin/bash\necho "⚡ Shell Script Sandbox Initialized"\necho "Timestamp: $(date)"\necho "Sandbox Environment Active"'
 };
 const languageTemplates={
   java:`import java.util.Scanner;\npublic class Main {\npublic static void main(String[] args) {\nScanner sc = new Scanner(System.in);\nSystem.out.println("Hello KartikTerminal");\nsc.close();\n}\n}`,
@@ -814,17 +1097,40 @@ const languageTemplates={
   js:`console.log("Hello KartikTerminal");`,
   go:`package main\nimport "fmt"\nfunc main() {\nfmt.Println("Hello KartikTerminal")\n}`,
   mysql:`-- Insert template\nCREATE TABLE IF NOT EXISTS temp_data (\n  id INT,\n  info VARCHAR(100)\n);\nINSERT INTO temp_data VALUES (101, 'Quick SQL execution');\nSELECT * FROM temp_data;\nDROP TABLE temp_data;`,
-  ts:`const sayHello = (name: string): string => {\n  return \`Hello \${name}!\`;\n};\nconsole.log(sayHello("KartikTerminal"));`
+  ts:`const sayHello = (name: string): string => {\n  return \`Hello \${name}!\`;\n};\nconsole.log(sayHello("KartikTerminal"));`,
+  rust:`fn main() {\n    let greeting = "Hello KartikTerminal Rust!";\n    println!("{}", greeting);\n}`,
+  php:`<?php\necho "Hello KartikTerminal from PHP!\\n";\n?>`,
+  ruby:`puts "Hello KartikTerminal from Ruby!"`,
+  bash:`echo "Hello KartikTerminal from Bash!"`
 };
+
+function getMonacoLang(lang) {
+  switch(lang) {
+    case 'js': return 'javascript';
+    case 'ts': return 'typescript';
+    case 'mysql': return 'sql';
+    case 'rust': return 'rust';
+    case 'php': return 'php';
+    case 'ruby': return 'ruby';
+    case 'bash': return 'shell';
+    case 'python': return 'python';
+    case 'cpp': return 'cpp';
+    case 'c': return 'c';
+    case 'go': return 'go';
+    case 'java': return 'java';
+    default: return 'plaintext';
+  }
+}
+
 function changeLanguage(showMessage=true) {
   const lang=document.getElementById('language').value;
   const mobileSelect = document.getElementById('language-mobile');
   if (mobileSelect) mobileSelect.value = lang;
-  const fileName=`Main.${langExt[lang]}`;
+  const fileName=`Main.${langExt[lang] || 'txt'}`;
   terminal.innerHTML=''; 
   if (window.monacoEditor) {
     const model = window.monacoEditor.getModel();
-    monaco.editor.setModelLanguage(model, lang === 'js' ? 'javascript' : (lang === 'ts' ? 'typescript' : (lang === 'mysql' ? 'sql' : lang)));
+    monaco.editor.setModelLanguage(model, getMonacoLang(lang));
     editor.value = defaultTemplates[lang]||'';
   } else { editor.value=defaultTemplates[lang]||''; }
   document.getElementById('file-name').innerText=fileName;
@@ -980,6 +1286,22 @@ const codeSnippets={java:[{title:'For Loop',desc:'Standard for loop',code:'for(i
   ts:[
     {title:'Interface',desc:'Declare TypeScript interface structure',code:'interface User {\n  id: number;\n  name: string;\n}'},
     {title:'Arrow Function',desc:'Strict typed function',code:'const add = (a: number, b: number): number => a + b;'}
+  ],
+  rust:[
+    {title:'Vector & Loop',desc:'Iterate over vector',code:'let v = vec![1, 2, 3];\nfor i in &v {\n    println!("{}", i);\n}'},
+    {title:'Function',desc:'Typed Rust function',code:'fn add(a: i32, b: i32) -> i32 {\n    a + b\n}'}
+  ],
+  php:[
+    {title:'Associative Array',desc:'Key-value pairs',code:'$user = ["name" => "Kartik", "role" => "Admin"];\necho $user["name"];'},
+    {title:'Function',desc:'PHP function',code:'function greet($name) {\n    return "Hello, {$name}!";\n}'}
+  ],
+  ruby:[
+    {title:'Each Loop',desc:'Block iteration',code:'[1, 2, 3].each do |x|\n  puts "Item: #{x}"\nend'},
+    {title:'Class Definition',desc:'Object class in Ruby',code:'class User\n  attr_accessor :name\n  def initialize(name)\n    @name = name\n  end\nend'}
+  ],
+  bash:[
+    {title:'For Loop',desc:'Shell iteration',code:'for i in 1 2 3 4 5; do\n  echo "Counter: $i"\ndone'},
+    {title:'Conditional',desc:'If condition in bash',code:'if [ -d "/tmp" ]; then\n  echo "Tmp directory exists"\nfi'}
   ]
 };
 function toggleSnippets(){const lang=document.getElementById('language').value,snippets=codeSnippets[lang]||[];if(!snippets.length){logToTerminal("⚠️ No snippets for this language","warning");return;}snippetsPanel.innerHTML=snippets.map((s,i)=>`<div class="snippet-item" onclick="insertSnippet(${i})"><div class="snippet-title">${s.title}</div><div class="snippet-desc">${s.desc}</div></div>`).join('');snippetsPanel.classList.toggle('active');statsPanel.classList.remove('active');}
@@ -1247,7 +1569,345 @@ document.addEventListener('click', (e) => {
     const panel = document.getElementById('mobileSettingsPanel');
     if (panel) panel.classList.remove('active');
   }
+  const psModal = document.getElementById('powerSuiteModal');
+  if (psModal && e.target === psModal) {
+    closePowerSuite();
+  }
 });
+
+// ==========================================
+// ⚡ KARTIK POWER SUITE JAVASCRIPT ENGINE
+// ==========================================
+function togglePowerSuite() {
+  const modal = document.getElementById('powerSuiteModal');
+  if (!modal) return;
+  modal.classList.toggle('active');
+  if (modal.classList.contains('active')) {
+    if (!document.getElementById('psWebCode').value) {
+      loadWebTemplate();
+    }
+    analyzeProfiler();
+    testRegex();
+  }
+}
+
+function closePowerSuite() {
+  const modal = document.getElementById('powerSuiteModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function switchPSTab(tabId) {
+  document.querySelectorAll('.ps-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ps-tab-content').forEach(c => c.classList.remove('active'));
+  
+  const btn = document.getElementById(`psBtn-${tabId}`);
+  const content = document.getElementById(`psTab-${tabId}`);
+  if (btn) btn.classList.add('active');
+  if (content) content.classList.add('active');
+
+  if (tabId === 'profiler') analyzeProfiler();
+  if (tabId === 'regex') testRegex();
+  if (tabId === 'web') renderWebPreview();
+}
+
+// 1. Web Sandbox Playground
+const webTemplates = {
+  card: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #fff;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 24px;
+      width: 280px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .card:hover { transform: translateY(-5px); }
+    .badge {
+      background: #6366f1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    h2 { margin: 12px 0 8px; font-size: 18px; }
+    p { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+    button {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">PRO SANDBOX</span>
+    <h2>Kartik Glass Card</h2>
+    <p>Live render engine running directly inside the cloud terminal browser sandbox.</p>
+    <button onclick="alert('⚡ Realtime Web JS Interactive Event Triggered!')">Interactive Test</button>
+  </div>
+</body>
+</html>`,
+  button: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: #09090b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: sans-serif;
+    }
+    .neon-btn {
+      position: relative;
+      padding: 14px 32px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #10b981;
+      background: transparent;
+      border: 2px solid #10b981;
+      border-radius: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), inset 0 0 15px rgba(16, 185, 129, 0.2);
+      transition: all 0.3s;
+    }
+    .neon-btn:hover {
+      background: #10b981;
+      color: #000;
+      box-shadow: 0 0 35px #10b981;
+    }
+  </style>
+</head>
+<body>
+  <button class="neon-btn" onclick="this.innerText='⚡ ACTIVE!'">CYBER BUTTON</button>
+</body>
+</html>`,
+  clock: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: #020617;
+      color: #38bdf8;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .time { font-size: 36px; font-weight: 900; text-shadow: 0 0 20px #38bdf8; }
+    .label { font-size: 12px; color: #64748b; margin-top: 8px; letter-spacing: 3px; }
+  </style>
+</head>
+<body>
+  <div class="time" id="clock">00:00:00</div>
+  <div class="label">LIVE WEB REALTIME CLOCK</div>
+  <script>
+    function update() {
+      document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    }
+    setInterval(update, 1000);
+    update();
+  <\/script>
+</body>
+</html>`
+};
+
+function loadWebTemplate() {
+  const sel = document.getElementById('psWebTemplateSelect').value;
+  const code = webTemplates[sel] || webTemplates.card;
+  document.getElementById('psWebCode').value = code;
+  renderWebPreview();
+}
+
+function renderWebPreview() {
+  const code = document.getElementById('psWebCode').value;
+  const frame = document.getElementById('psWebFrame');
+  if (frame) {
+    frame.srcdoc = code;
+  }
+}
+
+// 2. RegEx Studio
+function testRegex() {
+  const pattern = document.getElementById('regexPattern').value;
+  const testStr = document.getElementById('regexTestStr').value;
+  const g = document.getElementById('regexFlagG').checked ? 'g' : '';
+  const i = document.getElementById('regexFlagI').checked ? 'i' : '';
+  const m = document.getElementById('regexFlagM').checked ? 'm' : '';
+  const flags = g + i + m;
+  const outputEl = document.getElementById('regexOutput');
+  const countEl = document.getElementById('regexMatchCount');
+  if (!outputEl || !countEl) return;
+  
+  if (!pattern) {
+    outputEl.innerHTML = '<span style="color:var(--text-muted)">Enter a regular expression pattern to test...</span>';
+    countEl.innerText = '0 matches';
+    return;
+  }
+
+  try {
+    const reg = new RegExp(pattern, flags.includes('g') ? flags : flags + 'g');
+    const matches = [...testStr.matchAll(reg)];
+    countEl.innerText = `${matches.length} match${matches.length === 1 ? '' : 'es'}`;
+    
+    if (matches.length === 0) {
+      outputEl.innerHTML = '<span style="color:#ef4444">No pattern matches found in test string.</span>';
+      return;
+    }
+
+    let report = `✓ Pattern compiled: /${pattern}/${flags}\nTotal Matches: ${matches.length}\n\n`;
+    matches.forEach((match, idx) => {
+      report += `[Match #${idx + 1}] "${match[0]}" at position ${match.index}\n`;
+      if (match.length > 1) {
+        for (let gIdx = 1; gIdx < match.length; gIdx++) {
+          report += `  ↳ Group ${gIdx}: "${match[gIdx]}"\n`;
+        }
+      }
+    });
+    outputEl.textContent = report;
+  } catch (err) {
+    countEl.innerText = 'Syntax Error';
+    outputEl.innerHTML = `<span style="color:#ef4444">Regex Error: ${err.message}</span>`;
+  }
+}
+
+// 3. Code & AST Profiler
+function analyzeProfiler() {
+  const code = (window.monacoEditor ? window.monacoEditor.getValue() : editor.value) || '';
+  const lang = (document.getElementById('language').value || 'java').toUpperCase();
+  
+  const lines = code.split('\n');
+  const totalLines = lines.length;
+  const nonEmptyLines = lines.filter(l => l.trim().length > 0).length;
+  const words = code.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const chars = code.length;
+
+  // Cyclomatic Complexity calculation
+  const branchKeywords = ['if', 'else if', 'for', 'while', 'case', 'catch', '&&', '\\|\\|', '\\?'];
+  let branches = 1;
+  branchKeywords.forEach(kw => {
+    const reg = new RegExp('\\b' + kw + '\\b|' + kw, 'g');
+    const matches = code.match(reg);
+    if (matches) branches += matches.length;
+  });
+
+  const compEl = document.getElementById('profComplexity');
+  let compLabel = `Low (${branches})`;
+  let compColor = '#10b981';
+  if (branches > 10) { compLabel = `High (${branches})`; compColor = '#ef4444'; }
+  else if (branches > 5) { compLabel = `Moderate (${branches})`; compColor = '#f59e0b'; }
+  if (compEl) {
+    compEl.innerText = compLabel;
+    compEl.style.color = compColor;
+  }
+
+  // Maintainability rating
+  let maintainability = Math.max(30, Math.min(100, Math.round(100 - (branches * 2.5) - (totalLines * 0.15) + (code.includes('//') ? 5 : 0))));
+  const mainEl = document.getElementById('profMaintainability');
+  if (mainEl) mainEl.innerText = `${maintainability}/100`;
+
+  // Tokens count
+  const tokens = code.match(/[\w]+|[^\s\w]/g) || [];
+  const tokEl = document.getElementById('profTokens');
+  if (tokEl) tokEl.innerText = `${tokens.length} tokens`;
+
+  // Details
+  const detailsEl = document.getElementById('profDetails');
+  if (detailsEl) {
+    detailsEl.innerHTML = `
+      • <strong>Active Target:</strong> ${lang} Source File<br>
+      • <strong>Code Volume:</strong> ${totalLines} total lines (${nonEmptyLines} executable, ${totalLines - nonEmptyLines} empty/whitespace)<br>
+      • <strong>Density Metrics:</strong> ${words} words | ${chars} raw characters | ${tokens.length} lexical tokens<br>
+      • <strong>Control Flow Depth:</strong> ${branches} decision points across active functions<br>
+      • <strong>Estimated Heap/AST Footprint:</strong> ~${Math.round(chars * 1.8 / 1024 * 100) / 100} KB parsed memory tree<br>
+      • <strong>Architectural Cleanliness:</strong> ${maintainability >= 80 ? '🟢 Excellent modularity & low cognitive friction' : '🟡 Recommended: break complex procedures into subroutines'}
+    `;
+  }
+}
+
+// 4. Universal Transformer
+function transformData(action) {
+  const input = document.getElementById('transformerInput').value;
+  const outputEl = document.getElementById('transformerOutput');
+
+  try {
+    if (action === 'formatJson') {
+      const parsed = JSON.parse(input);
+      outputEl.value = JSON.stringify(parsed, null, 2);
+      showToast("JSON formatted successfully", "success");
+    } else if (action === 'minifyJson') {
+      const parsed = JSON.parse(input);
+      outputEl.value = JSON.stringify(parsed);
+      showToast("JSON minified", "success");
+    } else if (action === 'formatSql') {
+      const keywords = ['SELECT', 'FROM', 'WHERE', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'CREATE TABLE', 'DROP TABLE', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN'];
+      let formatted = input;
+      keywords.forEach(kw => {
+        const reg = new RegExp('\\b' + kw + '\\b', 'gi');
+        formatted = formatted.replace(reg, '\n' + kw.toUpperCase() + ' ');
+      });
+      outputEl.value = formatted.trim();
+      showToast("SQL formatted", "success");
+    } else if (action === 'base64Encode') {
+      outputEl.value = btoa(unescape(encodeURIComponent(input)));
+      showToast("Base64 encoded", "success");
+    } else if (action === 'base64Decode') {
+      outputEl.value = decodeURIComponent(escape(atob(input)));
+      showToast("Base64 decoded", "success");
+    }
+  } catch (err) {
+    outputEl.value = `Error: ${err.message}`;
+    showToast(`Transform Error: ${err.message}`, "error");
+  }
+}
+
+function copyTransformerResult() {
+  const val = document.getElementById('transformerOutput').value;
+  if (!val) { showToast("No output to copy", "warning"); return; }
+  navigator.clipboard.writeText(val).then(() => showToast("📋 Transformed output copied!", "success"));
+}
+
+function sendToMainEditor() {
+  const val = document.getElementById('transformerOutput').value;
+  if (!val) { showToast("No output to send", "warning"); return; }
+  if (window.monacoEditor) {
+    window.monacoEditor.setValue(val);
+  } else {
+    editor.value = val;
+  }
+  handleInput();
+  closePowerSuite();
+  showToast("📥 Loaded output into main editor", "success");
+}
 </script>
 </body>
 </html>
