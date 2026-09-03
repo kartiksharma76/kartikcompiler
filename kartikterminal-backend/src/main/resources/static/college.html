@@ -707,35 +707,20 @@ async function renderTab() {
   // 3. AI AUTO-GRADER TAB (MATCHING SCREENSHOT 3)
   // ==============================================================
   else if (currentTab === 'autograder') {
+    let autoRes = null;
+    try { autoRes = JSON.parse(localStorage.getItem('autoGraderResult')); } catch(e) {}
+    
+    const subCode = autoRes && autoRes.code ? autoRes.code : `#!/bin/bash\necho "⚡ Shell Script Sandbox Initialized"\necho "Timestamp: $(date)"\necho "Sandbox Environment Active"`;
+    const subTime = autoRes && autoRes.timestamp ? autoRes.timestamp : '1:00:15 AM';
+    const subComplexity = autoRes && autoRes.timeComplexity ? autoRes.timeComplexity : 'O(1)';
+    const subSecurity = autoRes && autoRes.securityScore !== undefined ? autoRes.securityScore : 100;
+    const subReadability = autoRes && autoRes.readabilityScore !== undefined ? autoRes.readabilityScore : 85;
+    const subScore = Math.round(( (subComplexity === 'O(1)' ? 100 : (subComplexity === 'O(N)' ? 85 : 60)) + subSecurity + subReadability) / 3);
+    const subGrade = subScore >= 90 ? 'A+' : (subScore >= 75 ? 'A' : (subScore >= 60 ? 'B' : 'C'));
+
+    const formattedLines = subCode.split('\n').map((line, idx) => `<div><span style="color:#64748b; margin-right:12px; font-size:11px;">${idx + 1}</span>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`).join('');
+
     main.innerHTML = `
-      <div class="tab-header">
-        <div class="tab-header-left">
-          <div class="tab-icon-box">🤖</div>
-          <div>
-            <div class="tab-title">AI Auto-Grader Engine</div>
-            <div class="tab-subtitle">Deep code analysis measuring Complexity, Security, and Style patterns.</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.3); padding:6px 14px; border-radius:10px;">
-          <span class="online-dot"></span>
-          <div>
-            <div style="font-size:11.5px; font-weight:700; color:#10b981;">Engine Online</div>
-            <div style="font-size:9.5px; color:var(--text-dim);">All systems operational</div>
-          </div>
-      let autoRes = null;
-      try { autoRes = JSON.parse(localStorage.getItem('autoGraderResult')); } catch(e) {}
-      
-      const subCode = autoRes && autoRes.code ? autoRes.code : `#!/bin/bash\necho "⚡ Shell Script Sandbox Initialized"\necho "Timestamp: $(date)"\necho "Sandbox Environment Active"`;
-      const subTime = autoRes && autoRes.timestamp ? autoRes.timestamp : '1:00:15 AM';
-      const subComplexity = autoRes && autoRes.timeComplexity ? autoRes.timeComplexity : 'O(1)';
-      const subSecurity = autoRes && autoRes.securityScore !== undefined ? autoRes.securityScore : 100;
-      const subReadability = autoRes && autoRes.readabilityScore !== undefined ? autoRes.readabilityScore : 85;
-      const subScore = Math.round(( (subComplexity === 'O(1)' ? 100 : (subComplexity === 'O(N)' ? 85 : 60)) + subSecurity + subReadability) / 3);
-      const subGrade = subScore >= 90 ? 'A+' : (subScore >= 75 ? 'A' : (subScore >= 60 ? 'B' : 'C'));
-
-      const formattedLines = subCode.split('\n').map((line, idx) => `<div><span style="color:#64748b; margin-right:12px; font-size:11px;">${idx + 1}</span>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`).join('');
-
-      main.innerHTML = `
       <div class="tab-header">
         <div class="tab-header-left">
           <div class="tab-icon-box">🤖</div>
@@ -1656,7 +1641,13 @@ window.generatePDFReport = async function() {
 
 // Initial Page Render
 window.onload = () => {
-  renderTab();
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  if (tabParam) {
+    switchTab(tabParam);
+  } else {
+    switchTab(currentTab);
+  }
 };
 </script>
 </body>
