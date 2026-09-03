@@ -23,9 +23,10 @@ public class AIService {
     @Value("${nvidia.api.key:}")
     private String nvidiaApiKey;
 
+    @Value("${nvidia.model:meta/llama-3.2-11b-vision-instruct}")
+    private String modelName;
+
     private static final String NVIDIA_API_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
-    // We will use the standard Llama 3.1 70b instruct model provided by NVIDIA NIM
-    private static final String MODEL_NAME = "meta/llama-3.1-70b-instruct";
     
     private final RestTemplate restTemplate = createUnsafeRestTemplate();
     private final ObjectMapper objectMapper;
@@ -69,7 +70,7 @@ public class AIService {
             message.put("content", prompt);
 
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", MODEL_NAME);
+            requestBody.put("model", modelName != null && !modelName.isBlank() ? modelName : "meta/llama-3.2-11b-vision-instruct");
             requestBody.put("messages", List.of(message));
             requestBody.put("max_tokens", 1024);
             requestBody.put("temperature", 0.2);

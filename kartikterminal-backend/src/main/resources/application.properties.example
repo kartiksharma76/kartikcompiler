@@ -22,6 +22,7 @@ spring.jpa.open-in-view=false
 #  Get your API key at: https://build.nvidia.com/
 # ==============================================
 nvidia.api.key=YOUR_NVIDIA_API_KEY_HERE
+nvidia.model=meta/llama-3.2-11b-vision-instruct
 # ==============================================
 #  GOOGLE OAUTH2
 #  Step 1: https://console.cloud.google.com
