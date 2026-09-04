@@ -3,241 +3,1146 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KartikTerminal | Login</title>
+<title>KartikTerminal | Cloud Execution Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/responsive.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
-  --bg: #050505; --panel: #0d0f14; --border: #1e2530;
-  --text: #e2e8f0; --muted: #64748b; --accent: #2563eb;
-  --success: #10b981; --error: #ef4444;
+  --bg: #030712;
+  --bg-card: rgba(10, 16, 31, 0.92);
+  --border-card: rgba(56, 189, 248, 0.35);
+  --border-input: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent-blue: #2563eb;
+  --accent-cyan: #38bdf8;
+  --accent-purple: #8b5cf6;
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --glow-cyan: rgba(56, 189, 248, 0.25);
 }
 
 body {
-  min-height: 100vh; background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text);
-  overflow: hidden;
-}
-
-/* Animated background grid */
-body::before {
-  content: ''; position: fixed; inset: 0;
-  background-image:
-    linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: gridMove 20s linear infinite;
-  pointer-events: none;
-}
-@keyframes gridMove { from { transform: translateY(0); } to { transform: translateY(40px); } }
-
-.card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 48px 44px;
-  width: 420px;
-  text-align: center;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 50% 85%, rgba(56, 189, 248, 0.12) 0%, transparent 45%),
+    linear-gradient(rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  background-position: 0 0, 0 0, 0 0, center center, center center;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
   position: relative;
-  box-shadow: 0 0 80px rgba(37,99,235,0.08);
-  animation: fadeUp 0.5s ease-out;
+  padding: 24px 16px;
 }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
+
+/* Background animated glow orbs */
+.bg-ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+.orb-1 {
+  width: 380px;
+  height: 380px;
+  background: rgba(37, 99, 235, 0.22);
+  top: 10%;
+  left: 5%;
+}
+.orb-2 {
+  width: 440px;
+  height: 440px;
+  background: rgba(56, 189, 248, 0.15);
+  top: 25%;
+  left: 35%;
+}
+.orb-3 {
+  width: 400px;
+  height: 400px;
+  background: rgba(124, 58, 237, 0.18);
+  bottom: 10%;
+  right: 5%;
+}
+
+/* Main Container: 3 Column Layout */
+.page-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1320px;
+  display: grid;
+  grid-template-columns: 1.05fr 1.15fr 1fr;
+  gap: 36px;
+  align-items: center;
+  min-height: calc(100vh - 48px);
+}
+
+/* =================================================================
+   LEFT HERO SECTION
+   ================================================================= */
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-right: 12px;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(56, 189, 248, 0.15));
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+}
+.brand-text-group {
+  display: flex;
+  flex-direction: column;
+}
+.brand-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+}
+.brand-title span {
+  color: var(--accent-cyan);
+}
+.brand-subtitle {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
+  font-weight: 500;
+}
+
+.hero-heading {
+  font-family: 'Outfit', sans-serif;
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+.hero-heading .gradient-text {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+}
+
+.hero-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 380px;
+}
+
+/* Feature List */
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.feature-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.feature-item:hover .feature-icon {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+.feature-content {
+  display: flex;
+  flex-direction: column;
+}
+.feature-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+.feature-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Quote Card */
+.quote-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 14px;
+  padding: 16px 20px;
+  max-width: 360px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  display: flex;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.quote-symbol {
+  font-family: 'Outfit', serif;
+  font-size: 32px;
+  line-height: 1;
+  color: #818cf8;
+  opacity: 0.9;
+}
+.quote-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.quote-text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #cbd5e1;
+  font-style: italic;
+}
+.quote-author {
+  font-size: 11px;
+  color: var(--accent-cyan);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* =================================================================
+   CENTER LOGIN / REGISTER CARD
+   ================================================================= */
+.auth-card-container {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 24px;
+  padding: 36px 32px;
+  box-shadow: 
+    0 0 50px -10px rgba(56, 189, 248, 0.28),
+    0 25px 50px -12px rgba(0, 0, 0, 0.85),
+    inset 0 0 20px rgba(56, 189, 248, 0.06);
+  backdrop-filter: blur(24px);
+  position: relative;
+  z-index: 2;
+  transition: box-shadow 0.3s ease;
+}
+
+/* Top Badge */
+.card-badge {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(56, 189, 248, 0.15));
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+}
+
+.card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+.card-title span {
+  color: var(--accent-cyan);
+}
+.card-subtitle {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 24px;
+  letter-spacing: 0.2px;
+}
+
+/* Google Sign-in Button */
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 20px;
+  background: #ffffff;
+  color: #1e293b;
+  border: none;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  margin-bottom: 20px;
+}
+.google-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+}
+.google-btn:active {
+  transform: translateY(0);
+}
+
+/* Divider */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.or-divider::before, .or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.or-divider span {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+/* Tabs: Login / Register */
+.auth-tabs {
+  display: flex;
+  background: #080d1a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 22px;
+}
+.auth-tab-btn {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.auth-tab-btn.active {
+  background: var(--accent-blue);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+}
+
+/* Forms */
+.tab-pane {
+  display: none;
+}
+.tab-pane.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Top accent line */
-.card::before {
-  content: ''; position: absolute; top: 0; left: 10%; right: 10%;
-  height: 2px; background: linear-gradient(90deg, transparent, #2563eb, transparent);
+.input-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+.input-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #090e1c;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 0 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-wrapper:focus-within {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+.input-icon {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.input-field {
+  width: 100%;
+  padding: 12px 0;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 13.5px;
+  outline: none;
+  font-family: inherit;
+}
+.input-field::placeholder {
+  color: #475569;
+}
+.toggle-pwd {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s;
+}
+.toggle-pwd:hover {
+  color: var(--text-main);
+}
+
+/* Action Submit Button */
+.auth-submit-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent-gradient);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+.auth-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 25px rgba(37, 99, 235, 0.5);
+}
+.auth-submit-btn:active {
+  transform: translateY(0);
+}
+.auth-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Checkbox and Forgot row */
+.auth-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.remember-me input {
+  accent-color: var(--accent-blue);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+.forgot-pwd-link {
+  color: var(--accent-cyan);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.forgot-pwd-link:hover {
+  color: #7dd3fc;
+  text-decoration: underline;
+}
+
+/* Legal Footer */
+.auth-footer {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.5;
+}
+.auth-footer a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+}
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Messages */
+.status-msg {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  margin-bottom: 14px;
+  display: none;
+}
+.status-msg.error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+.status-msg.success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+
+/* =================================================================
+   RIGHT SHOWCASE / LAPTOP MOCKUP SECTION
+   ================================================================= */
+.showcase-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.creative-slogan {
+  align-self: flex-start;
+  margin-left: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.slogan-text {
+  font-family: 'Caveat', cursive;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #38bdf8;
+  letter-spacing: 0.5px;
+}
+.slogan-curve {
+  width: 70px;
+  height: 12px;
+  margin-top: -2px;
+}
+
+/* Sleek 3D Laptop */
+.laptop-container {
+  width: 100%;
+  max-width: 420px;
+  perspective: 1000px;
+  position: relative;
+}
+
+.laptop-screen {
+  background: #080c16;
+  border: 2px solid #1e293b;
+  border-radius: 16px 16px 4px 4px;
+  padding: 14px 16px 20px;
+  box-shadow: 
+    0 0 35px rgba(56, 189, 248, 0.2),
+    0 20px 40px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Screen Header */
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.dot-red { background: #ef4444; }
+.dot-yellow { background: #f59e0b; }
+.dot-green { background: #10b981; }
+
+.terminal-prompt {
+  font-family: 'Fira Code', monospace;
+  font-size: 11.5px;
+  color: #4ade80;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Code Content */
+.code-display {
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #e2e8f0;
+}
+.code-line {
+  display: flex;
+  gap: 12px;
+}
+.line-num {
+  color: #475569;
+  user-select: none;
+  min-width: 14px;
+  text-align: right;
+}
+.code-comment { color: #64748b; font-style: italic; }
+.code-keyword { color: #c084fc; font-weight: 600; }
+.code-fn { color: #38bdf8; }
+.code-str { color: #fbbf24; }
+.code-bool { color: #60a5fa; }
+.code-call { color: #a5f3fc; }
+
+.cursor-blink {
+  display: inline-block;
+  width: 6px;
+  height: 13px;
+  background: #38bdf8;
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Laptop Base */
+.laptop-base {
+  width: 108%;
+  margin-left: -4%;
+  height: 12px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8);
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.laptop-notch {
+  width: 44px;
+  height: 4px;
+  background: #090d16;
   border-radius: 0 0 4px 4px;
 }
 
-.logo {
-  font-size: 28px; font-weight: 800; letter-spacing: 2px;
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  margin-bottom: 6px;
+.laptop-caption {
+  margin-top: 26px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
 }
-.tagline {
-  font-size: 13px; color: var(--muted);
-  margin-bottom: 36px; letter-spacing: 0.5px;
-}
-
-/* ── Google Button ── */
-.google-btn {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; padding: 14px 24px;
-  background: #fff; color: #1f1f1f;
-  border: none; border-radius: 12px;
-  font-size: 15px; font-weight: 600;
-  cursor: pointer; text-decoration: none;
-  transition: box-shadow 0.2s, transform 0.15s;
-  margin-bottom: 24px;
-}
-.google-btn:hover {
-  box-shadow: 0 4px 20px rgba(255,255,255,0.15);
-  transform: translateY(-1px);
-}
-.google-btn:active { transform: translateY(0); }
-
-.google-btn svg { flex-shrink: 0; }
-
-.divider {
-  display: flex; align-items: center; gap: 12px;
-  margin: 20px 0; color: var(--muted); font-size: 12px;
-}
-.divider::before, .divider::after {
-  content: ''; flex: 1; height: 1px; background: var(--border);
+.laptop-caption strong {
+  color: #cbd5e1;
+  display: block;
 }
 
-/* ── Form Fields ── */
-.field { margin-bottom: 14px; text-align: left; }
-.field label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
-.field input {
-  width: 100%; padding: 12px 14px;
-  background: #0a0c10; border: 1px solid var(--border);
-  color: var(--text); border-radius: 8px; font-size: 14px; outline: none;
-  transition: border-color 0.2s;
+/* =================================================================
+   RESPONSIVENESS
+   ================================================================= */
+@media (max-width: 1100px) {
+  .page-wrapper {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  .showcase-section {
+    display: none;
+  }
 }
-.field input:focus { border-color: var(--accent); }
 
-.submit-btn {
-  width: 100%; padding: 13px;
-  background: var(--accent); color: #fff;
-  border: none; border-radius: 10px;
-  font-size: 15px; font-weight: 700; cursor: pointer;
-  transition: opacity 0.2s, transform 0.15s;
-  margin-top: 4px;
-}
-.submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-/* ── Tabs ── */
-.tabs { display: flex; gap: 0; margin-bottom: 28px; background: #0a0c10; border-radius: 10px; padding: 4px; }
-.tab-btn {
-  flex: 1; padding: 9px; background: transparent; border: none;
-  color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
-  border-radius: 7px; transition: all 0.2s;
-}
-.tab-btn.active { background: var(--accent); color: #fff; }
-
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
-/* ── Status Messages ── */
-.msg {
-  padding: 11px 14px; border-radius: 8px;
-  font-size: 13px; margin-bottom: 14px; display: none;
-}
-.msg.error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5; }
-.msg.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
-
-.footer-note {
-  margin-top: 24px; font-size: 11px; color: var(--muted); line-height: 1.6;
-}
-.footer-note a { color: var(--accent); text-decoration: none; }
-
-/* ── Error from OAuth2 redirect ── */
-.oauth-error {
-  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
-  color: #fca5a5; padding: 11px 14px; border-radius: 8px;
-  font-size: 13px; margin-bottom: 20px; display: none;
+@media (max-width: 768px) {
+  body {
+    padding: 16px 12px;
+  }
+  .page-wrapper {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    min-height: auto;
+  }
+  .hero-section {
+    align-items: center;
+    text-align: center;
+    padding-right: 0;
+  }
+  .hero-heading {
+    font-size: 36px;
+  }
+  .features-list {
+    align-items: flex-start;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .quote-card {
+    margin: 0 auto;
+  }
+  .auth-card {
+    padding: 28px 20px;
+  }
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="logo">KARTIKTERMINAL</div>
-  <div class="tagline">Enterprise Code Execution Platform</div>
+<!-- Background Glow Orbs -->
+<div class="bg-ambient-orb orb-1"></div>
+<div class="bg-ambient-orb orb-2"></div>
+<div class="bg-ambient-orb orb-3"></div>
 
-  <!-- OAuth error message -->
-  <div class="oauth-error" id="oauthError"></div>
+<div class="page-wrapper">
 
-  <!-- Google Sign In (Primary) -->
-  <a class="google-btn" href="/oauth2/authorization/google" id="googleBtn">
-    <svg width="20" height="20" viewBox="0 0 48 48">
-      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-    </svg>
-    Continue with Google
-  </a>
+  <!-- =============================================================
+       LEFT COLUMN: Hero & Features
+       ============================================================= -->
+  <div class="hero-section">
+    <!-- Brand -->
+    <div class="brand-header">
+      <div class="brand-icon-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      </div>
+      <div class="brand-text-group">
+        <div class="brand-title">KARTIK<span>TERMINAL</span></div>
+        <div class="brand-subtitle">Code · Learn · Build · Grow</div>
+      </div>
+    </div>
 
-  <div class="divider">or use email/password</div>
+    <!-- Main Headings -->
+    <div>
+      <h1 class="hero-heading">
+        Your
+        <span class="gradient-text">Development</span>
+        Workspace
+      </h1>
+      <p class="hero-description" style="margin-top: 10px;">
+        A powerful online IDE built for learners, developers and dreamers.
+      </p>
+    </div>
 
-  <!-- Tabs: Login / Register -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    <!-- Features -->
+    <div class="features-list">
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div class="feature-content">
+          <div class="feature-title">Write & Run Code Online</div>
+          <div class="feature-desc">Support for multiple languages</div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="feature-content">
+          <div class="feature-title">Learn & Practice</div>
+          <div class="feature-desc">Quizzes, DSA, and more</div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+          </svg>
+        </div>
+        <div class="feature-content">
+          <div class="feature-title">Build & Deploy</div>
+          <div class="feature-desc">Cloud powered environment</div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </div>
+        <div class="feature-content">
+          <div class="feature-title">Track Your Progress</div>
+          <div class="feature-desc">Leaderboards & analytics</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quote Card -->
+    <div class="quote-card">
+      <div class="quote-symbol">“</div>
+      <div class="quote-body">
+        <div class="quote-text">Code today,<br>a better tomorrow."</div>
+        <div class="quote-author">— KartikTerminal</div>
+      </div>
+    </div>
   </div>
 
-  <!-- Login Tab -->
-  <div class="tab-content active" id="tab-login">
-    <div class="msg" id="loginMsg"></div>
-    <div class="field">
-      <label>Username or Email</label>
-      <input type="text" id="loginUser" placeholder="your_username or email@example.com" autocomplete="username">
+
+  <!-- =============================================================
+       CENTER COLUMN: Auth Card
+       ============================================================= -->
+  <div class="auth-card-container">
+    <div class="auth-card">
+      <!-- Badge icon -->
+      <div class="card-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      </div>
+
+      <div class="card-title">KARTIK<span>TERMINAL</span></div>
+      <div class="card-subtitle">Developer's Cloud Execution Platform</div>
+
+      <!-- OAuth / System Error Message -->
+      <div class="status-msg error" id="oauthError"></div>
+
+      <!-- Google Button -->
+      <a class="google-btn" href="/oauth2/authorization/google" id="googleBtn">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </a>
+
+      <div class="or-divider">
+        <span>OR LOGIN WITH EMAIL</span>
+      </div>
+
+      <!-- Tabs Switcher -->
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchTab('login')">Login</button>
+        <button class="auth-tab-btn" id="tabBtnRegister" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- ================= LOGIN FORM ================= -->
+      <div class="tab-pane active" id="tab-login">
+        <div class="status-msg" id="loginMsg"></div>
+
+        <div class="input-group">
+          <label class="input-label" for="loginUser">Email Address</label>
+          <div class="input-wrapper">
+            <div class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <input type="text" id="loginUser" class="input-field" placeholder="kartikey1729@gmail.com" autocomplete="username">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="loginPass">Password</label>
+          <div class="input-wrapper">
+            <div class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <input type="password" id="loginPass" class="input-field" placeholder="••••••••" autocomplete="current-password">
+            <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility('loginPass', this)" title="Toggle password visibility">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="auth-submit-btn" id="loginBtn" onclick="handleLogin()">
+          Login <span>→</span>
+        </button>
+
+        <div class="auth-options">
+          <label class="remember-me">
+            <input type="checkbox" id="rememberMe" checked>
+            Remember me
+          </label>
+          <a href="#" class="forgot-pwd-link" onclick="alert('Please contact your administrator or sign in with Google.'); return false;">Forgot password?</a>
+        </div>
+      </div>
+
+      <!-- ================= REGISTER FORM ================= -->
+      <div class="tab-pane" id="tab-register">
+        <div class="status-msg" id="registerMsg"></div>
+
+        <div class="input-group">
+          <label class="input-label" for="regName">Full Name</label>
+          <div class="input-wrapper">
+            <div class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <input type="text" id="regName" class="input-field" placeholder="Kartik Sharma">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="regUser">Username</label>
+          <div class="input-wrapper">
+            <div class="input-icon">
+              <span style="font-size:14px; font-weight:700;">@</span>
+            </div>
+            <input type="text" id="regUser" class="input-field" placeholder="kartik_dev" oninput="checkUsername(this.value)">
+          </div>
+          <div id="usernameFeedback" style="font-size:11px; margin-top:4px; padding-left:4px;"></div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="regEmail">Email Address</label>
+          <div class="input-wrapper">
+            <div class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <input type="email" id="regEmail" class="input-field" placeholder="email@example.com">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="regPass">Password</label>
+          <div class="input-wrapper">
+            <div class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <input type="password" id="regPass" class="input-field" placeholder="Min 6 characters">
+            <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility('regPass', this)" title="Toggle password visibility">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 14px; margin-bottom: 14px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; font-size: 12.5px; color: var(--text-main);">
+            <input type="checkbox" id="regIsCompany" onchange="toggleCompanyField()" style="width: 15px; height: 15px; accent-color: var(--accent-blue); cursor: pointer;">
+            Register under a Company / College?
+          </label>
+        </div>
+
+        <div class="input-group" id="companyFieldContainer" style="display: none; opacity: 0; transform: translateY(-8px); transition: all 0.3s ease;">
+          <label class="input-label" for="regCompany">Company / College Name</label>
+          <div class="input-wrapper">
+            <input type="text" id="regCompany" class="input-field" placeholder="e.g. Google or MIT">
+          </div>
+        </div>
+
+        <button class="auth-submit-btn" id="registerBtn" onclick="handleRegister()">
+          Create Account <span>→</span>
+        </button>
+      </div>
+
+      <!-- Legal footer -->
+      <div class="auth-footer">
+        By continuing, you agree to our <a href="#">Terms of Service</a><br>
+        and <a href="#">Privacy Policy</a>.
+      </div>
     </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <button class="submit-btn" id="loginBtn" onclick="handleLogin()">Login</button>
   </div>
 
-  <!-- Register Tab -->
-  <div class="tab-content" id="tab-register">
-    <div class="msg" id="registerMsg"></div>
-    <div class="field">
-      <label>Full Name</label>
-      <input type="text" id="regName" placeholder="Kartik Sharma">
+
+  <!-- =============================================================
+       RIGHT COLUMN: Artistic Slogan & Sleek Terminal Laptop
+       ============================================================= -->
+  <div class="showcase-section">
+    <!-- Handwritten artistic slogan -->
+    <div class="creative-slogan">
+      <div class="slogan-text">
+        Build<br>
+        Execute<br>
+        Innovate
+      </div>
+      <svg class="slogan-curve" viewBox="0 0 100 20" fill="none">
+        <path d="M 5 5 Q 50 20 95 8" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
     </div>
-    <div class="field">
-      <label>Username</label>
-      <input type="text" id="regUser" placeholder="kartik_dev" oninput="checkUsername(this.value)">
-      <div id="usernameFeedback" style="font-size:11px; margin-top:4px;"></div>
+
+    <!-- 3D Sleek Laptop Mockup -->
+    <div class="laptop-container">
+      <div class="laptop-screen">
+        <div class="screen-header">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+        </div>
+
+        <div class="terminal-prompt">
+          <span>kartik@terminal:~$</span>
+        </div>
+
+        <div class="code-display">
+          <div class="code-line">
+            <span class="line-num">1</span>
+            <span class="code-comment"># Welcome to KartikTerminal</span>
+          </div>
+          <div class="code-line">
+            <span class="line-num">2</span>
+            <span><span class="code-fn">print</span>(<span class="code-str">"Code Anywhere, Anytime!"</span>)</span>
+          </div>
+          <div class="code-line">
+            <span class="line-num">3</span>
+            <span></span>
+          </div>
+          <div class="code-line">
+            <span class="line-num">4</span>
+            <span><span class="code-keyword">while</span> <span class="code-bool">True</span>:</span>
+          </div>
+          <div class="code-line">
+            <span class="line-num">5</span>
+            <span style="padding-left: 14px;"><span class="code-call">learn</span>()</span>
+          </div>
+          <div class="code-line">
+            <span class="line-num">6</span>
+            <span style="padding-left: 14px;"><span class="code-call">build</span>()</span>
+          </div>
+          <div class="code-line">
+            <span class="line-num">7</span>
+            <span style="padding-left: 14px;"><span class="code-call">improve</span>()</span>
+          </div>
+          <div class="code-line">
+            <span class="line-num">8</span>
+            <span style="padding-left: 14px;" class="code-comment"># never stop...<span class="cursor-blink"></span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Laptop Base -->
+      <div class="laptop-base">
+        <div class="laptop-notch"></div>
+      </div>
     </div>
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="regEmail" placeholder="email@example.com">
+
+    <!-- Bottom Caption -->
+    <div class="laptop-caption">
+      <strong>More than a Compiler,</strong>
+      A Developer's Companion.
     </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="regPass" placeholder="Min 6 characters">
-    </div>
-    <div class="field" style="margin-top: 18px; margin-bottom: 18px;">
-      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 13px; color: var(--text);">
-        <input type="checkbox" id="regIsCompany" onchange="toggleCompanyField()" style="width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;">
-        Register under a Company / College?
-      </label>
-    </div>
-    <div class="field" id="companyFieldContainer" style="display: none; opacity: 0; transform: translateY(-8px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-      <label>Company / College Name</label>
-      <input type="text" id="regCompany" placeholder="e.g. Google or MIT">
-    </div>
-    <button class="submit-btn" id="registerBtn" onclick="handleRegister()">Create Account</button>
   </div>
 
-  <div class="footer-note">
-    By continuing, you agree to KartikTerminal's terms.<br>
-    Your code runs in a <strong>sandboxed environment</strong>.
-  </div>
 </div>
 
+<!-- =============================================================
+     AUTHENTICATION & SCRIPT LOGIC
+     ============================================================= -->
 <script>
 const API = '';  // Same origin
 
-// ── Handle ?error= from OAuth2 failure redirect ──
+// ── Restore remembered user ──
+window.addEventListener('DOMContentLoaded', () => {
+  const remembered = localStorage.getItem('kt_remember_user');
+  if (remembered) {
+    const userField = document.getElementById('loginUser');
+    if (userField) userField.value = remembered;
+  }
+});
+
+// ── Handle ?error= or ?msg= from OAuth2 failure redirect ──
 const params = new URLSearchParams(location.search);
 if (params.get('error')) {
   const el = document.getElementById('oauthError');
   el.textContent = 'Google login failed. Please try again or use email/password.';
+  el.style.display = 'block';
+} else if (params.get('msg')) {
+  const el = document.getElementById('oauthError');
+  el.textContent = params.get('msg');
   el.style.display = 'block';
 }
 
@@ -246,30 +1151,61 @@ if (localStorage.getItem('kt_token')) {
   location.href = '/compiler.html';
 }
 
+// ── Switch Tabs (Login / Register) ──
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === (tab === 'login' ? 0 : 1)));
+  document.getElementById('tabBtnLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabBtnRegister').classList.toggle('active', tab === 'register');
   document.getElementById('tab-login').classList.toggle('active', tab === 'login');
   document.getElementById('tab-register').classList.toggle('active', tab === 'register');
 }
 
+// ── Toggle Password Visibility ──
+function togglePasswordVisibility(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+  const isPass = input.type === 'password';
+  input.type = isPass ? 'text' : 'password';
+  btn.innerHTML = isPass ? `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+    </svg>
+  ` : `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  `;
+}
+
+// ── Show Feedback Messages ──
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
   el.textContent = text;
-  el.className = `msg ${type}`;
+  el.className = `status-msg ${type}`;
   el.style.display = 'block';
 }
 
-// ── Login ──
+// ── Login Handler ──
 async function handleLogin() {
   const usernameOrEmail = document.getElementById('loginUser').value.trim();
   const password        = document.getElementById('loginPass').value;
+  const remember        = document.getElementById('rememberMe').checked;
 
   if (!usernameOrEmail || !password) {
-    showMsg('loginMsg', 'Please fill in all fields.', 'error'); return;
+    showMsg('loginMsg', 'Please fill in all fields.', 'error');
+    return;
+  }
+
+  if (remember) {
+    localStorage.setItem('kt_remember_user', usernameOrEmail);
+  } else {
+    localStorage.removeItem('kt_remember_user');
   }
 
   const btn = document.getElementById('loginBtn');
-  btn.disabled = true; btn.textContent = 'Logging in...';
+  btn.disabled = true;
+  btn.innerHTML = 'Logging in...';
 
   try {
     const res = await fetch(`${API}/api/auth/login`, {
@@ -285,19 +1221,19 @@ async function handleLogin() {
       showMsg('loginMsg', data.message || 'Login failed.', 'error');
     }
   } catch (e) {
-    showMsg('loginMsg', 'Server error. Is the backend running?', 'error');
+    showMsg('loginMsg', 'Server connection error. Is the backend running?', 'error');
   } finally {
-    btn.disabled = false; btn.textContent = 'Login';
+    btn.disabled = false;
+    btn.innerHTML = 'Login <span>→</span>';
   }
 }
 
-// ── Toggle Company Field UI ──
+// ── Toggle Company Field ──
 function toggleCompanyField() {
   const chk = document.getElementById('regIsCompany');
   const container = document.getElementById('companyFieldContainer');
   if (chk.checked) {
     container.style.display = 'block';
-    // Small timeout to allow browser layout rendering before setting transition styles
     setTimeout(() => {
       container.style.opacity = '1';
       container.style.transform = 'translateY(0)';
@@ -312,7 +1248,7 @@ function toggleCompanyField() {
   }
 }
 
-// ── Register ──
+// ── Register Handler ──
 async function handleRegister() {
   const fullName = document.getElementById('regName').value.trim();
   const username = document.getElementById('regUser').value.trim();
@@ -323,15 +1259,18 @@ async function handleRegister() {
   const companyName = isCompany ? document.getElementById('regCompany').value.trim() : '';
 
   if (!username || !email || !password) {
-    showMsg('registerMsg', 'Please fill in all required fields.', 'error'); return;
+    showMsg('registerMsg', 'Please fill in all required fields.', 'error');
+    return;
   }
   
   if (isCompany && !companyName) {
-    showMsg('registerMsg', 'Please enter your Company / College Name.', 'error'); return;
+    showMsg('registerMsg', 'Please enter your Company / College Name.', 'error');
+    return;
   }
 
   const btn = document.getElementById('registerBtn');
-  btn.disabled = true; btn.textContent = 'Creating account...';
+  btn.disabled = true;
+  btn.innerHTML = 'Creating account...';
 
   try {
     const res = await fetch(`${API}/api/auth/register`, {
@@ -347,29 +1286,35 @@ async function handleRegister() {
       showMsg('registerMsg', data.message || 'Registration failed.', 'error');
     }
   } catch (e) {
-    showMsg('registerMsg', 'Server error. Is the backend running?', 'error');
+    showMsg('registerMsg', 'Server connection error. Is the backend running?', 'error');
   } finally {
-    btn.disabled = false; btn.textContent = 'Create Account';
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account <span>→</span>';
   }
 }
 
-// ── Username availability check ──
+// ── Username Availability Check ──
 let usernameTimer;
 async function checkUsername(val) {
   clearTimeout(usernameTimer);
   const el = document.getElementById('usernameFeedback');
-  if (val.length < 3) { el.textContent = ''; return; }
+  if (val.length < 3) {
+    el.textContent = '';
+    return;
+  }
   usernameTimer = setTimeout(async () => {
     try {
       const res = await fetch(`${API}/api/auth/check-username/${encodeURIComponent(val)}`);
       const data = await res.json();
       el.style.color = data.available ? '#10b981' : '#ef4444';
       el.textContent  = data.available ? '✓ Available' : '✗ Already taken';
-    } catch { el.textContent = ''; }
+    } catch {
+      el.textContent = '';
+    }
   }, 400);
 }
 
-// ── Save JWT and redirect ──
+// ── Save Auth Data & Redirect ──
 function saveAuthAndRedirect(data) {
   localStorage.setItem('kt_token',    data.token);
   localStorage.setItem('kt_username', data.username);
@@ -380,10 +1325,10 @@ function saveAuthAndRedirect(data) {
   location.href = '/compiler.html';
 }
 
-// ── Enter key support ──
+// ── Keyboard Enter Support ──
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
-    const activeTab = document.querySelector('.tab-content.active').id;
+    const activeTab = document.querySelector('.tab-pane.active').id;
     if (activeTab === 'tab-login') handleLogin();
     else handleRegister();
   }
