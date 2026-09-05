@@ -564,151 +564,78 @@ body {
 }
 
 /* =================================================================
-   RIGHT SHOWCASE / LAPTOP MOCKUP SECTION
+   RIGHT SHOWCASE / DEVELOPER WORKSPACE SECTION
    ================================================================= */
 .showcase-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
   position: relative;
+  height: 100%;
+  min-height: 480px;
+  padding: 10px 0;
 }
 
 .creative-slogan {
   align-self: flex-start;
-  margin-left: 20px;
-  margin-bottom: 24px;
+  margin-left: 10px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  z-index: 2;
 }
 .slogan-text {
   font-family: 'Caveat', cursive;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.12;
   color: #38bdf8;
   letter-spacing: 0.5px;
+  text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
 }
 .slogan-curve {
-  width: 70px;
-  height: 12px;
+  width: 76px;
+  height: 14px;
   margin-top: -2px;
 }
 
-/* Sleek 3D Laptop */
-.laptop-container {
+.developer-workspace-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: auto 0;
+}
+
+.developer-showcase-img {
   width: 100%;
   max-width: 420px;
-  perspective: 1000px;
-  position: relative;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+  object-fit: cover;
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.7));
+  transition: transform 0.3s ease;
+}
+.developer-showcase-img:hover {
+  transform: scale(1.02);
 }
 
-.laptop-screen {
-  background: #080c16;
-  border: 2px solid #1e293b;
-  border-radius: 16px 16px 4px 4px;
-  padding: 14px 16px 20px;
-  box-shadow: 
-    0 0 35px rgba(56, 189, 248, 0.2),
-    0 20px 40px rgba(0, 0, 0, 0.7);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Screen Header */
-.screen-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-.dot-red { background: #ef4444; }
-.dot-yellow { background: #f59e0b; }
-.dot-green { background: #10b981; }
-
-.terminal-prompt {
-  font-family: 'Fira Code', monospace;
-  font-size: 11.5px;
-  color: #4ade80;
+.workspace-caption {
+  align-self: flex-end;
+  margin-right: 15px;
   margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Code Content */
-.code-display {
-  font-family: 'Fira Code', monospace;
-  font-size: 12px;
-  line-height: 1.7;
-  color: #e2e8f0;
-}
-.code-line {
-  display: flex;
-  gap: 12px;
-}
-.line-num {
-  color: #475569;
-  user-select: none;
-  min-width: 14px;
   text-align: right;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #94a3b8;
+  z-index: 2;
 }
-.code-comment { color: #64748b; font-style: italic; }
-.code-keyword { color: #c084fc; font-weight: 600; }
-.code-fn { color: #38bdf8; }
-.code-str { color: #fbbf24; }
-.code-bool { color: #60a5fa; }
-.code-call { color: #a5f3fc; }
-
-.cursor-blink {
-  display: inline-block;
-  width: 6px;
-  height: 13px;
-  background: #38bdf8;
-  vertical-align: middle;
-  margin-left: 2px;
-  animation: blink 1s infinite;
-}
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* Laptop Base */
-.laptop-base {
-  width: 108%;
-  margin-left: -4%;
-  height: 12px;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-  border-radius: 0 0 16px 16px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8);
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-.laptop-notch {
-  width: 44px;
-  height: 4px;
-  background: #090d16;
-  border-radius: 0 0 4px 4px;
-}
-
-.laptop-caption {
-  margin-top: 26px;
-  text-align: center;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-.laptop-caption strong {
-  color: #cbd5e1;
+.workspace-caption strong {
+  color: #e2e8f0;
+  font-weight: 600;
   display: block;
 }
 
@@ -1040,7 +967,7 @@ body {
 
 
   <!-- =============================================================
-       RIGHT COLUMN: Artistic Slogan & Sleek Terminal Laptop
+       RIGHT COLUMN: Artistic Slogan & Developer Workspace Showcase
        ============================================================= -->
   <div class="showcase-section">
     <!-- Handwritten artistic slogan -->
@@ -1055,63 +982,13 @@ body {
       </svg>
     </div>
 
-    <!-- 3D Sleek Laptop Mockup -->
-    <div class="laptop-container">
-      <div class="laptop-screen">
-        <div class="screen-header">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-        </div>
-
-        <div class="terminal-prompt">
-          <span>kartik@terminal:~$</span>
-        </div>
-
-        <div class="code-display">
-          <div class="code-line">
-            <span class="line-num">1</span>
-            <span class="code-comment"># Welcome to KartikTerminal</span>
-          </div>
-          <div class="code-line">
-            <span class="line-num">2</span>
-            <span><span class="code-fn">print</span>(<span class="code-str">"Code Anywhere, Anytime!"</span>)</span>
-          </div>
-          <div class="code-line">
-            <span class="line-num">3</span>
-            <span></span>
-          </div>
-          <div class="code-line">
-            <span class="line-num">4</span>
-            <span><span class="code-keyword">while</span> <span class="code-bool">True</span>:</span>
-          </div>
-          <div class="code-line">
-            <span class="line-num">5</span>
-            <span style="padding-left: 14px;"><span class="code-call">learn</span>()</span>
-          </div>
-          <div class="code-line">
-            <span class="line-num">6</span>
-            <span style="padding-left: 14px;"><span class="code-call">build</span>()</span>
-          </div>
-          <div class="code-line">
-            <span class="line-num">7</span>
-            <span style="padding-left: 14px;"><span class="code-call">improve</span>()</span>
-          </div>
-          <div class="code-line">
-            <span class="line-num">8</span>
-            <span style="padding-left: 14px;" class="code-comment"># never stop...<span class="cursor-blink"></span></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Laptop Base -->
-      <div class="laptop-base">
-        <div class="laptop-notch"></div>
-      </div>
+    <!-- Developer Workspace Showcase Image -->
+    <div class="developer-workspace-container">
+      <img src="/workspace-showcase.png" alt="Developer Workspace - Coding with KartikTerminal" class="developer-showcase-img">
     </div>
 
     <!-- Bottom Caption -->
-    <div class="laptop-caption">
+    <div class="workspace-caption">
       <strong>More than a Compiler,</strong>
       A Developer's Companion.
     </div>
