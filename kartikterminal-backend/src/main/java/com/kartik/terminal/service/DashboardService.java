@@ -71,7 +71,9 @@ public class DashboardService {
                 .lastActive(user.getLastLoginAt())
                 .todayExecutions((int) todayCount)
                 .role(user.getRole().name())
-                .cheatViolations(user.getCheatViolations())
+                .cheatViolations(user.getCheatViolations() != null ? user.getCheatViolations() : 0)
+                .isActive(user.getIsActive() != null ? user.getIsActive() : true)
+                .isDisqualified(user.getIsDisqualified() != null ? user.getIsDisqualified() : false)
                 .build();
 
         return DashboardResponse.builder()
@@ -96,7 +98,7 @@ public class DashboardService {
         List<User> topAIRaw;
         long totalUsers;
         long todayExecutions;
-        String companyName = null;
+        String companyName = "Global Public Arena";
 
         LocalDateTime startOfToday = LocalDateTime.now().toLocalDate().atStartOfDay();
 
@@ -195,7 +197,12 @@ public class DashboardService {
     @Transactional
     public void logCheat() {
         User user = authService.getCurrentUser();
-        user.setCheatViolations(user.getCheatViolations() + 1);
+        int currentViolations = (user.getCheatViolations() != null ? user.getCheatViolations() : 0) + 1;
+        user.setCheatViolations(currentViolations);
+        if (currentViolations >= 3) {
+            user.setIsActive(false);
+            user.setIsDisqualified(true);
+        }
         userRepository.save(user);
     }
 

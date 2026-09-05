@@ -1215,6 +1215,14 @@ async function loadUserPoints() {
     const badge = document.getElementById('userPointsBadge');
     const val   = document.getElementById('userPointsVal');
     if (badge && val) { val.textContent = data.totalPoints || 0; badge.style.display = 'inline'; }
+    if ((data.cheatViolations !== undefined && data.cheatViolations >= MAX_VIOLATIONS) || data.isDisqualified || data.isActive === false) {
+      isBlocked = true;
+      violations = data.cheatViolations || MAX_VIOLATIONS;
+      document.body.classList.add('locked');
+      if (document.getElementById('runBtn')) document.getElementById('runBtn').disabled = true;
+      if (document.getElementById('aiBtn')) document.getElementById('aiBtn').disabled = true;
+      openModal("Maximum anti-cheat violations reached. Account is Locked. Only an Admin can unlock your account.");
+    }
   } catch(e){}
 }
 
@@ -1392,6 +1400,11 @@ function handleKeydown(e) {
 let securityMode=false, violations=0, isBlocked=false;
 const MAX_VIOLATIONS=3;
 function toggleSecurity() {
+  if (isBlocked) {
+    showErrorEffect();
+    showToast("Account locked by Anti-Cheat. Contact Admin to unlock.", "error");
+    return;
+  }
   securityMode=!securityMode; securityToggle.classList.toggle('active');
   securityLabel.innerText=securityMode?'SECURE':'NORMAL';
   securityStatus.innerText=`STATUS: ${securityMode?'SECURE':'NORMAL'}`;
@@ -1811,7 +1824,13 @@ function logToTerminal(msg,type){
   term.scrollTop=term.scrollHeight;
 }
 function openModal(msg){violations++;logToTerminal(`⚠️ ${msg} (Violation ${violations}/${MAX_VIOLATIONS})`,"warning");modalMsg.innerHTML=`${msg}<br><br><strong>Violations: ${violations}/${MAX_VIOLATIONS}</strong>`;securityModal.classList.add('active');if(violations>=MAX_VIOLATIONS){isBlocked=true;document.body.classList.add('locked');document.getElementById('runBtn').disabled=true;}}
-function closeModal(){securityModal.classList.remove('active');if(isBlocked)document.body.classList.add('locked');}
+function closeModal(){
+  if(isBlocked){
+    document.body.classList.add('locked');
+    return;
+  }
+  securityModal.classList.remove('active');
+}
 function resetEditorData(){const lang=document.getElementById('language').value;editor.value=defaultTemplates[lang]||'';handleInput();terminal.querySelectorAll('.output').forEach(el=>el.remove());logToTerminal("🔄 Data auto-reset (security mode)","warning");}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&securityMode&&!isBlocked){resetEditorData();openModal("Tab switched - Data auto-reset");}});
 
@@ -1889,7 +1908,12 @@ window.onload = () => {
   setTimeout(loadUserPoints, 1000);
 };
 setInterval(()=>{saveToLocalStorage();saveAppState();},30000);
-[securityModal,shortcutsModal,gotoLineModal].forEach(modal=>{modal.addEventListener('click',(e)=>{if(e.target===modal)modal.classList.remove('active');});});
+[shortcutsModal,gotoLineModal].forEach(modal=>{modal.addEventListener('click',(e)=>{if(e.target===modal)modal.classList.remove('active');});});
+if (securityModal) {
+  securityModal.addEventListener('click', (e) => {
+    if (e.target === securityModal && !isBlocked) securityModal.classList.remove('active');
+  });
+}
 // ── Anti-Cheat: Tab Switch Detection ──
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && securityMode) {

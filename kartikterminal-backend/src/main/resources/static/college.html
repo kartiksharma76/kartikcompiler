@@ -1445,8 +1445,14 @@ window.adminAction = async function(userId, action) {
     if(res.ok) {
       alert(`Action ${action} completed!`);
       renderTab();
+    } else if (res.status === 403) {
+      alert("Permission Denied: Only Admin can perform this action.");
+    } else {
+      alert("Action failed. Ensure backend service is reachable.");
     }
-  } catch(e) {}
+  } catch(e) {
+    alert("Network or Server error.");
+  }
 };
 
 window.adminUnlockAll = async function() {
@@ -1459,8 +1465,14 @@ window.adminUnlockAll = async function() {
     if(res.ok) {
       alert("All students unlocked successfully!");
       renderTab();
+    } else if (res.status === 403) {
+      alert("Permission Denied: Only Admin can unlock students.");
+    } else {
+      alert("Unlock failed. Ensure backend service is reachable.");
     }
-  } catch(e) {}
+  } catch(e) {
+    alert("Network or Server error.");
+  }
 };
 
 window.promoteToAdmin = async function() {

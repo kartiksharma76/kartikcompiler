@@ -56,6 +56,9 @@ public class CompilerService {
     @Transactional
     public ExecutionResponse executeCode(CodeRequest request) {
         User user = authService.getCurrentUser();
+        if (Boolean.TRUE.equals(user.getIsDisqualified()) || Boolean.FALSE.equals(user.getIsActive()) || (user.getCheatViolations() != null && user.getCheatViolations() >= 3)) {
+            throw new RuntimeException("Account is locked due to Anti-Cheat violations. Only an Administrator can unlock your account.");
+        }
         long startTime = System.currentTimeMillis();
 
         ExecutionResult result = runCodeInSandbox(request);

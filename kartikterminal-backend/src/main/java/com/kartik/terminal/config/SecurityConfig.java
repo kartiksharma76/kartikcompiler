@@ -69,8 +69,8 @@ public class SecurityConfig {
                                  "/static/**", "/*.css", "/*.js", "/*.ico", "/*.png").permitAll()
                 // ── Public: Proctoring Stream ──
                 .requestMatchers("/api/proctor/**").permitAll()
-                // ── Admin & College ERP: must be authenticated ──
-                .requestMatchers("/api/admin/**").authenticated()
+                // ── Admin & College ERP: must be admin ──
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "COLLEGE_ADMIN", "FACULTY")
                 // ── Everything else: must be authenticated ──
                 .anyRequest().authenticated()
             )

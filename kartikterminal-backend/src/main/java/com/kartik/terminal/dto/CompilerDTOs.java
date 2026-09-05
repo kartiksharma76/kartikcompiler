@@ -83,6 +83,10 @@ public class CompilerDTOs {
         private int todayExecutions;
         private String role;
         private int cheatViolations;
+        @com.fasterxml.jackson.annotation.JsonProperty("isActive")
+        private boolean isActive;
+        @com.fasterxml.jackson.annotation.JsonProperty("isDisqualified")
+        private boolean isDisqualified;
     }
 
     @Data
