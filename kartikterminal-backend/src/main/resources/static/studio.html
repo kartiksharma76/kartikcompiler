@@ -1463,11 +1463,12 @@ void testDiscount() {
 
 <!-- Interactive Client-side Script -->
 <script>
-function switchTool(toolId) {
+function switchTool(toolId, btnEl) {
   document.querySelectorAll('.tool-item').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tool-view').forEach(el => el.classList.remove('active'));
 
-  event.currentTarget.classList.add('active');
+  const btn = btnEl || (window.event && window.event.currentTarget ? window.event.currentTarget : document.querySelector(`.tool-item[onclick*="${toolId}"]`));
+  if (btn) btn.classList.add('active');
   const targetView = document.getElementById('view-' + toolId);
   if (targetView) targetView.classList.add('active');
 
