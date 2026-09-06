@@ -64,8 +64,10 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 // ── Public: WebSockets HTTP Handshake ──
                 .requestMatchers("/ws/**").permitAll()
+                // ── Public: Dev Studio & Intelligence APIs ──
+                .requestMatchers("/api/devstudio/**", "/api/intelligence/**").permitAll()
                 // ── Serve static files ──
-                .requestMatchers("/", "/login.html", "/compiler.html", "/college.html", "/quiz.html", "/chat.html", "/dashboard.html", "/resume.html", "/leaderboard.html", "/intelligence.html",
+                .requestMatchers("/", "/login.html", "/compiler.html", "/college.html", "/quiz.html", "/chat.html", "/dashboard.html", "/resume.html", "/leaderboard.html", "/intelligence.html", "/studio.html",
                                  "/static/**", "/*.css", "/*.js", "/*.ico", "/*.png").permitAll()
                 // ── Public: Proctoring Stream ──
                 .requestMatchers("/api/proctor/**").permitAll()

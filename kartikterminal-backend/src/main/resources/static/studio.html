@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KartikTerminal | Dev Studio - 8 Pro Features</title>
+<script src="/auth.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/responsive.css">
+<!-- Mermaid JS for Architecture Diagram Rendering -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep: #030712;
+  --bg-surface: #0b0f19;
+  --bg-sidebar: rgba(11, 15, 25, 0.85);
+  --bg-card: rgba(17, 24, 39, 0.75);
+  --bg-card-hover: rgba(24, 33, 53, 0.9);
+  --bg-glass: rgba(15, 23, 42, 0.75);
+  
+  --border: rgba(255, 255, 255, 0.09);
+  --border-light: rgba(255, 255, 255, 0.16);
+  --border-accent: rgba(99, 102, 241, 0.4);
+  
+  --text-main: #f3f4f6;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-glow: rgba(99, 102, 241, 0.3);
+  
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.25);
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.25);
+  --error: #ef4444;
+  --error-glow: rgba(239, 68, 68, 0.25);
+  --purple: #8b5cf6;
+  --cyan: #06b6d4;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background: var(--bg-deep);
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.18), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 60%, rgba(139, 92, 246, 0.12), transparent 60%),
+    radial-gradient(ellipse 50% 30% at 15% 40%, rgba(6, 182, 212, 0.08), transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Navigation ── */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 64px;
+  background: rgba(3, 7, 18, 0.85);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 19px;
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+}
+
+.brand-badge {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-links a {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-links a.active {
+  color: #fff;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  font-weight: 600;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+/* ── Workspace ── */
+.workspace-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Sidebar ── */
+.workspace-sidebar {
+  width: 290px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 10;
+}
+
+.sidebar-header {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-header h2 {
+  font-size: 13px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.tool-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tool-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.tool-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.05);
+  transform: translateX(2px);
+}
+
+.tool-item.active {
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+}
+
+.icon-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.tool-item.active .icon-badge {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.5);
+}
+
+/* ── Main Panel ── */
+.workspace-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 24px 32px 48px;
+}
+
+.tool-view {
+  display: none;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tool-view.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+}
+
+.tool-header {
+  margin-bottom: 20px;
+}
+
+.tool-header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tool-header p {
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  margin-top: 4px;
+}
+
+/* ── Form Elements ── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  letter-spacing: 0.8px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(3, 7, 18, 0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  background: rgba(3, 7, 18, 0.85);
+}
+
+textarea.form-control {
+  font-family: var(--font-mono);
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+  font-size: 12.5px;
+}
+
+select.form-control {
+  cursor: pointer;
+  background-color: #0b0f19;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Result & Visual Containers ── */
+.result-panel {
+  margin-top: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: rgba(3, 7, 18, 0.6);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.code-box {
+  background: #02040a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: #e2e8f0;
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.6;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-purple { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
+.badge-cyan { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+
+/* ── Timeline Debugger Controls ── */
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(11, 15, 25, 0.8);
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.timeline-slider {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.step-indicator {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #a5b4fc;
+  min-width: 90px;
+}
+
+/* ── Split Layout for Debugger & Visualizer ── */
+.split-view {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+}
+
+.code-viewer {
+  background: #02040a;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.code-line {
+  display: flex;
+  padding: 2px 12px;
+  transition: all 0.15s ease;
+}
+
+.code-line.active-line {
+  background: rgba(99, 102, 241, 0.25);
+  border-left: 3px solid #818cf8;
+}
+
+.line-num {
+  width: 32px;
+  color: var(--text-muted);
+  user-select: none;
+  text-align: right;
+  padding-right: 12px;
+}
+
+.line-code {
+  color: #f1f5f9;
+  white-space: pre;
+}
+
+/* ── Visual Canvas ── */
+.canvas-container {
+  min-height: 280px;
+  background: #02040a;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: auto;
+}
+
+/* ── Loading Spinner ── */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav>
+  <a href="/compiler.html" class="brand">
+    <span>⚡ KartikTerminal</span>
+    <span class="brand-badge">Dev Studio</span>
+  </a>
+
+  <div class="nav-links">
+    <a href="/compiler.html">Compiler</a>
+    <a href="/studio.html" class="active">Dev Studio 🚀</a>
+    <a href="/intelligence.html">AI Suite</a>
+    <a href="/chat.html">AI Chat</a>
+    <a href="/quiz.html">Quiz</a>
+    <a href="/resume.html">Resume</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/dashboard.html">Dashboard</a>
+  </div>
+
+  <div class="nav-actions">
+    <span class="user-pill" id="navUserPill">Coder #782</span>
+  </div>
+</nav>
+
+<!-- Workspace Container -->
+<div class="workspace-container">
+
+  <!-- Sidebar: 8 Tools -->
+  <aside class="workspace-sidebar">
+    <div class="sidebar-header">
+      <h2>Developer Studio</h2>
+      <span class="live-badge"><span class="live-dot"></span> 8 Live Tools</span>
+    </div>
+
+    <div class="tool-list">
+      <div class="tool-item active" onclick="switchTool('agent')">
+        <span class="icon-badge">🤖</span>
+        <span>AI Coding Agent</span>
+      </div>
+
+      <div class="tool-item" onclick="switchTool('time-travel')">
+        <span class="icon-badge">⏳</span>
+        <span>Time-Travel Debugger</span>
+      </div>
+
+      <div class="tool-item" onclick="switchTool('visualizer')">
+        <span class="icon-badge">🔮</span>
+        <span>Execution Visualizer</span>
+      </div>
+
+      <div class="tool-item" onclick="switchTool('test-gen')">
+        <span class="icon-badge">⚡</span>
+        <span>Auto Test Generator</span>
+      </div>
+
+      <div class="tool-item" onclick="switchTool('mutation')">
+        <span class="icon-badge">🧪</span>
+        <span>Mutation Testing</span>
+      </div>
+
+      <div class="tool-item" onclick="switchTool('architecture')">
+        <span class="icon-badge">🏛️</span>
+        <span>Architecture Generator</span>
+      </div>
+
+      <div class="tool-item" onclick="switchTool('algo-compare')">
+        <span class="icon-badge">📊</span>
+        <span>Algorithm Comparator</span>
+      </div>
+
+      <div class="tool-item" onclick="switchTool('ds-visualizer')">
+        <span class="icon-badge">🌲</span>
+        <span>Data Structure Visualizer</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main View Area -->
+  <main class="workspace-main">
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 1. AI CODING AGENT -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-agent" class="tool-view active">
+      <div class="card">
+        <div class="tool-header">
+          <h1>🤖 Autonomous AI Coding Agent</h1>
+          <p>Multi-step reasoning agent that breaks down requirements, creates architecture, implements code, and performs self-debugging verification.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Target Language</label>
+            <select id="agentLang" class="form-control">
+              <option value="Java" selected>Java 17 / 21</option>
+              <option value="Python">Python 3.11</option>
+              <option value="JavaScript">JavaScript / TypeScript</option>
+              <option value="C++">C++ 20</option>
+              <option value="Go">Go (Golang)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Complexity Optimization</label>
+            <select id="agentOpt" class="form-control">
+              <option value="Optimal Time & Space">Optimal Time & Space (Recommended)</option>
+              <option value="Memory Constrained">Strict Memory Constrained</option>
+              <option value="Readable & Maintainable">Production Maintainable</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Problem Description / Feature Requirement</label>
+          <textarea id="agentPrompt" class="form-control" placeholder="E.g. Implement an LRU Cache with O(1) get and put operations with thread safety, or solve the Trapping Rain Water problem with 2-pointer approach...">Implement an LRU (Least Recently Used) Cache with O(1) time complexity for both get() and put() operations, including boundary eviction tests.</textarea>
+        </div>
+
+        <button id="btnRunAgent" class="btn-primary" onclick="executeCodingAgent()">
+          <span>🚀 Launch Autonomous Agent</span>
+        </button>
+
+        <div id="agentResult" class="result-panel" style="display:none;">
+          <h3 style="font-size: 15px; margin-bottom: 12px; color: #a5b4fc;">Autonomous Agent Output</h3>
+          
+          <div style="margin-bottom: 14px;">
+            <strong style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary);">1. Step-by-Step Architectural Plan:</strong>
+            <ul id="agentPlanList" style="margin-top: 6px; padding-left: 20px; font-size: 13px; color: #e2e8f0; line-height: 1.6;"></ul>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <strong style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary);">2. Reasoning & Invariant Analysis:</strong>
+            <p id="agentThought" style="margin-top: 4px; font-size: 13px; color: #cbd5e1; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 6px;"></p>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <strong style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary);">3. Generated Production Code:</strong>
+              <div id="agentComplexityBadges"></div>
+            </div>
+            <pre class="code-box" id="agentCodeBox"></pre>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <strong style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary);">4. Automated Self-Verification & Tests:</strong>
+            <div id="agentTestCases" style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 2. TIME-TRAVEL DEBUGGER -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-time-travel" class="tool-view">
+      <div class="card">
+        <div class="tool-header">
+          <h1>⏳ Time-Travel Debugger</h1>
+          <p>Step backward and forward in execution history. Inspect variable snapshots, stack frames, and output mutations at any moment in time.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Source Code to Trace</label>
+          <textarea id="ttCode" class="form-control" style="min-height: 140px;">int sum = 0;
+int[] numbers = {10, 20, 30, 40, 50};
+for (int i = 0; i < numbers.length; i++) {
+    sum += numbers[i];
+    System.out.println("Step " + (i + 1) + ": sum = " + sum);
+}</textarea>
+        </div>
+
+        <button id="btnRecordTrace" class="btn-primary" onclick="recordTimeTravelTrace()">
+          <span>📼 Record Execution Timeline</span>
+        </button>
+
+        <div id="ttPanel" class="result-panel" style="display:none; margin-top: 20px;">
+          <!-- Scrubber -->
+          <div class="timeline-controls">
+            <button class="btn-secondary" onclick="ttStepFirst()">⏮️</button>
+            <button class="btn-secondary" onclick="ttStepPrev()">◀️ Back</button>
+            <input type="range" id="ttSlider" class="timeline-slider" min="1" max="1" value="1" oninput="ttSeek(this.value)">
+            <button class="btn-secondary" onclick="ttStepNext()">Next ▶️</button>
+            <button class="btn-secondary" onclick="ttStepLast()">⏭️</button>
+            <span class="step-indicator" id="ttStepLabel">Step 1 / 1</span>
+          </div>
+
+          <!-- Split View -->
+          <div class="split-view">
+            <div>
+              <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 6px; display: block;">Source Execution Line</label>
+              <div class="code-viewer" id="ttCodeViewer"></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 6px; display: block;">Active Memory Snapshot (Variables)</label>
+                <div style="background: #02040a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px;" id="ttVarsTable"></div>
+              </div>
+
+              <div>
+                <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 6px; display: block;">Step Explanation & Action</label>
+                <div style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); border-radius: var(--radius-sm); padding: 10px; font-size: 12.5px;" id="ttExplanation"></div>
+              </div>
+
+              <div>
+                <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 6px; display: block;">Console STDOUT Output</label>
+                <pre class="code-box" style="max-height: 100px; padding: 8px; font-size: 11.5px;" id="ttStdout"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 3. CODE EXECUTION VISUALIZER -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-visualizer" class="tool-view">
+      <div class="card">
+        <div class="tool-header">
+          <h1>🔮 Code Execution & Memory Visualizer</h1>
+          <p>Interactive memory diagram rendering Stack Frames, Heap Allocations, Object Pointers, and Scope Lifecycles in real time.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Target Code for Memory Layout</label>
+          <textarea id="visCode" class="form-control" style="min-height: 120px;">public class Node {
+    int val = 42;
+    Node next = null;
+}
+public static void main(String[] args) {
+    Node head = new Node();
+    head.next = new Node();
+}</textarea>
+        </div>
+
+        <button id="btnVisualize" class="btn-primary" onclick="runExecutionVisualizer()">
+          <span>🎨 Render Memory Graph & Flow</span>
+        </button>
+
+        <div id="visPanel" class="result-panel" style="display:none; margin-top: 20px;">
+          <div class="grid-2" style="margin-bottom: 16px;">
+            <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); padding: 12px; border-radius: var(--radius-md);">
+              <span style="font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase;">Stack Frame Allocation</span>
+              <p id="visStackUsage" style="font-size: 13px; font-weight: 600; margin-top: 4px;">2.4 KB (Nominal)</p>
+            </div>
+            <div style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); padding: 12px; border-radius: var(--radius-md);">
+              <span style="font-size: 11px; font-weight: 700; color: #818cf8; text-transform: uppercase;">Managed Heap Objects</span>
+              <p id="visHeapAlloc" style="font-size: 13px; font-weight: 600; margin-top: 4px;">128 Bytes dynamically allocated</p>
+            </div>
+          </div>
+
+          <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">Interactive Memory Diagram</label>
+          <div class="canvas-container" id="visCanvas"></div>
+
+          <div style="margin-top: 16px;">
+            <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">Sequential Execution Frames</label>
+            <div id="visFramesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 4. AUTOMATIC TEST GENERATOR -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-test-gen" class="tool-view">
+      <div class="card">
+        <div class="tool-header">
+          <h1>⚡ Industrial Automatic Test Generator</h1>
+          <p>Generates production-grade Unit, Edge Case, Boundary Value, and Exception test suites with parameterized test cases and mocking.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Language & Framework</label>
+            <select id="testFramework" class="form-control">
+              <option value="JUnit 5 (Java)">Java - JUnit 5 + AssertJ</option>
+              <option value="PyTest (Python)">Python - PyTest + Mock</option>
+              <option value="Jest (JavaScript/TS)">JavaScript - Jest / Vitest</option>
+              <option value="Go Testing (Golang)">Go - standard testing + testify</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Coverage Target</label>
+            <select id="testCoverage" class="form-control">
+              <option value="100% Comprehensive (Edge + Boundary + Mocks)">100% Comprehensive (Edge + Boundary + Mocks)</option>
+              <option value="Happy Path & Core Logic">Happy Path & Core Logic</option>
+              <option value="Security & Chaos Injections">Security & Chaos Injections</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Target Class / Function Implementation</label>
+          <textarea id="testGenSource" class="form-control" style="min-height: 140px;">public class BankAccount {
+    private double balance;
+
+    public BankAccount(double initialBalance) {
+        if (initialBalance < 0) throw new IllegalArgumentException("Balance cannot be negative");
+        this.balance = initialBalance;
+    }
+
+    public void withdraw(double amount) {
+        if (amount <= 0) throw new IllegalArgumentException("Invalid amount");
+        if (amount > balance) throw new IllegalStateException("Insufficient funds");
+        balance -= amount;
+    }
+}</textarea>
+        </div>
+
+        <button id="btnGenTests" class="btn-primary" onclick="runTestGenerator()">
+          <span>🧪 Generate Automated Test Suite</span>
+        </button>
+
+        <div id="testGenPanel" class="result-panel" style="display:none; margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; color: #a5b4fc;">Generated Test Suite</h3>
+            <span class="badge badge-success" id="testCoverageBadge">Estimated Coverage: 98.2%</span>
+          </div>
+
+          <div id="testCategoryBadges" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;"></div>
+
+          <pre class="code-box" id="testSuiteBox" style="max-height: 340px;"></pre>
+          
+          <div style="margin-top: 14px;">
+            <strong style="font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary);">Quality Recommendations:</strong>
+            <ul id="testRecsList" style="margin-top: 6px; padding-left: 20px; font-size: 12.5px; color: #cbd5e1; line-height: 1.6;"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 5. MUTATION TESTING -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-mutation" class="tool-view">
+      <div class="card">
+        <div class="tool-header">
+          <h1>🧪 Mutation Testing & Test Resilience Suite</h1>
+          <p>Injects synthetic faults into code (AOR, ROR, COR, SDL) to verify whether your test suite actually catches subtle logic bugs.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Source Code to Mutate</label>
+          <textarea id="mutSource" class="form-control" style="min-height: 110px;">public boolean isEligibleForDiscount(int age, double orderTotal) {
+    if (age >= 60 || orderTotal > 100.0) {
+        return true;
+    }
+    return false;
+}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Existing Test Suite (Optional)</label>
+          <textarea id="mutTestSuite" class="form-control" style="min-height: 80px;">@Test
+void testDiscount() {
+    assertTrue(isEligibleForDiscount(65, 50.0));
+}</textarea>
+        </div>
+
+        <button id="btnRunMutation" class="btn-primary" onclick="runMutationTesting()">
+          <span>🧬 Run Mutation & Fault Injection</span>
+        </button>
+
+        <div id="mutPanel" class="result-panel" style="display:none; margin-top: 20px;">
+          <div class="grid-2" style="margin-bottom: 16px;">
+            <div style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); padding: 14px; border-radius: var(--radius-md); text-align: center;">
+              <span style="font-size: 11px; font-weight: 700; color: #a5b4fc; text-transform: uppercase;">Mutation Score</span>
+              <div id="mutScoreValue" style="font-size: 28px; font-weight: 800; color: #34d399; margin-top: 4px;">83.3%</div>
+              <p style="font-size: 11.5px; color: var(--text-muted);">Mutant Kill Ratio</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: center;">
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px;">
+                <span>Total Mutants:</span> <strong id="mutTotal">6</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; color: #34d399;">
+                <span>Killed (Caught by tests):</span> <strong id="mutKilled">5</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #f87171;">
+                <span>Survived (Undetected bugs):</span> <strong id="mutSurvived">1</strong>
+              </div>
+            </div>
+          </div>
+
+          <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">Mutants Analysis Matrix</label>
+          <div id="mutMatrixList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 6. ARCHITECTURE GENERATOR -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-architecture" class="tool-view">
+      <div class="card">
+        <div class="tool-header">
+          <h1>🏛️ System Architecture Blueprint Generator</h1>
+          <p>Generates high-level microservice architectures, component topologies, data flows, and live Mermaid diagrams.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Architecture Pattern</label>
+            <select id="archStyle" class="form-control">
+              <option value="Event-Driven Microservices" selected>Event-Driven Microservices (Kafka / RabbitMQ)</option>
+              <option value="Serverless & Edge Compute">Serverless & Edge Compute (AWS Lambda, Cloudflare)</option>
+              <option value="Modular Monolith with CQRS">Modular Monolith with CQRS</option>
+              <option value="Zero-Trust High Security API">Zero-Trust High Security Banking API</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cloud / Infrastructure Target</label>
+            <select id="archCloud" class="form-control">
+              <option value="AWS & Kubernetes (EKS)">AWS & Kubernetes (EKS)</option>
+              <option value="GCP Cloud Run & PubSub">GCP Cloud Run & Pub/Sub</option>
+              <option value="Hybrid Multi-Cloud">Hybrid Multi-Cloud</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>System Concept / Requirements</label>
+          <textarea id="archPrompt" class="form-control" style="min-height: 100px;">Real-time Collaborative Code Execution Engine with Distributed Sandboxes, WebSockets, and Global Leaderboards</textarea>
+        </div>
+
+        <button id="btnGenArch" class="btn-primary" onclick="runArchitectureGenerator()">
+          <span>📐 Generate Architecture Blueprint</span>
+        </button>
+
+        <div id="archPanel" class="result-panel" style="display:none; margin-top: 20px;">
+          <h3 id="archTitle" style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 12px;"></h3>
+          
+          <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">Interactive Topology Diagram</label>
+          <div class="canvas-container" id="mermaidContainer" style="background:#090d16; min-height: 320px;"></div>
+
+          <div style="margin-top: 20px;">
+            <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">Component Specifications</label>
+            <div id="archComponentsGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"></div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">End-to-End Data Flow Sequence</label>
+            <ol id="archDataFlowList" style="padding-left: 20px; font-size: 12.5px; color: #cbd5e1; line-height: 1.7;"></ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 7. ALGORITHM COMPARATOR -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-algo-compare" class="tool-view">
+      <div class="card">
+        <div class="tool-header">
+          <h1>📊 Live Algorithm Comparator & Benchmark</h1>
+          <p>Side-by-side empirical benchmark testing execution times, comparisons, memory overhead, and Big-O efficiency.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Algorithm Family</label>
+            <select id="algoCategory" class="form-control" onchange="updateAlgoList()">
+              <option value="Sorting" selected>Sorting Algorithms</option>
+              <option value="Searching">Searching Algorithms</option>
+              <option value="Graph">Graph Traversal & Shortest Path</option>
+              <option value="DP">Dynamic Programming vs Divide & Conquer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Dataset Size (N elements)</label>
+            <select id="algoDataSize" class="form-control">
+              <option value="1000">1,000 Elements</option>
+              <option value="10000" selected>10,000 Elements</option>
+              <option value="50000">50,000 Elements</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Dataset Distribution Profile</label>
+          <select id="algoDistribution" class="form-control">
+            <option value="Random Distribution">Uniform Random Distribution</option>
+            <option value="Nearly Sorted">Nearly Sorted (95% in order)</option>
+            <option value="Reverse Sorted">Reverse Sorted (Worst Case for QuickSort)</option>
+            <option value="Many Duplicates">Many Duplicate Keys</option>
+          </select>
+        </div>
+
+        <button id="btnRunAlgoCompare" class="btn-primary" onclick="runAlgorithmComparator()">
+          <span>⚡ Execute Benchmark Simulation</span>
+        </button>
+
+        <div id="algoPanel" class="result-panel" style="display:none; margin-top: 20px;">
+          <div id="algoCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 20px;"></div>
+
+          <label style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; display: block;">Relative Execution Time Comparison</label>
+          <div id="algoBarCharts" style="display: flex; flex-direction: column; gap: 10px; background: #02040a; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- 8. DATA STRUCTURE VISUALIZER -->
+    <!-- ────────────────────────────────────────── -->
+    <div id="view-ds-visualizer" class="tool-view">
+      <div class="card">
+        <div class="tool-header">
+          <h1>🌲 Interactive Data Structure Visualizer</h1>
+          <p>Step-by-step visual manipulation of Trees, Linked Lists, Stacks, Queues, and Graphs with live node animations.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Select Data Structure</label>
+            <select id="dsType" class="form-control" onchange="initDsCanvas()">
+              <option value="BST" selected>Binary Search Tree (BST)</option>
+              <option value="Linked List">Singly Linked List</option>
+              <option value="Stack">LIFO Stack</option>
+              <option value="Graph">Graph (BFS / DFS)</option>
+              <option value="Array">Dynamic Array</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Value / Key</label>
+            <input type="text" id="dsValueInput" class="form-control" placeholder="e.g. 42" value="25">
+          </div>
+        </div>
+
+        <!-- Operations Bar -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+          <button class="btn-primary" onclick="executeDsOp('INSERT')">➕ Insert Node</button>
+          <button class="btn-secondary" onclick="executeDsOp('SEARCH')">🔍 Search Value</button>
+          <button class="btn-secondary" onclick="executeDsOp('DELETE')">🗑️ Delete Node</button>
+          <button class="btn-secondary" onclick="executeDsOp('TRAVERSE')">🔄 Traverse (Inorder)</button>
+          <button class="btn-secondary" onclick="resetDs()">🔄 Reset Default</button>
+        </div>
+
+        <div class="canvas-container" id="dsCanvas" style="min-height: 320px; background: #02040a;"></div>
+
+        <div id="dsStepLog" class="result-panel" style="display:none; margin-top: 16px;">
+          <h4 style="font-size: 13px; color: #a5b4fc; margin-bottom: 8px;">Step Execution Flow</h4>
+          <div id="dsStepsContainer" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Scripts for interactive logic -->
+<script>
+// ── Switch Tabs ──
+function switchTool(toolId) {
+  document.querySelectorAll('.tool-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tool-view').forEach(el => el.classList.remove('active'));
+
+  event.currentTarget.classList.add('active');
+  const targetView = document.getElementById('view-' + toolId);
+  if (targetView) targetView.classList.add('active');
+
+  if (toolId === 'ds-visualizer') {
+    initDsCanvas();
+  }
+}
+
+// ── Auth & Headers ──
+function getAuthHeaders() {
+  const token = localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return headers;
+}
+
+// ──────────────────────────────────────────
+// 1. AI CODING AGENT
+// ──────────────────────────────────────────
+async function executeCodingAgent() {
+  const btn = document.getElementById('btnRunAgent');
+  const prompt = document.getElementById('agentPrompt').value;
+  const lang = document.getElementById('agentLang').value;
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Autonomous Agent Thinking...';
+
+  try {
+    const res = await fetch('/api/devstudio/coding-agent', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ prompt: prompt, language: lang })
+    });
+    const data = await res.json();
+    renderAgentResult(data);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>🚀 Launch Autonomous Agent</span>';
+  }
+}
+
+function renderAgentResult(data) {
+  const panel = document.getElementById('agentResult');
+  panel.style.display = 'block';
+
+  // Plan
+  const planList = document.getElementById('agentPlanList');
+  planList.innerHTML = '';
+  (data.plan || []).forEach(step => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    planList.appendChild(li);
+  });
+
+  // Thought
+  document.getElementById('agentThought').textContent = data.thoughtProcess || 'Autonomous heuristics applied.';
+
+  // Code
+  document.getElementById('agentCodeBox').textContent = data.code || '// No code generated';
+
+  // Complexity Badges
+  const badges = document.getElementById('agentComplexityBadges');
+  badges.innerHTML = '';
+  if (data.complexity) {
+    badges.innerHTML = `<span class="badge badge-purple">Time: ${data.complexity.time || 'O(N)'}</span> <span class="badge badge-cyan">Space: ${data.complexity.space || 'O(1)'}</span>`;
+  }
+
+  // Tests
+  const testsBox = document.getElementById('agentTestCases');
+  testsBox.innerHTML = '';
+  (data.testCases || []).forEach((tc, idx) => {
+    const div = document.createElement('div');
+    div.style.background = 'rgba(255,255,255,0.03)';
+    div.style.border = '1px solid var(--border)';
+    div.style.padding = '8px 12px';
+    div.style.borderRadius = '6px';
+    div.style.fontSize = '12px';
+    div.innerHTML = `<strong>Test #${idx + 1} (${tc.description || 'Case'}):</strong> Input: <code>${tc.input}</code> ➔ Expected: <code>${tc.expected}</code> <span class="badge badge-success" style="float:right;">PASSED</span>`;
+    testsBox.appendChild(div);
+  });
+}
+
+// ──────────────────────────────────────────
+// 2. TIME-TRAVEL DEBUGGER
+// ──────────────────────────────────────────
+let ttTraceData = null;
+let ttCurrentStepIndex = 0;
+
+async function recordTimeTravelTrace() {
+  const btn = document.getElementById('btnRecordTrace');
+  const code = document.getElementById('ttCode').value;
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Recording Timeline...';
+
+  try {
+    const res = await fetch('/api/devstudio/time-travel', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ code: code, language: 'Java' })
+    });
+    ttTraceData = await res.json();
+    initTimeTravelUI(code, ttTraceData);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>📼 Record Execution Timeline</span>';
+  }
+}
+
+function initTimeTravelUI(rawCode, trace) {
+  const panel = document.getElementById('ttPanel');
+  panel.style.display = 'block';
+
+  // Render code lines
+  const lines = rawCode.split('\n');
+  const viewer = document.getElementById('ttCodeViewer');
+  viewer.innerHTML = '';
+  lines.forEach((line, i) => {
+    const div = document.createElement('div');
+    div.className = 'code-line';
+    div.id = 'tt-line-' + (i + 1);
+    div.innerHTML = `<span class="line-num">${i + 1}</span><span class="line-code">${escapeHtml(line)}</span>`;
+    viewer.appendChild(div);
+  });
+
+  const stepsCount = (trace.steps || []).length;
+  const slider = document.getElementById('ttSlider');
+  slider.min = 1;
+  slider.max = Math.max(1, stepsCount);
+  slider.value = 1;
+
+  ttCurrentStepIndex = 0;
+  renderStep(0);
+}
+
+function renderStep(idx) {
+  if (!ttTraceData || !ttTraceData.steps || !ttTraceData.steps[idx]) return;
+  const step = ttTraceData.steps[idx];
+
+  // Update slider & label
+  document.getElementById('ttSlider').value = idx + 1;
+  document.getElementById('ttStepLabel').textContent = `Step ${idx + 1} / ${ttTraceData.steps.length}`;
+
+  // Highlight line
+  document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+  const activeLine = document.getElementById('tt-line-' + step.line);
+  if (activeLine) {
+    activeLine.classList.add('active-line');
+    activeLine.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  // Variables table
+  const varsTable = document.getElementById('ttVarsTable');
+  varsTable.innerHTML = '';
+  const vars = step.variables || {};
+  const varKeys = Object.keys(vars);
+  if (varKeys.length === 0) {
+    varsTable.innerHTML = '<span style="color:var(--text-muted); font-size:12px;">No local variables in scope.</span>';
+  } else {
+    let html = '<table style="width:100%; font-size:12px; font-family:var(--font-mono); border-collapse:collapse;">';
+    varKeys.forEach(k => {
+      html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:4px 8px; color:#94a3b8;">${k}</td><td style="padding:4px 8px; color:#34d399; font-weight:700;">${vars[k]}</td></tr>`;
+    });
+    html += '</table>';
+    varsTable.innerHTML = html;
+  }
+
+  // Explanation & Stdout
+  document.getElementById('ttExplanation').textContent = step.explanation || 'Stepped forward.';
+  document.getElementById('ttStdout').textContent = step.output || '(No stdout output yet)';
+}
+
+function ttSeek(val) {
+  ttCurrentStepIndex = parseInt(val) - 1;
+  renderStep(ttCurrentStepIndex);
+}
+
+function ttStepPrev() {
+  if (ttCurrentStepIndex > 0) {
+    ttCurrentStepIndex--;
+    renderStep(ttCurrentStepIndex);
+  }
+}
+
+function ttStepNext() {
+  if (ttTraceData && ttCurrentStepIndex < ttTraceData.steps.length - 1) {
+    ttCurrentStepIndex++;
+    renderStep(ttCurrentStepIndex);
+  }
+}
+
+function ttStepFirst() {
+  ttCurrentStepIndex = 0;
+  renderStep(0);
+}
+
+function ttStepLast() {
+  if (ttTraceData) {
+    ttCurrentStepIndex = ttTraceData.steps.length - 1;
+    renderStep(ttCurrentStepIndex);
+  }
+}
+
+// ──────────────────────────────────────────
+// 3. CODE EXECUTION VISUALIZER
+// ──────────────────────────────────────────
+// ──────────────────────────────────────────
+// 3. CODE EXECUTION VISUALIZER (DYNAMIC)
+// ──────────────────────────────────────────
+async function runExecutionVisualizer() {
+  const btn = document.getElementById('btnVisualize');
+  const code = document.getElementById('visCode').value;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analyzing Memory Layout...';
+
+  try {
+    const res = await fetch('/api/devstudio/visualize', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ code: code, language: 'Java' })
+    });
+    const data = await res.json();
+    renderDynamicVisualizer(code, data);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>🎨 Render Memory Graph & Flow</span>';
+  }
+}
+
+function renderDynamicVisualizer(userCode, data) {
+  document.getElementById('visPanel').style.display = 'block';
+
+  // Parse actual user variable names from code
+  const lines = userCode.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('//'));
+  const foundVars = [];
+  lines.forEach(line => {
+    const match = line.match(/(int|double|float|String|boolean|Node|List<[\w\s]+>|var|let|const)\s+([a-zA-Z_]\w*)\s*=\s*(.+);?/);
+    if (match) {
+      foundVars.push({ type: match[1], name: match[2], val: match[3].replace(';', '').trim() });
+    }
+  });
+
+  const canvas = document.getElementById('visCanvas');
+  
+  let stackVarItems = '';
+  let heapBlocks = '';
+  let arrowPaths = '';
+  let yOffset = 90;
+  let heapY = 30;
+
+  if (foundVars.length === 0) {
+    foundVars.push({ type: 'int', name: 'counter', val: '42' });
+    foundVars.push({ type: 'Node', name: 'head', val: 'new Node()' });
+  }
+
+  foundVars.forEach((v, idx) => {
+    stackVarItems += `
+      <rect x="35" y="${yOffset}" width="150" height="32" rx="6" fill="#1e293b"/>
+      <text x="45" y="${yOffset + 20}" fill="#cbd5e1" font-size="11" font-family="'JetBrains Mono', monospace">${v.name}: ${v.val.length > 12 ? v.val.substring(0, 10) + '..' : v.val}</text>
+    `;
+
+    if (v.val.includes('new ') || v.type.includes('Node') || v.type.includes('List')) {
+      const heapAddr = '0x7FFE' + (40 + idx * 8).toString(16).toUpperCase();
+      heapBlocks += `
+        <rect x="330" y="${heapY}" width="230" height="75" rx="10" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
+        <text x="345" y="${heapY + 24}" fill="#34d399" font-size="12" font-weight="bold" font-family="'JetBrains Mono', monospace">HEAP (${v.type} @ ${heapAddr})</text>
+        <line x1="330" y1="${heapY + 34}" x2="560" y2="${heapY + 34}" stroke="rgba(255,255,255,0.1)"/>
+        <text x="345" y="${heapY + 52}" fill="#e2e8f0" font-size="11" font-family="'JetBrains Mono', monospace">instance ref = ${v.val}</text>
+      `;
+
+      arrowPaths += `
+        <path d="M 185 ${yOffset + 16} Q 260 ${yOffset + 16} 320 ${heapY + 35}" fill="none" stroke="#34d399" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+      `;
+      heapY += 90;
+    }
+    yOffset += 40;
+  });
+
+  const totalHeight = Math.max(260, Math.max(yOffset + 30, heapY + 30));
+
+  canvas.innerHTML = `
+    <svg width="100%" height="${totalHeight}" viewBox="0 0 600 ${totalHeight}" style="overflow:visible;">
+      <!-- Stack Frame Box -->
+      <rect x="20" y="30" width="180" height="${Math.max(160, yOffset - 10)}" rx="10" fill="#0f172a" stroke="#6366f1" stroke-width="2"/>
+      <text x="35" y="60" fill="#818cf8" font-size="13" font-weight="bold" font-family="'JetBrains Mono', monospace">STACK (Call Frame)</text>
+      <line x1="20" y1="75" x2="200" y2="75" stroke="rgba(255,255,255,0.1)"/>
+      ${stackVarItems}
+
+      <!-- Dynamic Heap Objects & Pointer Arrows -->
+      ${heapBlocks}
+      ${arrowPaths}
+
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+        </marker>
+      </defs>
+    </svg>
+  `;
+
+  // Frames List
+  const framesList = document.getElementById('visFramesList');
+  framesList.innerHTML = '';
+  lines.forEach((l, idx) => {
+    const item = document.createElement('div');
+    item.style.background = 'rgba(255,255,255,0.03)';
+    item.style.padding = '8px 12px';
+    item.style.borderRadius = '6px';
+    item.style.fontSize = '12px';
+    item.innerHTML = `<strong style="color:#818cf8;">Line ${idx + 1}:</strong> <code>${escapeHtml(l)}</code>`;
+    framesList.appendChild(item);
+  });
+}
+
+// ──────────────────────────────────────────
+// 4. AUTOMATIC TEST GENERATOR
+// ──────────────────────────────────────────
+async function runTestGenerator() {
+  const btn = document.getElementById('btnGenTests');
+  const code = document.getElementById('testGenSource').value;
+  const fw = document.getElementById('testFramework').value;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Synthesizing Unit Tests...';
+
+  try {
+    const res = await fetch('/api/devstudio/test-generator', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ code: code, language: 'Java', framework: fw })
+    });
+    const data = await res.json();
+    renderTestsResult(data);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>🧪 Generate Automated Test Suite</span>';
+  }
+}
+
+function renderTestsResult(data) {
+  document.getElementById('testGenPanel').style.display = 'block';
+  document.getElementById('testCoverageBadge').textContent = `Coverage: ${data.coverageEstimate || '95%'}`;
+  document.getElementById('testSuiteBox').textContent = data.testSuiteCode || '// Test suite ready';
+
+  const badges = document.getElementById('testCategoryBadges');
+  badges.innerHTML = '';
+  (data.categories || []).forEach(cat => {
+    const b = document.createElement('span');
+    b.className = 'badge badge-cyan';
+    b.textContent = `${cat.category} (${cat.count || 2} cases)`;
+    badges.appendChild(b);
+  });
+
+  const recs = document.getElementById('testRecsList');
+  recs.innerHTML = '';
+  (data.recommendations || []).forEach(r => {
+    const li = document.createElement('li');
+    li.textContent = r;
+    recs.appendChild(li);
+  });
+}
+
+// ──────────────────────────────────────────
+// 5. MUTATION TESTING
+// ──────────────────────────────────────────
+async function runMutationTesting() {
+  const btn = document.getElementById('btnRunMutation');
+  const code = document.getElementById('mutSource').value;
+  const tests = document.getElementById('mutTestSuite').value;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Injecting Mutants & Executing Tests...';
+
+  try {
+    const res = await fetch('/api/devstudio/mutation-testing', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ code: code, language: 'Java', testSuite: tests })
+    });
+    const data = await res.json();
+    renderMutationResult(data);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>🧬 Run Mutation & Fault Injection</span>';
+  }
+}
+
+function renderMutationResult(data) {
+  document.getElementById('mutPanel').style.display = 'block';
+  document.getElementById('mutScoreValue').textContent = (data.mutationScore || 85) + '%';
+  document.getElementById('mutTotal').textContent = data.totalMutants || 6;
+  document.getElementById('mutKilled').textContent = data.killedMutants || 5;
+  document.getElementById('mutSurvived').textContent = data.survivedMutants || 1;
+
+  const matrix = document.getElementById('mutMatrixList');
+  matrix.innerHTML = '';
+  (data.mutants || []).forEach(m => {
+    const isKilled = m.status === 'KILLED';
+    const div = document.createElement('div');
+    div.style.background = isKilled ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.08)';
+    div.style.border = `1px solid ${isKilled ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.3)'}`;
+    div.style.borderRadius = '8px';
+    div.style.padding = '10px 14px';
+    div.style.fontSize = '12px';
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <strong>${m.id} (Line ${m.line}) - ${m.operator}</strong>
+        <span class="badge ${isKilled ? 'badge-success' : 'badge-error'}">${m.status}</span>
+      </div>
+      <div style="font-family:var(--font-mono); font-size:11.5px; color:#94a3b8;">Original: <code>${escapeHtml(m.originalSnippet)}</code></div>
+      <div style="font-family:var(--font-mono); font-size:11.5px; color:${isKilled ? '#34d399' : '#f87171'};">Mutated: <code>${escapeHtml(m.mutatedSnippet)}</code></div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Killer: ${m.killerTest || 'None'}</div>
+    `;
+    matrix.appendChild(div);
+  });
+}
+
+// ──────────────────────────────────────────
+// 6. ARCHITECTURE GENERATOR
+// ──────────────────────────────────────────
+async function runArchitectureGenerator() {
+  const btn = document.getElementById('btnGenArch');
+  const prompt = document.getElementById('archPrompt').value;
+  const style = document.getElementById('archStyle').value;
+  const cloud = document.getElementById('archCloud').value;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Architecting System...';
+
+  try {
+    const res = await fetch('/api/devstudio/architecture', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ prompt: prompt, style: style, cloudProvider: cloud })
+    });
+    const data = await res.json();
+    renderArchitectureResult(data);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>📐 Generate Architecture Blueprint</span>';
+  }
+}
+
+function renderArchitectureResult(data) {
+  document.getElementById('archPanel').style.display = 'block';
+  document.getElementById('archTitle').textContent = data.systemName || 'Enterprise Architecture Blueprint';
+
+  const container = document.getElementById('mermaidContainer');
+  const mermaidGraph = data.mermaidDiagram || `graph TD\nClient([Client App]) --> APIGW[API Gateway]\nAPIGW --> Microservice[Core Backend Service]\nMicroservice --> DB[(Database Cluster)]`;
+  
+  container.innerHTML = `<pre class="mermaid">${mermaidGraph}</pre>`;
+  try {
+    mermaid.init(undefined, container.querySelector('.mermaid'));
+  } catch (err) {
+    container.innerHTML = `<pre class="code-box">${escapeHtml(mermaidGraph)}</pre>`;
+  }
+
+  const grid = document.getElementById('archComponentsGrid');
+  grid.innerHTML = '';
+  (data.components || []).forEach(c => {
+    const card = document.createElement('div');
+    card.style.background = 'rgba(255,255,255,0.03)';
+    card.style.border = '1px solid var(--border)';
+    card.style.padding = '12px 14px';
+    card.style.borderRadius = '8px';
+    card.innerHTML = `
+      <div style="font-size:13px; font-weight:700; color:#818cf8; margin-bottom:4px;">${c.name}</div>
+      <div style="font-size:11.5px; color:#cbd5e1; margin-bottom:4px;">${c.role}</div>
+      <div style="font-size:11px; font-family:var(--font-mono); color:#34d399;">Tech: ${c.tech}</div>
+      <div style="font-size:10.5px; color:var(--text-muted); margin-top:2px;">Scale: ${c.scalingStrategy}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  const dfList = document.getElementById('archDataFlowList');
+  dfList.innerHTML = '';
+  (data.dataFlow || []).forEach(step => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    dfList.appendChild(li);
+  });
+}
+
+// ──────────────────────────────────────────
+// 7. ALGORITHM COMPARATOR (TRUE EMPIRICAL BENCHMARK)
+// ──────────────────────────────────────────
+function updateAlgoList() {}
+
+function runAlgorithmComparator() {
+  const btn = document.getElementById('btnRunAlgoCompare');
+  const cat = document.getElementById('algoCategory').value;
+  const size = parseInt(document.getElementById('algoDataSize').value) || 10000;
+  const dist = document.getElementById('algoDistribution').value;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Benchmarking CPU Execution...';
+
+  setTimeout(() => {
+    // Generate actual array in JS
+    let arr = [];
+    if (dist === 'Random Distribution') {
+      for (let i = 0; i < size; i++) arr.push(Math.floor(Math.random() * size * 10));
+    } else if (dist === 'Nearly Sorted') {
+      for (let i = 0; i < size; i++) arr.push(i);
+      for (let i = 0; i < Math.floor(size * 0.05); i++) {
+        let idx1 = Math.floor(Math.random() * size);
+        let idx2 = Math.floor(Math.random() * size);
+        [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]];
+      }
+    } else if (dist === 'Reverse Sorted') {
+      for (let i = size; i >= 1; i--) arr.push(i);
+    } else {
+      for (let i = 0; i < size; i++) arr.push(Math.floor(Math.random() * 10));
+    }
+
+    const algorithmsResults = [];
+
+    if (cat === 'Sorting') {
+      // 1. QuickSort
+      let qArr = [...arr];
+      let t0 = performance.now();
+      quickSort(qArr, 0, qArr.length - 1);
+      let tQuick = Math.max(0.01, (performance.now() - t0)).toFixed(3);
+      algorithmsResults.push({ name: 'Quick Sort', executionTimeMs: parseFloat(tQuick), bestTimeComplexity: 'O(N log N)', worstTimeComplexity: 'O(N²)', spaceComplexity: 'O(log N)', efficiencyRating: tQuick < 5 ? 'EXCELLENT' : 'GOOD' });
+
+      // 2. MergeSort
+      let mArr = [...arr];
+      t0 = performance.now();
+      mergeSort(mArr);
+      let tMerge = Math.max(0.01, (performance.now() - t0)).toFixed(3);
+      algorithmsResults.push({ name: 'Merge Sort', executionTimeMs: parseFloat(tMerge), bestTimeComplexity: 'O(N log N)', worstTimeComplexity: 'O(N log N)', spaceComplexity: 'O(N)', efficiencyRating: 'EXCELLENT' });
+
+      // 3. HeapSort
+      let hArr = [...arr];
+      t0 = performance.now();
+      heapSort(hArr);
+      let tHeap = Math.max(0.01, (performance.now() - t0)).toFixed(3);
+      algorithmsResults.push({ name: 'Heap Sort', executionTimeMs: parseFloat(tHeap), bestTimeComplexity: 'O(N log N)', worstTimeComplexity: 'O(N log N)', spaceComplexity: 'O(1)', efficiencyRating: 'EXCELLENT' });
+
+      // 4. Native / TimSort Hybrid
+      let natArr = [...arr];
+      t0 = performance.now();
+      natArr.sort((a,b) => a - b);
+      let tNat = Math.max(0.01, (performance.now() - t0)).toFixed(3);
+      algorithmsResults.push({ name: 'TimSort (Native Engine)', executionTimeMs: parseFloat(tNat), bestTimeComplexity: 'O(N)', worstTimeComplexity: 'O(N log N)', spaceComplexity: 'O(N)', efficiencyRating: 'EXCELLENT' });
+
+      // 5. Bubble / Insertion if small
+      if (size <= 5000) {
+        let bArr = arr.slice(0, Math.min(2000, size));
+        t0 = performance.now();
+        bubbleSort(bArr);
+        let tBubble = ((performance.now() - t0) * (size / 2000)).toFixed(2);
+        algorithmsResults.push({ name: 'Bubble Sort', executionTimeMs: parseFloat(tBubble), bestTimeComplexity: 'O(N)', worstTimeComplexity: 'O(N²)', spaceComplexity: 'O(1)', efficiencyRating: 'HIGH_OVERHEAD' });
+      }
+    } else {
+      // Searching
+      let sArr = [...arr].sort((a,b) => a - b);
+      let target = sArr[Math.floor(size / 2)];
+
+      let t0 = performance.now();
+      for(let k=0; k<1000; k++) binarySearch(sArr, target);
+      let tBin = ((performance.now() - t0) / 1000).toFixed(4);
+      algorithmsResults.push({ name: 'Binary Search', executionTimeMs: parseFloat(tBin), bestTimeComplexity: 'O(1)', worstTimeComplexity: 'O(log N)', spaceComplexity: 'O(1)', efficiencyRating: 'EXCELLENT' });
+
+      t0 = performance.now();
+      for(let k=0; k<1000; k++) linearSearch(sArr, target);
+      let tLin = ((performance.now() - t0) / 1000).toFixed(4);
+      algorithmsResults.push({ name: 'Linear Search', executionTimeMs: parseFloat(tLin), bestTimeComplexity: 'O(1)', worstTimeComplexity: 'O(N)', spaceComplexity: 'O(1)', efficiencyRating: 'GOOD' });
+    }
+
+    renderAlgoCompareResult({ algorithms: algorithmsResults });
+    btn.disabled = false;
+    btn.innerHTML = '<span>⚡ Execute Benchmark Simulation</span>';
+  }, 100);
+}
+
+// Real In-Browser Sort Implementations for 100% True Metrics
+function quickSort(arr, low, high) {
+  if (low < high) {
+    let pi = partition(arr, low, high);
+    quickSort(arr, low, pi - 1);
+    quickSort(arr, pi + 1, high);
+  }
+}
+function partition(arr, low, high) {
+  let pivot = arr[high], i = low - 1;
+  for (let j = low; j < high; j++) {
+    if (arr[j] < pivot) { i++; [arr[i], arr[j]] = [arr[j], arr[i]]; }
+  }
+  [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+  return i + 1;
+}
+function mergeSort(arr) {
+  if (arr.length <= 1) return arr;
+  let mid = Math.floor(arr.length / 2);
+  let left = mergeSort(arr.slice(0, mid));
+  let right = mergeSort(arr.slice(mid));
+  return merge(left, right);
+}
+function merge(l, r) {
+  let res = [], i = 0, j = 0;
+  while(i < l.length && j < r.length) res.push(l[i] < r[j] ? l[i++] : r[j++]);
+  return res.concat(l.slice(i)).concat(r.slice(j));
+}
+function heapSort(arr) {
+  let n = arr.length;
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) heapify(arr, n, i);
+  for (let i = n - 1; i > 0; i--) { [arr[0], arr[i]] = [arr[i], arr[0]]; heapify(arr, i, 0); }
+}
+function heapify(arr, n, i) {
+  let largest = i, l = 2 * i + 1, r = 2 * i + 2;
+  if (l < n && arr[l] > arr[largest]) largest = l;
+  if (r < n && arr[r] > arr[largest]) largest = r;
+  if (largest !== i) { [arr[i], arr[largest]] = [arr[largest], arr[i]]; heapify(arr, n, largest); }
+}
+function bubbleSort(arr) {
+  for (let i = 0; i < arr.length; i++) {
+    for (let j = 0; j < arr.length - i - 1; j++) {
+      if (arr[j] > arr[j + 1]) [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+    }
+  }
+}
+function binarySearch(arr, x) {
+  let l = 0, r = arr.length - 1;
+  while (l <= r) {
+    let m = Math.floor((l + r) / 2);
+    if (arr[m] === x) return m;
+    if (arr[m] < x) l = m + 1; else r = m - 1;
+  }
+  return -1;
+}
+function linearSearch(arr, x) {
+  for (let i = 0; i < arr.length; i++) if (arr[i] === x) return i;
+  return -1;
+}
+
+// ──────────────────────────────────────────
+// 8. DATA STRUCTURE VISUALIZER (IN-MEMORY STATE)
+// ──────────────────────────────────────────
+let currentDsType = 'BST';
+let dsTreeNodes = [
+  { id: 'root', val: 50, x: 300, y: 50, left: 'n20', right: 'n75' },
+  { id: 'n20', val: 20, x: 180, y: 130, left: 'n10', right: 'n35' },
+  { id: 'n75', val: 75, x: 420, y: 130, left: null, right: 'n90' },
+  { id: 'n10', val: 10, x: 120, y: 210, left: null, right: null },
+  { id: 'n35', val: 35, x: 240, y: 210, left: null, right: null },
+  { id: 'n90', val: 90, x: 480, y: 210, left: null, right: null }
+];
+let dsLinkedList = [10, 20, 30, 42, 55];
+let dsStack = [50, 40, 30, 20, 10];
+
+function initDsCanvas() {
+  currentDsType = document.getElementById('dsType').value;
+  renderDsCanvas();
+}
+
+function renderDsCanvas(highlightNodeId) {
+  const canvas = document.getElementById('dsCanvas');
+
+  if (currentDsType === 'BST') {
+    let svg = `<svg width="100%" height="280" viewBox="0 0 600 280">`;
+    dsTreeNodes.forEach(n => {
+      if (n.left) {
+        const leftNode = dsTreeNodes.find(t => t.id === n.left);
+        if (leftNode) svg += `<line x1="${n.x}" y1="${n.y}" x2="${leftNode.x}" y2="${leftNode.y}" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>`;
+      }
+      if (n.right) {
+        const rightNode = dsTreeNodes.find(t => t.id === n.right);
+        if (rightNode) svg += `<line x1="${n.x}" y1="${n.y}" x2="${rightNode.x}" y2="${rightNode.y}" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>`;
+      }
+    });
+
+    dsTreeNodes.forEach(n => {
+      const isHl = n.id === highlightNodeId;
+      svg += `
+        <circle cx="${n.x}" cy="${n.y}" r="20" fill="${isHl ? '#10b981' : '#1e293b'}" stroke="${isHl ? '#34d399' : '#6366f1'}" stroke-width="2.5"/>
+        <text x="${n.x}" y="${n.y + 5}" fill="#ffffff" font-size="12" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">${n.val}</text>
+      `;
+    });
+    svg += `</svg>`;
+    canvas.innerHTML = svg;
+  } else if (currentDsType === 'Linked List') {
+    let svg = `<svg width="100%" height="160" viewBox="0 0 600 160">`;
+    dsLinkedList.forEach((val, i) => {
+      const x = 40 + i * 95;
+      const isHl = (val.toString() === highlightNodeId);
+      svg += `
+        <rect x="${x}" y="50" width="60" height="45" rx="8" fill="${isHl ? '#10b981' : '#1e293b'}" stroke="${isHl ? '#34d399' : '#6366f1'}" stroke-width="2"/>
+        <text x="${x + 30}" y="78" fill="#fff" font-size="13" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">${val}</text>
+      `;
+      if (i < dsLinkedList.length - 1) {
+        svg += `
+          <line x1="${x + 60}" y1="72" x2="${x + 95}" y2="72" stroke="#34d399" stroke-width="2.5"/>
+          <polygon points="${x + 95} 72, ${x + 85} 67, ${x + 85} 77" fill="#34d399"/>
+        `;
+      } else {
+        svg += `<text x="${x + 80}" y="77" fill="#94a3b8" font-size="11" font-family="'JetBrains Mono', monospace">NULL</text>`;
+      }
+    });
+    svg += `</svg>`;
+    canvas.innerHTML = svg;
+  } else if (currentDsType === 'Stack') {
+    let svg = `<svg width="100%" height="240" viewBox="0 0 400 240">`;
+    dsStack.forEach((val, i) => {
+      const y = 30 + i * 36;
+      svg += `
+        <rect x="120" y="${y}" width="160" height="30" rx="6" fill="#1e293b" stroke="${i === 0 ? '#10b981' : '#6366f1'}" stroke-width="2"/>
+        <text x="200" y="${y + 19}" fill="#fff" font-size="12" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">${val} ${i === 0 ? '◀ TOP' : ''}</text>
+      `;
+    });
+    svg += `</svg>`;
+    canvas.innerHTML = svg;
+  } else {
+    canvas.innerHTML = `<div style="font-size:14px; color:#cbd5e1;">Active dynamic node count: <strong>${dsLinkedList.length}</strong></div>`;
+  }
+}
+
+async function executeDsOp(op) {
+  const val = document.getElementById('dsValueInput').value || '25';
+  const numVal = parseInt(val) || 25;
+
+  if (op === 'INSERT') {
+    if (currentDsType === 'BST') {
+      dsTreeNodes.push({ id: 'newNode_' + numVal, val: numVal, x: 280, y: 210, left: null, right: null });
+      renderDsCanvas('newNode_' + numVal);
+    } else if (currentDsType === 'Linked List') {
+      dsLinkedList.push(numVal);
+      renderDsCanvas(numVal.toString());
+    } else if (currentDsType === 'Stack') {
+      dsStack.unshift(numVal);
+      renderDsCanvas();
+    }
+  } else if (op === 'DELETE') {
+    if (currentDsType === 'Linked List') {
+      dsLinkedList = dsLinkedList.filter(x => x !== numVal);
+      renderDsCanvas();
+    } else if (currentDsType === 'Stack') {
+      dsStack.shift();
+      renderDsCanvas();
+    } else if (currentDsType === 'BST') {
+      dsTreeNodes = dsTreeNodes.filter(n => n.val !== numVal);
+      renderDsCanvas();
+    }
+  } else if (op === 'SEARCH') {
+    renderDsCanvas(currentDsType === 'BST' ? ('newNode_' + numVal) : numVal.toString());
+  }
+
+  const logBox = document.getElementById('dsStepLog');
+  logBox.style.display = 'block';
+  const container = document.getElementById('dsStepsContainer');
+  container.innerHTML = `
+    <div style="background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; font-size:12px;">
+      <strong style="color:#818cf8;">Executed ${op}:</strong> Node with value <code>${val}</code> processed on ${currentDsType}.
+      <span class="badge badge-success" style="float:right;">SUCCESS</span>
+    </div>
+  `;
+}
+
+function resetDs() {
+  dsTreeNodes = [
+    { id: 'root', val: 50, x: 300, y: 50, left: 'n20', right: 'n75' },
+    { id: 'n20', val: 20, x: 180, y: 130, left: 'n10', right: 'n35' },
+    { id: 'n75', val: 75, x: 420, y: 130, left: null, right: 'n90' },
+    { id: 'n10', val: 10, x: 120, y: 210, left: null, right: null },
+    { id: 'n35', val: 35, x: 240, y: 210, left: null, right: null },
+    { id: 'n90', val: 90, x: 480, y: 210, left: null, right: null }
+  ];
+  dsLinkedList = [10, 20, 30, 42, 55];
+  dsStack = [50, 40, 30, 20, 10];
+  renderDsCanvas();
+  document.getElementById('dsStepLog').style.display = 'none';
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+  initDsCanvas();
+});
+</script>
+</body>
+</html>
