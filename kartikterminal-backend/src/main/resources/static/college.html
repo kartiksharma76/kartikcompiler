@@ -1318,7 +1318,7 @@ async function renderTab() {
   }
 
   // ==============================================================
-  // 8. POWER SUITE & DEVELOPER HUB
+  // 8. POWER SUITE & DEVELOPER HUB (FULL 4-TAB SUITE)
   // ==============================================================
   else if (currentTab === 'powersuite') {
     main.innerHTML = `
@@ -1330,71 +1330,218 @@ async function renderTab() {
             <div class="tab-subtitle">Live Web Sandbox, RegEx Studio, AST Code Profiler, and Universal Transformer.</div>
           </div>
         </div>
+        <div class="tab-header-right" style="display:flex; gap:8px;">
+          <button class="btn-secondary" onclick="switchErpPSTab('web')">🌐 Web Sandbox</button>
+          <button class="btn-secondary" onclick="switchErpPSTab('regex')">🔍 RegEx Studio</button>
+          <button class="btn-secondary" onclick="switchErpPSTab('profiler')">📊 AST Profiler</button>
+          <button class="btn-secondary" onclick="switchErpPSTab('transformer')">✨ Transformer</button>
+        </div>
       </div>
 
-      <!-- Live Web Sandbox -->
-      <div class="bento-card" style="margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div style="font-size:14px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;">
-            <span>🌐</span> Live Web Sandbox (HTML / CSS / JavaScript)
+      <!-- Power Suite Subtab Buttons -->
+      <div style="display:flex; gap:8px; margin-bottom:18px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+        <button class="btn-primary erp-ps-tab-btn" id="erpPsTabBtn-web" onclick="switchErpPSTab('web')">🌐 Live Web Sandbox</button>
+        <button class="btn-secondary erp-ps-tab-btn" id="erpPsTabBtn-regex" onclick="switchErpPSTab('regex')">🔍 RegEx Studio</button>
+        <button class="btn-secondary erp-ps-tab-btn" id="erpPsTabBtn-profiler" onclick="switchErpPSTab('profiler')">📊 Code & AST Profiler</button>
+        <button class="btn-secondary erp-ps-tab-btn" id="erpPsTabBtn-transformer" onclick="switchErpPSTab('transformer')">✨ Universal Transformer</button>
+      </div>
+
+      <!-- Tab 1: Live Web Sandbox -->
+      <div id="erpPsTab-web" class="erp-ps-tab-pane" style="display:block;">
+        <div class="bento-card" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div style="font-size:14px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;">
+              <span>🌐</span> Live Web Sandbox (HTML / CSS / JavaScript)
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="erpWebTemplate" onchange="loadErpWebTemplate()" class="form-input" style="padding:5px 10px; font-size:12px; width:auto;">
+                <option value="card">Glassmorphism Card</option>
+                <option value="button">Neon Glow Button</option>
+                <option value="clock">Live Digital Clock</option>
+              </select>
+              <button class="btn-secondary" style="padding:5px 10px; font-size:12px;" onclick="clearErpWeb()">🧹 Clear</button>
+              <button class="btn-secondary" style="padding:5px 10px; font-size:12px;" onclick="openErpWebPreviewNewTab()">🚀 Full Window</button>
+              <button class="btn-primary" style="padding:5px 14px; font-size:12px;" onclick="renderErpWebPreview()">▶ Run Preview</button>
+            </div>
           </div>
-          <div style="display:flex; gap:8px;">
-            <select id="erpWebTemplate" onchange="loadErpWebTemplate()" class="form-input" style="padding:4px 8px; font-size:11.5px; width:auto;">
-              <option value="card">Glassmorphism Card</option>
-              <option value="button">Neon Glow Button</option>
-              <option value="clock">Live Digital Clock</option>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">HTML / CSS / JS CODE</div>
+              <textarea id="erpWebCode" class="form-input" style="height:320px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.4; resize:vertical;" placeholder="Write HTML/CSS/JS here..." oninput="renderErpWebPreview()">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;style&gt;
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #fff;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 24px;
+      width: 280px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      text-align: center;
+    }
+    .badge {
+      background: #6366f1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    h2 { margin: 12px 0 8px; font-size: 18px; }
+    p { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+    button {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class="card"&gt;
+    &lt;span class="badge"&gt;PRO SANDBOX&lt;/span&gt;
+    &lt;h2&gt;Kartik Glass Card&lt;/h2&gt;
+    &lt;p&gt;Live render engine running directly inside College ERP sandbox.&lt;/p&gt;
+    &lt;button onclick="alert('⚡ Realtime Web JS Interactive Event Triggered!')"&gt;Interactive Test&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">LIVE BROWSER PREVIEW</div>
+              <iframe id="erpWebFrame" sandbox="allow-scripts allow-modals allow-same-origin allow-forms" style="width:100%; height:320px; background:#0b0f19; border:1px solid var(--border); border-radius:8px;"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: RegEx Studio -->
+      <div id="erpPsTab-regex" class="erp-ps-tab-pane" style="display:none;">
+        <div class="bento-card" style="margin-bottom:20px;">
+          <div style="font-size:14px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+            <span>🔍</span> RegEx Pattern Tester & Live Match Inspector
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px;">
+            <input type="text" id="erpRegexPattern" class="form-input" placeholder="Regular Expression pattern (e.g. [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})" value="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}" style="flex:1; font-family:'JetBrains Mono',monospace; font-size:12.5px;" oninput="testErpRegex()">
+            <select id="erpRegexPresetSelect" onchange="loadErpRegexPreset()" class="form-input" style="width:auto; font-size:12px;">
+              <option value="">Quick Presets...</option>
+              <option value="email">Email Address</option>
+              <option value="url">Web URL</option>
+              <option value="phone">Phone Number</option>
+              <option value="ip">IPv4 Address</option>
+              <option value="hex">HEX Color</option>
+              <option value="date">Date YYYY-MM-DD</option>
             </select>
-            <button class="btn-primary" style="padding:4px 12px; font-size:11.5px;" onclick="renderErpWebPreview()">▶ Run Preview</button>
+            <div style="display:flex; gap:8px; align-items:center; background:rgba(255,255,255,0.04); padding:6px 12px; border-radius:8px; border:1px solid var(--border); font-size:12px;">
+              <label style="cursor:pointer;"><input type="checkbox" id="erpRegexFlagG" checked onchange="testErpRegex()"> g</label>
+              <label style="cursor:pointer;"><input type="checkbox" id="erpRegexFlagI" checked onchange="testErpRegex()"> i</label>
+              <label style="cursor:pointer;"><input type="checkbox" id="erpRegexFlagM" onchange="testErpRegex()"> m</label>
+            </div>
           </div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-          <div>
-            <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">HTML / CSS / JS CODE</div>
-            <textarea id="erpWebCode" class="form-input" style="height:240px; font-family:'JetBrains Mono',monospace; font-size:12px; resize:vertical;" placeholder="Write HTML/CSS/JS here..." oninput="renderErpWebPreview()">&lt;div style="padding:20px; text-align:center; color:#fff; font-family:sans-serif; background:linear-gradient(135deg,#6366f1,#8b5cf6); border-radius:12px; box-shadow:0 8px 24px rgba(99,102,241,0.4);"&gt;
-  &lt;h2&gt;⚡ KartikTerminal Power Hub&lt;/h2&gt;
-  &lt;p&gt;Real-time live frontend sandbox running inside College ERP.&lt;/p&gt;
-&lt;/div&gt;</textarea>
-          </div>
-          <div>
-            <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">LIVE BROWSER PREVIEW</div>
-            <iframe id="erpWebFrame" sandbox="allow-scripts allow-modals allow-same-origin allow-forms" style="width:100%; height:240px; background:#0b0f19; border:1px solid var(--border); border-radius:8px;"></iframe>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">TEST STRING</div>
+              <textarea id="erpRegexText" class="form-input" style="height:220px; font-size:12.5px; font-family:'JetBrains Mono',monospace;" oninput="testErpRegex()">Contact support team at support@kartikterminal.com or admin.college@enterprise.edu for any inquiry.</textarea>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">
+                <span>MATCH RESULTS & CAPTURES</span>
+                <span id="erpRegexCount" style="color:#818cf8;">2 matches</span>
+              </div>
+              <div id="erpRegexResult" style="height:220px; background:#02040a; border:1px solid var(--border); border-radius:8px; padding:12px; font-family:'JetBrains Mono',monospace; font-size:12px; overflow-y:auto; color:#10b981; white-space:pre-wrap;">Matches (2):
+1. support@kartikterminal.com
+2. admin.college@enterprise.edu</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- RegEx Studio & AST Profiler -->
-      <div class="bento-grid" style="margin-bottom:20px;">
-        <!-- RegEx Studio -->
-        <div class="bento-card col-6">
-          <div style="font-size:13.5px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span>🔍</span> RegEx Studio
+      <!-- Tab 3: AST & Code Profiler -->
+      <div id="erpPsTab-profiler" class="erp-ps-tab-pane" style="display:none;">
+        <div class="bento-card" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div style="font-size:14px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;">
+              <span>📊</span> Code Complexity & AST Health Profiler
+            </div>
+            <button class="btn-primary" style="padding:4px 12px; font-size:12px;" onclick="analyzeErpProfiler()">⚡ Analyze Code</button>
           </div>
-          <input type="text" id="erpRegexPattern" class="form-input" placeholder="Pattern (e.g. [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})" value="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}" style="margin-bottom:10px; font-family:'JetBrains Mono',monospace; font-size:12px;" oninput="testErpRegex()">
-          <textarea id="erpRegexText" class="form-input" style="height:90px; margin-bottom:8px; font-size:12px;" oninput="testErpRegex()">Contact team at admin@college.edu or support@kartikterminal.com</textarea>
-          <div id="erpRegexResult" style="padding:8px 12px; background:#02040a; border:1px solid var(--border); border-radius:6px; font-size:12px; color:#10b981; font-family:'JetBrains Mono',monospace;">Matches detected: 2 emails</div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:12px; border-radius:10px; text-align:center;">
+              <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Cyclomatic Complexity</div>
+              <div style="font-size:18px; font-weight:800; color:#818cf8; margin-top:4px;" id="erpProfComplexity">Low (2)</div>
+              <div style="font-size:10.5px; color:var(--text-dim); margin-top:2px;">Branch & condition depth</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:12px; border-radius:10px; text-align:center;">
+              <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Maintainability Index</div>
+              <div style="font-size:18px; font-weight:800; color:#34d399; margin-top:4px;" id="erpProfMaintainability">96 / 100</div>
+              <div style="font-size:10.5px; color:var(--text-dim); margin-top:2px;">Clean code rating</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:12px; border-radius:10px; text-align:center;">
+              <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">AST Token Density</div>
+              <div style="font-size:18px; font-weight:800; color:#38bdf8; margin-top:4px;" id="erpProfTokens">48 tokens</div>
+              <div style="font-size:10.5px; color:var(--text-dim); margin-top:2px;">Lexical nodes in scope</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">PASTE CODE TO PROFILE</div>
+            <textarea id="erpProfCode" class="form-input" style="height:180px; font-family:'JetBrains Mono',monospace; font-size:12px;" oninput="analyzeErpProfiler()">public class SampleAlgorithm {
+    public int findMax(int[] arr) {
+        if (arr == null || arr.length == 0) return -1;
+        int max = arr[0];
+        for (int num : arr) {
+            if (num > max) {
+                max = num;
+            }
+        }
+        return max;
+    }
+}</textarea>
+          </div>
         </div>
+      </div>
 
-        <!-- Code & AST Profiler -->
-        <div class="bento-card col-6">
-          <div style="font-size:13.5px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span>📊</span> AST & Code Health Profiler
+      <!-- Tab 4: Universal Transformer -->
+      <div id="erpPsTab-transformer" class="erp-ps-tab-pane" style="display:none;">
+        <div class="bento-card" style="margin-bottom:20px;">
+          <div style="font-size:14px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+            <span>✨</span> Universal Data Transformer & Formatter
           </div>
-          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:12px;">
-            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px; border-radius:8px; text-align:center;">
-              <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase;">Complexity</div>
-              <div style="font-size:16px; font-weight:800; color:#818cf8; margin-top:2px;">O(1) Nominal</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px; border-radius:8px; text-align:center;">
-              <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase;">Maintainability</div>
-              <div style="font-size:16px; font-weight:800; color:#34d399; margin-top:2px;">96 / 100</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px; border-radius:8px; text-align:center;">
-              <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase;">Code Health</div>
-              <div style="font-size:16px; font-weight:800; color:#38bdf8; margin-top:2px;">Grade A+</div>
-            </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+            <button class="btn-secondary" onclick="transformErpData('formatJson')">Format JSON</button>
+            <button class="btn-secondary" onclick="transformErpData('minifyJson')">Minify JSON</button>
+            <button class="btn-secondary" onclick="transformErpData('formatSql')">Format SQL</button>
+            <button class="btn-secondary" onclick="transformErpData('base64Encode')">Base64 Encode</button>
+            <button class="btn-secondary" onclick="transformErpData('base64Decode')">Base64 Decode</button>
+            <button class="btn-secondary" onclick="transformErpData('urlEncode')">URL Encode</button>
           </div>
-          <div style="font-size:12px; color:var(--text-dim); line-height:1.5;">
-            Automated AST code analyzer scans code structure, indentation depth, cyclomatic density, and OOP encapsulation boundaries.
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">INPUT DATA</div>
+              <textarea id="erpTransformerInput" class="form-input" style="height:200px; font-family:'JetBrains Mono',monospace; font-size:12px;" placeholder="Paste raw JSON, SQL, or text here...">{"name":"KartikTerminal","version":"2.5.0","features":["DevStudio","PowerSuite","AntiCheat"]}</textarea>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700; color:var(--text-dim); margin-bottom:6px;">
+                <span>TRANSFORMED OUTPUT</span>
+                <button class="btn-secondary" style="padding:2px 8px; font-size:11px;" onclick="copyErpTransformerResult()">📋 Copy</button>
+              </div>
+              <textarea id="erpTransformerOutput" class="form-input" style="height:200px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#34d399;" placeholder="Transformed output appears here..." readonly></textarea>
+            </div>
           </div>
         </div>
       </div>
@@ -1405,57 +1552,325 @@ async function renderTab() {
       </div>
     `;
 
-    setTimeout(renderErpWebPreview, 50);
+    setTimeout(() => {
+      renderErpWebPreview();
+      testErpRegex();
+      analyzeErpProfiler();
+    }, 50);
   }
 }
 
-// ── Power Suite Helpers in College ERP ──
+// ── Power Suite Complete Helpers in College ERP ──
+function switchErpPSTab(tabId) {
+  document.querySelectorAll('.erp-ps-tab-btn').forEach(b => {
+    b.classList.remove('btn-primary');
+    b.classList.add('btn-secondary');
+  });
+  document.querySelectorAll('.erp-ps-tab-pane').forEach(p => p.style.display = 'none');
+
+  const btn = document.getElementById(`erpPsTabBtn-${tabId}`);
+  const pane = document.getElementById(`erpPsTab-${tabId}`);
+  if (btn) {
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-primary');
+  }
+  if (pane) pane.style.display = 'block';
+
+  if (tabId === 'web') renderErpWebPreview();
+  if (tabId === 'regex') testErpRegex();
+  if (tabId === 'profiler') analyzeErpProfiler();
+}
+
 function renderErpWebPreview() {
   const codeArea = document.getElementById('erpWebCode');
   const frame = document.getElementById('erpWebFrame');
   if (!codeArea || !frame) return;
-  const doc = frame.contentDocument || frame.contentWindow.document;
-  doc.open();
-  doc.write(codeArea.value);
-  doc.close();
+  try {
+    const doc = frame.contentDocument || (frame.contentWindow ? frame.contentWindow.document : null);
+    if (doc) {
+      doc.open();
+      doc.write(codeArea.value);
+      doc.close();
+    } else {
+      frame.srcdoc = codeArea.value;
+    }
+  } catch(e) {
+    frame.srcdoc = codeArea.value;
+  }
 }
+
+function clearErpWeb() {
+  const codeArea = document.getElementById('erpWebCode');
+  if (codeArea) {
+    codeArea.value = '';
+    renderErpWebPreview();
+  }
+}
+
+function openErpWebPreviewNewTab() {
+  const codeArea = document.getElementById('erpWebCode');
+  if (!codeArea) return;
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.open();
+    win.document.write(codeArea.value);
+    win.document.close();
+  }
+}
+
+const erpWebTemplates = {
+  card: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #fff;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 24px;
+      width: 280px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      text-align: center;
+    }
+    .badge {
+      background: #6366f1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    h2 { margin: 12px 0 8px; font-size: 18px; }
+    p { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+    button {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">PRO SANDBOX</span>
+    <h2>Kartik Glass Card</h2>
+    <p>Live render engine running directly inside College ERP sandbox.</p>
+    <button onclick="alert('⚡ Realtime Web JS Interactive Event Triggered!')">Interactive Test</button>
+  </div>
+</body>
+</html>`,
+  button: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: #09090b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: sans-serif;
+    }
+    .neon-btn {
+      padding: 14px 32px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #10b981;
+      background: transparent;
+      border: 2px solid #10b981;
+      border-radius: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+      transition: all 0.3s;
+    }
+    .neon-btn:hover {
+      background: #10b981;
+      color: #000;
+      box-shadow: 0 0 35px #10b981;
+    }
+  </style>
+</head>
+<body>
+  <button class="neon-btn" onclick="this.innerText='⚡ ACTIVE!'">CYBER BUTTON</button>
+</body>
+</html>`,
+  clock: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: #020617;
+      color: #38bdf8;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .time { font-size: 36px; font-weight: 900; text-shadow: 0 0 20px #38bdf8; }
+    .label { font-size: 12px; color: #64748b; margin-top: 8px; letter-spacing: 3px; }
+  </style>
+</head>
+<body>
+  <div class="time" id="clock">00:00:00</div>
+  <div class="label">LIVE WEB REALTIME CLOCK</div>
+  <script>
+    function update() {
+      document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    }
+    setInterval(update, 1000);
+    update();
+  <\/script>
+</body>
+</html>`
+};
 
 function loadErpWebTemplate() {
   const sel = document.getElementById('erpWebTemplate');
   const codeArea = document.getElementById('erpWebCode');
   if (!sel || !codeArea) return;
-  if (sel.value === 'card') {
-    codeArea.value = `<div style="padding:24px; max-width:320px; margin:20px auto; background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.15); border-radius:16px; color:#fff; font-family:sans-serif; text-align:center;">
-  <div style="font-size:32px;">🌟</div>
-  <h3 style="margin:10px 0 6px;">Glassmorphic Card</h3>
-  <p style="font-size:12px; color:#cbd5e1;">Modern translucent design pattern</p>
-</div>`;
-  } else if (sel.value === 'button') {
-    codeArea.value = `<div style="display:flex; justify-content:center; align-items:center; height:180px; background:#030712;">
-  <button style="padding:12px 28px; font-size:14px; font-weight:700; color:#fff; background:#6366f1; border:none; border-radius:30px; box-shadow:0 0 20px #6366f1; cursor:pointer;">NEON PULSE</button>
-</div>`;
-  } else if (sel.value === 'clock') {
-    codeArea.value = `<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:180px; background:#0b0f19; color:#34d399; font-family:monospace;">
-  <div style="font-size:28px; font-weight:bold;" id="time">00:00:00</div>
-  <script>setInterval(()=>{document.getElementById('time').innerText=new Date().toLocaleTimeString()},1000);document.getElementById('time').innerText=new Date().toLocaleTimeString();<\\/script>
-</div>`;
-  }
+  codeArea.value = erpWebTemplates[sel.value] || erpWebTemplates.card;
   renderErpWebPreview();
+}
+
+const erpRegexPresets = {
+  email: { pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}', test: 'Contact support@kartikterminal.com or dev.team@cloud-sandbox.org' },
+  url: { pattern: 'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)', test: 'Visit https://github.com/kartiksharma76/kartikcompiler or http://localhost:8080' },
+  phone: { pattern: '(\\+?\\d{1,3}[- ]?)?\\(?\\d{3}\\)?[- ]?\\d{3}[- ]?\\d{4}', test: 'Call us at +1 (555) 234-5678 or 9876543210' },
+  ip: { pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', test: 'Server running at 192.168.1.1 and gateway 10.0.0.254' },
+  hex: { pattern: '#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})\\b', test: 'Theme colors: #3b82f6, #10b981, and #ef4444' },
+  date: { pattern: '\\b\\d{4}-\\d{2}-\\d{2}\\b', test: 'Release dates: 2026-09-04 and scheduled deadline 2026-12-31' }
+};
+
+function loadErpRegexPreset() {
+  const sel = document.getElementById('erpRegexPresetSelect').value;
+  const p = erpRegexPresets[sel];
+  if (p) {
+    document.getElementById('erpRegexPattern').value = p.pattern;
+    document.getElementById('erpRegexText').value = p.test;
+    testErpRegex();
+  }
 }
 
 function testErpRegex() {
   const patInput = document.getElementById('erpRegexPattern');
   const textInput = document.getElementById('erpRegexText');
   const resBox = document.getElementById('erpRegexResult');
+  const countEl = document.getElementById('erpRegexCount');
   if (!patInput || !textInput || !resBox) return;
+
+  const pattern = patInput.value;
+  const text = textInput.value;
+  const g = document.getElementById('erpRegexFlagG')?.checked ? 'g' : '';
+  const i = document.getElementById('erpRegexFlagI')?.checked ? 'i' : '';
+  const m = document.getElementById('erpRegexFlagM')?.checked ? 'm' : '';
+  const flags = g + i + m;
+
+  if (!pattern) {
+    resBox.innerHTML = '<span style="color:var(--text-dim);">Enter a regular expression pattern to test...</span>';
+    if (countEl) countEl.innerText = '0 matches';
+    return;
+  }
+
   try {
-    const re = new RegExp(patInput.value, 'g');
-    const matches = textInput.value.match(re) || [];
-    resBox.innerHTML = matches.length > 0 ? 
-      `Matches (${matches.length}): <strong>${matches.map(m => escapeHtml(m)).join(', ')}</strong>` : 
-      '<span style="color:#f87171;">No matches found</span>';
-  } catch(e) {
-    resBox.innerHTML = '<span style="color:#f87171;">Invalid RegEx pattern</span>';
+    const reg = new RegExp(pattern, flags.includes('g') ? flags : flags + 'g');
+    const matches = [...text.matchAll(reg)];
+    if (countEl) countEl.innerText = `${matches.length} match${matches.length === 1 ? '' : 'es'}`;
+    if (matches.length === 0) {
+      resBox.innerHTML = '<span style="color:#ef4444;">No pattern matches found in test string.</span>';
+      return;
+    }
+    let report = `✓ Pattern compiled: /${pattern}/${flags}\nTotal Matches: ${matches.length}\n\n`;
+    matches.forEach((match, idx) => {
+      report += `[Match #${idx + 1}] "${match[0]}" at index ${match.index}\n`;
+    });
+    resBox.textContent = report;
+  } catch (err) {
+    if (countEl) countEl.innerText = 'Syntax Error';
+    resBox.innerHTML = `<span style="color:#ef4444;">Regex Error: ${err.message}</span>`;
+  }
+}
+
+function analyzeErpProfiler() {
+  const code = document.getElementById('erpProfCode')?.value || '';
+  const lines = code.split('\n');
+  const branchKeywords = ['if', 'else if', 'for', 'while', 'case', 'catch', '&&', '\\|\\|', '\\?'];
+  let branches = 1;
+  branchKeywords.forEach(kw => {
+    const reg = new RegExp('\\b' + kw + '\\b|' + kw, 'g');
+    const matches = code.match(reg);
+    if (matches) branches += matches.length;
+  });
+
+  const compEl = document.getElementById('erpProfComplexity');
+  if (compEl) {
+    compEl.innerText = branches > 8 ? `High (${branches})` : (branches > 4 ? `Moderate (${branches})` : `Low (${branches})`);
+    compEl.style.color = branches > 8 ? '#ef4444' : (branches > 4 ? '#f59e0b' : '#10b981');
+  }
+
+  const maintainability = Math.max(30, Math.min(100, Math.round(100 - (branches * 2.5) - (lines.length * 0.15) + (code.includes('//') ? 5 : 0))));
+  const mainEl = document.getElementById('erpProfMaintainability');
+  if (mainEl) mainEl.innerText = `${maintainability} / 100`;
+
+  const tokens = code.match(/[\w]+|[^\s\w]/g) || [];
+  const tokEl = document.getElementById('erpProfTokens');
+  if (tokEl) tokEl.innerText = `${tokens.length} tokens`;
+}
+
+function transformErpData(action) {
+  const input = document.getElementById('erpTransformerInput')?.value || '';
+  const outEl = document.getElementById('erpTransformerOutput');
+  if (!outEl) return;
+
+  try {
+    if (action === 'formatJson') {
+      outEl.value = JSON.stringify(JSON.parse(input), null, 2);
+    } else if (action === 'minifyJson') {
+      outEl.value = JSON.stringify(JSON.parse(input));
+    } else if (action === 'formatSql') {
+      const keywords = ['SELECT', 'FROM', 'WHERE', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'GROUP BY', 'ORDER BY', 'HAVING', 'JOIN'];
+      let formatted = input;
+      keywords.forEach(kw => {
+        formatted = formatted.replace(new RegExp('\\b' + kw + '\\b', 'gi'), '\n' + kw.toUpperCase() + ' ');
+      });
+      outEl.value = formatted.trim();
+    } else if (action === 'base64Encode') {
+      outEl.value = btoa(unescape(encodeURIComponent(input)));
+    } else if (action === 'base64Decode') {
+      outEl.value = decodeURIComponent(escape(atob(input)));
+    } else if (action === 'urlEncode') {
+      outEl.value = encodeURIComponent(input);
+    }
+  } catch (err) {
+    outEl.value = `Error: ${err.message}`;
+  }
+}
+
+function copyErpTransformerResult() {
+  const outEl = document.getElementById('erpTransformerOutput');
+  if (outEl && outEl.value) {
+    navigator.clipboard.writeText(outEl.value);
+    alert('📋 Transformed output copied to clipboard!');
   }
 }
 

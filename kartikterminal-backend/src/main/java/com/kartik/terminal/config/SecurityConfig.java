@@ -48,6 +48,10 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.disable())
+            )
+
             // Sessions: STATELESS for API, but OAuth2 needs a brief session during redirect
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
