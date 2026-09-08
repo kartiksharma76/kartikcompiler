@@ -738,42 +738,31 @@ body {
 .showcase-col {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   position: relative;
   min-height: 480px;
 }
 
 .seamless-artwork-blend {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
   position: relative;
-  /* Seamless fade mask on left edge so it smoothly merges into the background */
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
+  display: flex;
+  justify-content: flex-end;
+  /* Smooth non-linear mask on left side so it dissolves completely naturally into the dark cyber background */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 10%, black 25%, black 100%);
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 10%, black 25%, black 100%);
   transition: transform 0.4s ease;
 }
 .seamless-artwork-blend:hover {
-  transform: scale(1.02);
+  transform: scale(1.015);
 }
 .seamless-artwork-img {
   width: 100%;
-  height: auto;
+  max-height: 82vh;
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 0 35px rgba(168, 85, 247, 0.25));
-}
-
-/* Footer Tagline */
-.bottom-tagline-bar {
-  text-align: center;
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: #64748b;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 14px 0 18px;
-  position: relative;
-  z-index: 10;
+  filter: drop-shadow(0 0 35px rgba(168, 85, 247, 0.2));
 }
 
 /* =================================================================
@@ -1023,9 +1012,6 @@ body {
         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
       </svg>
     </button>
-    <a href="/compiler.html" class="nav-btn-gradient">
-      Get Started <span>→</span>
-    </a>
   </div>
 </header>
 
