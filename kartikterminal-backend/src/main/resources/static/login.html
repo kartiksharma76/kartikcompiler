@@ -6,7 +6,7 @@
 <title>KartikTerminal | Developer's Cloud Execution Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Reenie+Beanie&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/responsive.css">
 <style>
 *, *::before, *::after {
@@ -18,20 +18,17 @@
 :root {
   --bg: #030712;
   --bg-deep: #02040a;
-  --card-bg: rgba(9, 14, 28, 0.78);
-  --card-border-glow: rgba(56, 189, 248, 0.4);
+  --card-bg: rgba(8, 13, 27, 0.88);
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --text-main: #f8fafc;
+  --text-main: #ffffff;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
   --accent-cyan: #00f2fe;
   --accent-blue: #3b82f6;
   --accent-purple: #a855f7;
   --accent-pink: #ec4899;
-  --glow-cyan: 0 0 25px rgba(0, 242, 254, 0.45);
-  --glow-purple: 0 0 30px rgba(168, 85, 247, 0.4);
-  --btn-gradient: linear-gradient(90deg, #00b4d8 0%, #3b82f6 35%, #9333ea 70%, #d946ef 100%);
-  --btn-gradient-hover: linear-gradient(90deg, #00f2fe 0%, #60a5fa 35%, #a855f7 70%, #f472b6 100%);
+  --btn-gradient: linear-gradient(90deg, #00b4d8 0%, #3b82f6 32%, #9333ea 68%, #ec4899 100%);
+  --btn-gradient-hover: linear-gradient(90deg, #00f2fe 0%, #60a5fa 32%, #a855f7 68%, #f472b6 100%);
 }
 
 html, body {
@@ -41,75 +38,64 @@ html, body {
   color: var(--text-main);
   overflow-x: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-/* Background Cyber Atmosphere */
+/* Background Atmosphere with Mountains Silhouette */
 body {
   background-image: 
-    radial-gradient(circle at 10% 15%, rgba(0, 242, 254, 0.14) 0%, transparent 40%),
-    radial-gradient(circle at 88% 25%, rgba(168, 85, 247, 0.16) 0%, transparent 45%),
+    url('/mountains-footer-bg.png'),
+    radial-gradient(circle at 10% 18%, rgba(0, 242, 254, 0.16) 0%, transparent 40%),
+    radial-gradient(circle at 88% 25%, rgba(168, 85, 247, 0.18) 0%, transparent 45%),
     radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.09) 0%, transparent 60%),
-    radial-gradient(circle at 50% 95%, rgba(236, 72, 153, 0.12) 0%, transparent 50%),
-    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-  background-position: 0 0, 0 0, 0 0, 0 0, center center, center center;
+    linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
+  background-size: 100% auto, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  background-position: bottom center, 0 0, 0 0, 0 0, center center, center center;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
 }
 
-/* Background Ambient Orbs */
+/* Background Ambient Glow Orbs */
 .bg-ambient-orb {
   position: fixed;
   border-radius: 50%;
   filter: blur(100px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.55;
-  animation: floatOrb 12s ease-in-out infinite alternate;
+  opacity: 0.6;
 }
 .orb-1 {
-  width: 450px;
-  height: 450px;
+  width: 480px;
+  height: 480px;
   background: radial-gradient(circle, rgba(0, 242, 254, 0.28), rgba(59, 130, 246, 0.05));
-  top: 5%;
+  top: 2%;
   left: 2%;
 }
 .orb-2 {
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.05));
-  top: 15%;
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.26), rgba(236, 72, 153, 0.05));
+  top: 10%;
   right: 2%;
-  animation-delay: -4s;
-}
-.orb-3 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.2), rgba(0, 242, 254, 0.05));
-  bottom: 0%;
-  left: 30%;
-  animation-delay: -8s;
 }
 
-@keyframes floatOrb {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(25px, -30px) scale(1.08); }
-  100% { transform: translate(-20px, 20px) scale(0.95); }
-}
-
-/* Top Navigation Bar */
+/* =================================================================
+   TOP NAVBAR
+   ================================================================= */
 .top-navbar {
   position: relative;
   z-index: 50;
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 16px 28px;
+  padding: 18px 32px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* Brand Logo */
 .brand-container {
   display: flex;
   align-items: center;
@@ -117,24 +103,24 @@ body {
   text-decoration: none;
 }
 .brand-icon-sq {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(59, 130, 246, 0.1));
-  border: 1.5px solid rgba(0, 242, 254, 0.6);
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.22), rgba(59, 130, 246, 0.1));
+  border: 1.5px solid rgba(0, 242, 254, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-cyan);
-  box-shadow: 0 0 18px rgba(0, 242, 254, 0.35);
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.45);
   font-family: 'Fira Code', monospace;
   font-weight: 700;
-  font-size: 17px;
+  font-size: 16px;
   transition: all 0.3s ease;
 }
 .brand-container:hover .brand-icon-sq {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.7);
 }
 .brand-text-col {
   display: flex;
@@ -142,7 +128,7 @@ body {
 }
 .brand-main-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.8px;
   color: #ffffff;
@@ -166,7 +152,7 @@ body {
   gap: 6px;
   background: rgba(13, 20, 38, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  padding: 5px 8px;
+  padding: 4px 6px;
   border-radius: 9999px;
   backdrop-filter: blur(20px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -176,7 +162,7 @@ body {
   text-decoration: none;
   font-size: 13.5px;
   font-weight: 500;
-  padding: 8px 18px;
+  padding: 7px 18px;
   border-radius: 9999px;
   position: relative;
   transition: all 0.25s ease;
@@ -192,7 +178,7 @@ body {
 .nav-pill-item.active::after {
   content: '';
   position: absolute;
-  bottom: 3px;
+  bottom: 2px;
   left: 50%;
   transform: translateX(-50%);
   width: 22px;
@@ -202,7 +188,7 @@ body {
   box-shadow: 0 0 10px var(--accent-cyan);
 }
 
-/* Nav Actions (Right) */
+/* Nav Actions */
 .nav-actions {
   display: flex;
   align-items: center;
@@ -237,7 +223,7 @@ body {
   color: #ffffff;
   font-size: 13.5px;
   font-weight: 600;
-  padding: 9px 22px;
+  padding: 8px 20px;
   border-radius: 9999px;
   text-decoration: none;
   box-shadow: 0 0 20px rgba(112, 0, 255, 0.45);
@@ -249,19 +235,21 @@ body {
   box-shadow: 0 0 28px rgba(192, 38, 211, 0.65);
 }
 
-/* Main Layout Grid */
+/* =================================================================
+   MAIN 3-COLUMN LAYOUT
+   ================================================================= */
 .main-wrapper {
   position: relative;
   z-index: 10;
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 10px 28px 24px;
+  padding: 6px 32px 16px;
   display: grid;
-  grid-template-columns: 1.02fr 1.18fr 1.05fr;
-  gap: 28px;
+  grid-template-columns: 1.05fr 1.15fr 1.05fr;
+  gap: 30px;
   align-items: center;
-  min-height: calc(100vh - 140px);
+  flex: 1;
 }
 
 /* =================================================================
@@ -270,29 +258,28 @@ body {
 .hero-col {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding-left: 6px;
+  gap: 20px;
   position: relative;
 }
 
-/* Floating Code Bubble Icon */
+/* Floating Code Bubble */
 .floating-bracket-badge {
   position: absolute;
-  top: 140px;
-  left: -22px;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(0, 242, 254, 0.35);
+  top: 150px;
+  left: -20px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(13, 20, 38, 0.85);
+  border: 1.5px solid rgba(0, 242, 254, 0.4);
   color: var(--accent-cyan);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Fira Code', monospace;
   font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 0 16px rgba(0, 242, 254, 0.35);
+  font-size: 15px;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
   animation: floatSubtle 4s ease-in-out infinite alternate;
 }
 @keyframes floatSubtle {
@@ -311,7 +298,7 @@ body {
   background: rgba(168, 85, 247, 0.12);
   border: 1px solid rgba(168, 85, 247, 0.45);
   color: #f1f5f9;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
 }
@@ -326,7 +313,7 @@ body {
 /* Hero Title */
 .hero-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 48px;
+  font-size: 46px;
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: -0.8px;
@@ -340,7 +327,7 @@ body {
 }
 
 .hero-desc {
-  font-size: 14.5px;
+  font-size: 14px;
   line-height: 1.55;
   color: var(--text-muted);
   max-width: 390px;
@@ -350,61 +337,61 @@ body {
 .feature-cards-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-width: 400px;
+  gap: 11px;
+  max-width: 390px;
 }
 .feature-card {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 11px 16px;
+  padding: 10px 16px;
   border-radius: 14px;
-  background: rgba(13, 20, 38, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(13, 20, 38, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(12px);
   transition: all 0.25s ease;
   cursor: default;
 }
 .feature-card:hover {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.9);
   border-color: rgba(0, 242, 254, 0.35);
   transform: translateX(4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 242, 254, 0.15);
 }
 .feature-icon-box {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 16px;
+  font-size: 15px;
 }
 .icon-purple {
-  background: rgba(147, 51, 234, 0.18);
-  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(147, 51, 234, 0.2);
+  border-color: rgba(168, 85, 247, 0.45);
   color: #c084fc;
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
 }
 .icon-blue {
-  background: rgba(37, 99, 235, 0.18);
-  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(59, 130, 246, 0.45);
   color: #60a5fa;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
 }
 .icon-cyan {
-  background: rgba(6, 182, 212, 0.18);
-  border-color: rgba(0, 242, 254, 0.4);
+  background: rgba(6, 182, 212, 0.2);
+  border-color: rgba(0, 242, 254, 0.45);
   color: #38bdf8;
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
 }
 .icon-indigo {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: rgba(129, 140, 248, 0.4);
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(129, 140, 248, 0.45);
   color: #818cf8;
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
 }
 .feature-text-group {
   display: flex;
@@ -426,12 +413,12 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 14px 18px;
+  padding: 13px 18px;
   border-radius: 14px;
-  background: rgba(13, 20, 38, 0.6);
+  background: rgba(13, 20, 38, 0.65);
   border: 1px solid rgba(0, 242, 254, 0.18);
   backdrop-filter: blur(14px);
-  max-width: 400px;
+  max-width: 390px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 .quote-icon-quote {
@@ -459,7 +446,7 @@ body {
 }
 
 /* =================================================================
-   CENTER COLUMN: NEON AUTH CARD
+   CENTER COLUMN: EXACT NEON AUTH CARD
    ================================================================= */
 .auth-col {
   display: flex;
@@ -467,59 +454,58 @@ body {
   position: relative;
 }
 
-/* Neon Glowing Frame wrapper */
 .auth-card-neon-wrapper {
   position: relative;
   width: 100%;
-  max-width: 450px;
+  max-width: 440px;
   border-radius: 26px;
   padding: 2px;
   background: linear-gradient(135deg, #00f2fe 0%, #3b82f6 30%, #a855f7 70%, #ec4899 100%);
   box-shadow: 
-    0 0 35px -5px rgba(0, 242, 254, 0.35),
-    0 0 45px -8px rgba(168, 85, 247, 0.35),
+    0 0 35px -5px rgba(0, 242, 254, 0.38),
+    0 0 45px -8px rgba(168, 85, 247, 0.38),
     0 25px 50px -12px rgba(0, 0, 0, 0.9);
   transition: all 0.3s ease;
 }
 .auth-card-neon-wrapper:hover {
   box-shadow: 
-    0 0 45px -2px rgba(0, 242, 254, 0.5),
-    0 0 55px -4px rgba(236, 72, 153, 0.45),
+    0 0 45px -2px rgba(0, 242, 254, 0.52),
+    0 0 55px -4px rgba(236, 72, 153, 0.48),
     0 30px 60px -10px rgba(0, 0, 0, 0.95);
 }
 
 .auth-card-inner {
   width: 100%;
-  background: rgba(8, 14, 28, 0.92);
+  background: rgba(8, 13, 27, 0.94);
   border-radius: 24px;
-  padding: 30px 30px 24px;
+  padding: 28px 28px 22px;
   backdrop-filter: blur(28px);
   position: relative;
   overflow: hidden;
 }
 
-/* Top Card Header & Welcome Pill */
+/* Top Icon & Welcome Back Pill */
 .card-top-bar {
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .card-icon-badge {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: 14px;
   background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(59, 130, 246, 0.12));
-  border: 1.5px solid rgba(0, 242, 254, 0.6);
+  border: 1.5px solid rgba(0, 242, 254, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-cyan);
   font-family: 'Fira Code', monospace;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.45);
 }
 .welcome-status-pill {
   position: absolute;
@@ -546,7 +532,7 @@ body {
 
 .auth-card-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 23px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.8px;
   text-align: center;
@@ -557,11 +543,11 @@ body {
   color: var(--accent-cyan);
 }
 .auth-card-subtitle {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-muted);
   text-align: center;
   margin-top: 3px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 /* Social Buttons */
@@ -571,18 +557,18 @@ body {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 11.5px 18px;
+  padding: 11px 18px;
   background: #ffffff;
   color: #0f172a;
   border: none;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.25s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  margin-bottom: 12px;
+  margin-bottom: 11px;
 }
 .google-sso-btn:hover {
   background: #f8fafc;
@@ -590,19 +576,19 @@ body {
   box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
 }
 .google-sso-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
 }
 
 .social-row-icons {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 .social-icon-btn {
   flex: 1;
-  height: 42px;
+  height: 40px;
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -631,7 +617,7 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 .section-or-divider::before, .section-or-divider::after {
   content: '';
@@ -640,7 +626,7 @@ body {
   background: rgba(255, 255, 255, 0.12);
 }
 .section-or-divider span {
-  font-size: 10px;
+  font-size: 9.5px;
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: #64748b;
@@ -662,12 +648,12 @@ body {
 
 /* Form Fields */
 .form-field-group {
-  margin-bottom: 14px;
+  margin-bottom: 13px;
   text-align: left;
 }
 .field-label {
   display: block;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -698,7 +684,7 @@ body {
 }
 .field-input {
   width: 100%;
-  padding: 11px 0;
+  padding: 10.5px 0;
   background: transparent;
   border: none;
   color: #f8fafc;
@@ -730,8 +716,8 @@ body {
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  margin-top: 14px;
-  margin-bottom: 18px;
+  margin-top: 12px;
+  margin-bottom: 16px;
 }
 .custom-checkbox-label {
   display: flex;
@@ -762,12 +748,12 @@ body {
 /* Submit Action Button */
 .auth-gradient-submit-btn {
   width: 100%;
-  padding: 12.5px;
+  padding: 12px;
   background: var(--btn-gradient);
   color: #ffffff;
   border: none;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -776,7 +762,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .auth-gradient-submit-btn:hover {
   background: var(--btn-gradient-hover);
@@ -795,9 +781,9 @@ body {
 /* Switch Auth Link */
 .auth-switch-prompt {
   text-align: center;
-  font-size: 12.5px;
+  font-size: 12px;
   color: #94a3b8;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .auth-switch-prompt a {
   color: var(--accent-cyan);
@@ -829,10 +815,10 @@ body {
 
 /* Status Feedback */
 .status-msg-banner {
-  padding: 10px 14px;
+  padding: 9px 14px;
   border-radius: 9px;
   font-size: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   display: none;
 }
 .status-msg-banner.error {
@@ -847,23 +833,21 @@ body {
 }
 
 /* =================================================================
-   RIGHT COLUMN: ARTISTIC WORKSPACE & STATS
+   RIGHT COLUMN: EXACT WORKSPACE ROOM ARTWORK & STATS
    ================================================================= */
 .showcase-col {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  min-height: 520px;
-  padding-right: 6px;
+  min-height: 480px;
 }
 
-/* Ambient Neon Room Image & Floating Artwork */
 .room-art-container {
   position: relative;
   width: 100%;
   border-radius: 20px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .workspace-visual-frame {
@@ -871,13 +855,13 @@ body {
   width: 100%;
   height: 290px;
   border-radius: 20px;
-  background: radial-gradient(circle at 70% 30%, rgba(236, 72, 153, 0.25) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(3, 7, 18, 0.95) 100%), #050b1a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.65), 0 0 30px rgba(168, 85, 247, 0.2);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #020617;
 }
 
 .workspace-bg-img {
@@ -887,75 +871,30 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.75;
-  mix-blend-mode: lighten;
   transition: transform 0.5s ease;
 }
 .workspace-visual-frame:hover .workspace-bg-img {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
-/* Neon Slogans Overlay */
-.neon-slogan-left {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 5;
-  font-family: 'Caveat', cursive;
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: #38bdf8;
-  text-shadow: 0 0 18px rgba(56, 189, 248, 0.8), 0 0 35px rgba(56, 189, 248, 0.4);
-}
-.neon-slogan-right {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  z-index: 5;
-  text-align: right;
-  font-family: 'Caveat', cursive;
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 1.15;
-  color: #f472b6;
-  text-shadow: 0 0 15px rgba(244, 114, 182, 0.8);
-}
-.neon-poster-box {
-  position: absolute;
-  right: 22px;
-  top: 75px;
-  z-index: 5;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  border-radius: 8px;
-  padding: 6px 10px;
-  text-align: center;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  color: #e2e8f0;
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
-}
-
-/* Floating Badges */
+/* Floating hex badge on right frame */
 .floating-hex-code {
   position: absolute;
-  right: -10px;
-  top: 185px;
+  right: -12px;
+  top: 190px;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(0, 242, 254, 0.5);
+  border-radius: 12px;
+  background: rgba(13, 20, 38, 0.88);
+  border: 1.5px solid rgba(0, 242, 254, 0.5);
   color: var(--accent-cyan);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Fira Code', monospace;
   font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 0 16px rgba(0, 242, 254, 0.35);
+  font-size: 15px;
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.4);
   z-index: 6;
 }
 
@@ -970,7 +909,7 @@ body {
   background: rgba(13, 20, 38, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 12px 8px;
+  padding: 12px 6px;
   text-align: center;
   backdrop-filter: blur(14px);
   transition: all 0.25s ease;
@@ -982,19 +921,19 @@ body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 242, 254, 0.2);
 }
 .stat-icon {
-  font-size: 16px;
-  margin-bottom: 3px;
+  font-size: 15px;
+  margin-bottom: 2px;
   display: inline-block;
 }
 .stat-number {
   font-family: 'Outfit', sans-serif;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.1;
 }
 .stat-label {
-  font-size: 10px;
+  font-size: 9.5px;
   color: #94a3b8;
   margin-top: 2px;
   white-space: nowrap;
@@ -1010,7 +949,7 @@ body {
 }
 .handwritten-neon-script {
   font-family: 'Caveat', cursive;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: #c084fc;
   letter-spacing: 0.8px;
@@ -1018,7 +957,7 @@ body {
 }
 .terminal-explore-badge {
   font-family: 'Fira Code', monospace;
-  font-size: 9.5px;
+  font-size: 9px;
   color: #38bdf8;
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(56, 189, 248, 0.35);
@@ -1033,10 +972,10 @@ body {
   text-align: center;
   font-size: 11px;
   letter-spacing: 4px;
-  color: #475569;
+  color: #64748b;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 16px 0 20px;
+  padding: 14px 0 18px;
   position: relative;
   z-index: 10;
 }
@@ -1077,7 +1016,7 @@ body {
     padding-left: 0;
   }
   .hero-title {
-    font-size: 38px;
+    font-size: 36px;
   }
   .hero-desc {
     max-width: 100%;
@@ -1098,7 +1037,7 @@ body {
     padding: 24px 18px 20px;
   }
   .hero-title {
-    font-size: 32px;
+    font-size: 30px;
   }
 }
 </style>
@@ -1108,7 +1047,6 @@ body {
 <!-- Ambient Glow Orbs -->
 <div class="bg-ambient-orb orb-1"></div>
 <div class="bg-ambient-orb orb-2"></div>
-<div class="bg-ambient-orb orb-3"></div>
 
 <!-- Top Floating Navigation Bar -->
 <header class="top-navbar">
@@ -1143,9 +1081,6 @@ body {
         <line x1="21" y1="12" x2="23" y2="12"></line>
         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-      </svg>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;" id="moonIcon">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
       </svg>
     </button>
     <a href="/compiler.html" class="nav-btn-gradient">
@@ -1199,7 +1134,7 @@ body {
 
       <div class="feature-card">
         <div class="feature-icon-box icon-blue">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -1214,7 +1149,7 @@ body {
 
       <div class="feature-card">
         <div class="feature-icon-box icon-cyan">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
           </svg>
         </div>
@@ -1226,7 +1161,7 @@ body {
 
       <div class="feature-card">
         <div class="feature-icon-box icon-indigo">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"></line>
             <line x1="12" y1="20" x2="12" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -1250,7 +1185,7 @@ body {
   </section>
 
   <!-- =============================================================
-       CENTER COLUMN: Neon Authentication Card
+       CENTER COLUMN: Exact Neon Authentication Card
        ============================================================= -->
   <section class="auth-col">
     <div class="auth-card-neon-wrapper">
@@ -1455,29 +1390,13 @@ body {
   </section>
 
   <!-- =============================================================
-       RIGHT COLUMN: Neon Atmosphere & Metrics Stats
+       RIGHT COLUMN: Exact Developer Room Setup Artwork & Stats
        ============================================================= -->
   <section class="showcase-col">
     <!-- Atmospheric Workspace Visual Card -->
     <div class="room-art-container">
       <div class="workspace-visual-frame">
-        <img src="/workspace-showcase.png" alt="Developer Workspace Setup" class="workspace-bg-img" onerror="this.style.display='none'">
-        
-        <!-- Left Slogan: Build Execute Innovate -->
-        <div class="neon-slogan-left">
-          Build<br>Execute<br>Innovate
-        </div>
-
-        <!-- Right Slogan: Better Developers Brighter Tomorrow -->
-        <div class="neon-slogan-right">
-          Better<br>Developers<br>Brighter<br>Tomorrow
-        </div>
-
-        <!-- Wall Poster: Discipline Creates Freedom -->
-        <div class="neon-poster-box">
-          DISCIPLINE<br>CREATES<br>FREEDOM<br>
-          <span style="color:var(--accent-cyan); font-family:'Fira Code'; font-size:11px;">&lt;/&gt;</span>
-        </div>
+        <img src="/room-artwork.png" alt="Developer Workspace Setup" class="workspace-bg-img">
       </div>
 
       <!-- Floating hex badge -->
