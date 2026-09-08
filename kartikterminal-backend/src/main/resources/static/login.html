@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KartikTerminal | Cloud Execution Platform</title>
+<title>KartikTerminal | Developer's Cloud Execution Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Reenie+Beanie&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/responsive.css">
 <style>
 *, *::before, *::after {
@@ -17,417 +17,678 @@
 
 :root {
   --bg: #030712;
-  --bg-card: rgba(10, 16, 31, 0.92);
-  --border-card: rgba(56, 189, 248, 0.35);
-  --border-input: #1e293b;
+  --bg-deep: #02040a;
+  --card-bg: rgba(9, 14, 28, 0.78);
+  --card-border-glow: rgba(56, 189, 248, 0.4);
+  --border-subtle: rgba(255, 255, 255, 0.08);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
-  --accent-blue: #2563eb;
-  --accent-cyan: #38bdf8;
-  --accent-purple: #8b5cf6;
-  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  --glow-cyan: rgba(56, 189, 248, 0.25);
+  --accent-cyan: #00f2fe;
+  --accent-blue: #3b82f6;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --glow-cyan: 0 0 25px rgba(0, 242, 254, 0.45);
+  --glow-purple: 0 0 30px rgba(168, 85, 247, 0.4);
+  --btn-gradient: linear-gradient(90deg, #00b4d8 0%, #3b82f6 35%, #9333ea 70%, #d946ef 100%);
+  --btn-gradient-hover: linear-gradient(90deg, #00f2fe 0%, #60a5fa 35%, #a855f7 70%, #f472b6 100%);
 }
 
-body {
+html, body {
   min-height: 100vh;
   background-color: var(--bg);
-  background-image: 
-    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 50% 85%, rgba(56, 189, 248, 0.12) 0%, transparent 45%),
-    linear-gradient(rgba(56, 189, 248, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-  background-position: 0 0, 0 0, 0 0, center center, center center;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow-x: hidden;
   position: relative;
-  padding: 24px 16px;
 }
 
-/* Background animated glow orbs */
+/* Background Cyber Atmosphere */
+body {
+  background-image: 
+    radial-gradient(circle at 10% 15%, rgba(0, 242, 254, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 88% 25%, rgba(168, 85, 247, 0.16) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.09) 0%, transparent 60%),
+    radial-gradient(circle at 50% 95%, rgba(236, 72, 153, 0.12) 0%, transparent 50%),
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  background-position: 0 0, 0 0, 0 0, 0 0, center center, center center;
+}
+
+/* Background Ambient Orbs */
 .bg-ambient-orb {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(100px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.6;
+  opacity: 0.55;
+  animation: floatOrb 12s ease-in-out infinite alternate;
 }
 .orb-1 {
-  width: 380px;
-  height: 380px;
-  background: rgba(37, 99, 235, 0.22);
-  top: 10%;
-  left: 5%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.28), rgba(59, 130, 246, 0.05));
+  top: 5%;
+  left: 2%;
 }
 .orb-2 {
-  width: 440px;
-  height: 440px;
-  background: rgba(56, 189, 248, 0.15);
-  top: 25%;
-  left: 35%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.05));
+  top: 15%;
+  right: 2%;
+  animation-delay: -4s;
 }
 .orb-3 {
-  width: 400px;
-  height: 400px;
-  background: rgba(124, 58, 237, 0.18);
-  bottom: 10%;
-  right: 5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2), rgba(0, 242, 254, 0.05));
+  bottom: 0%;
+  left: 30%;
+  animation-delay: -8s;
 }
 
-/* Main Container: 3 Column Layout */
-.page-wrapper {
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(25px, -30px) scale(1.08); }
+  100% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+/* Top Navigation Bar */
+.top-navbar {
   position: relative;
-  z-index: 1;
+  z-index: 50;
   width: 100%;
-  max-width: 1320px;
-  display: grid;
-  grid-template-columns: 1.05fr 1.15fr 1fr;
-  gap: 36px;
-  align-items: center;
-  min-height: calc(100vh - 48px);
-}
-
-/* =================================================================
-   LEFT HERO SECTION
-   ================================================================= */
-.hero-section {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 16px 28px;
   display: flex;
-  flex-direction: column;
-  gap: 28px;
-  padding-right: 12px;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.brand-header {
+/* Brand Logo */
+.brand-container {
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
 }
-.brand-icon-box {
-  width: 42px;
-  height: 42px;
+.brand-icon-sq {
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(56, 189, 248, 0.15));
-  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(59, 130, 246, 0.1));
+  border: 1.5px solid rgba(0, 242, 254, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-cyan);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.35);
+  font-family: 'Fira Code', monospace;
+  font-weight: 700;
+  font-size: 17px;
+  transition: all 0.3s ease;
 }
-.brand-text-group {
+.brand-container:hover .brand-icon-sq {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
+}
+.brand-text-col {
   display: flex;
   flex-direction: column;
 }
-.brand-title {
+.brand-main-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 800;
   letter-spacing: 0.8px;
   color: #ffffff;
-  display: flex;
-  align-items: center;
+  line-height: 1.1;
 }
-.brand-title span {
+.brand-main-title span {
   color: var(--accent-cyan);
 }
-.brand-subtitle {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  letter-spacing: 0.6px;
+.brand-sub-tag {
+  font-size: 11px;
+  color: #94a3b8;
   font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
-.hero-heading {
+/* Nav Pill Capsule Menu */
+.nav-pill-menu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(13, 20, 38, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 5px 8px;
+  border-radius: 9999px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.nav-pill-item {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  position: relative;
+  transition: all 0.25s ease;
+}
+.nav-pill-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+.nav-pill-item.active {
+  color: #ffffff;
+  font-weight: 600;
+}
+.nav-pill-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 2.5px;
+  background: var(--accent-cyan);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--accent-cyan);
+}
+
+/* Nav Actions (Right) */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.theme-pill-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(13, 20, 38, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  color: #94a3b8;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.25s ease;
+}
+.theme-pill-toggle:hover {
+  color: #ffffff;
+  border-color: rgba(0, 242, 254, 0.4);
+}
+.theme-pill-toggle svg {
+  width: 15px;
+  height: 15px;
+}
+.nav-btn-gradient {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #0084ff 0%, #7000ff 50%, #c026d3 100%);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 9px 22px;
+  border-radius: 9999px;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(112, 0, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.25s ease;
+}
+.nav-btn-gradient:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 0 28px rgba(192, 38, 211, 0.65);
+}
+
+/* Main Layout Grid */
+.main-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 10px 28px 24px;
+  display: grid;
+  grid-template-columns: 1.02fr 1.18fr 1.05fr;
+  gap: 28px;
+  align-items: center;
+  min-height: calc(100vh - 140px);
+}
+
+/* =================================================================
+   LEFT COLUMN: HERO & FEATURES
+   ================================================================= */
+.hero-col {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-left: 6px;
+  position: relative;
+}
+
+/* Floating Code Bubble Icon */
+.floating-bracket-badge {
+  position: absolute;
+  top: 140px;
+  left: -22px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fira Code', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.35);
+  animation: floatSubtle 4s ease-in-out infinite alternate;
+}
+@keyframes floatSubtle {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+/* Top Pill Badge */
+.hero-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #f1f5f9;
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+}
+.hero-pill-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+}
+
+/* Hero Title */
+.hero-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 46px;
+  font-size: 48px;
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.5px;
+  line-height: 1.08;
+  letter-spacing: -0.8px;
   color: #ffffff;
 }
-.hero-heading .gradient-text {
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+.hero-title .gradient-text {
+  background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 30%, #818cf8 65%, #c084fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: block;
 }
 
-.hero-description {
-  font-size: 15px;
-  line-height: 1.6;
+.hero-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
   color: var(--text-muted);
-  max-width: 380px;
+  max-width: 390px;
 }
 
-/* Feature List */
-.features-list {
+/* Feature Cards Stack */
+.feature-cards-stack {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
+  max-width: 400px;
 }
-.feature-item {
+.feature-card {
   display: flex;
   align-items: center;
   gap: 14px;
+  padding: 11px 16px;
+  border-radius: 14px;
+  background: rgba(13, 20, 38, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  transition: all 0.25s ease;
+  cursor: default;
 }
-.feature-icon {
-  width: 38px;
-  height: 38px;
+.feature-card:hover {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(0, 242, 254, 0.35);
+  transform: translateX(4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 242, 254, 0.15);
+}
+.feature-icon-box {
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 16px;
 }
-.feature-item:hover .feature-icon {
-  transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
-  border-color: rgba(56, 189, 248, 0.5);
+.icon-purple {
+  background: rgba(147, 51, 234, 0.18);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
 }
-.feature-content {
+.icon-blue {
+  background: rgba(37, 99, 235, 0.18);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+}
+.icon-cyan {
+  background: rgba(6, 182, 212, 0.18);
+  border-color: rgba(0, 242, 254, 0.4);
+  color: #38bdf8;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+}
+.icon-indigo {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(129, 140, 248, 0.4);
+  color: #818cf8;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+}
+.feature-text-group {
   display: flex;
   flex-direction: column;
 }
-.feature-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #f1f5f9;
+.feature-title-text {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
 }
-.feature-desc {
+.feature-desc-text {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #94a3b8;
+  margin-top: 1px;
 }
 
 /* Quote Card */
-.quote-card {
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(56, 189, 248, 0.15);
-  border-radius: 14px;
-  padding: 16px 20px;
-  max-width: 360px;
-  backdrop-filter: blur(12px);
-  position: relative;
+.quote-banner-card {
   display: flex;
-  gap: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(13, 20, 38, 0.6);
+  border: 1px solid rgba(0, 242, 254, 0.18);
+  backdrop-filter: blur(14px);
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
-.quote-symbol {
-  font-family: 'Outfit', serif;
-  font-size: 32px;
+.quote-icon-quote {
+  font-size: 28px;
   line-height: 1;
   color: #818cf8;
+  font-family: 'Outfit', sans-serif;
   opacity: 0.9;
 }
-.quote-body {
+.quote-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
-.quote-text {
+.quote-statement {
   font-size: 13px;
-  line-height: 1.45;
-  color: #cbd5e1;
   font-style: italic;
+  color: #e2e8f0;
+  line-height: 1.4;
 }
-.quote-author {
-  font-size: 11px;
+.quote-sig {
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--accent-cyan);
-  font-weight: 500;
-  margin-top: 2px;
 }
 
 /* =================================================================
-   CENTER LOGIN / REGISTER CARD
+   CENTER COLUMN: NEON AUTH CARD
    ================================================================= */
-.auth-card-container {
+.auth-col {
   display: flex;
   justify-content: center;
   position: relative;
 }
 
-.auth-card {
-  width: 100%;
-  max-width: 440px;
-  background: var(--bg-card);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  border-radius: 24px;
-  padding: 36px 32px;
-  box-shadow: 
-    0 0 50px -10px rgba(56, 189, 248, 0.28),
-    0 25px 50px -12px rgba(0, 0, 0, 0.85),
-    inset 0 0 20px rgba(56, 189, 248, 0.06);
-  backdrop-filter: blur(24px);
+/* Neon Glowing Frame wrapper */
+.auth-card-neon-wrapper {
   position: relative;
-  z-index: 2;
-  transition: box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 26px;
+  padding: 2px;
+  background: linear-gradient(135deg, #00f2fe 0%, #3b82f6 30%, #a855f7 70%, #ec4899 100%);
+  box-shadow: 
+    0 0 35px -5px rgba(0, 242, 254, 0.35),
+    0 0 45px -8px rgba(168, 85, 247, 0.35),
+    0 25px 50px -12px rgba(0, 0, 0, 0.9);
+  transition: all 0.3s ease;
+}
+.auth-card-neon-wrapper:hover {
+  box-shadow: 
+    0 0 45px -2px rgba(0, 242, 254, 0.5),
+    0 0 55px -4px rgba(236, 72, 153, 0.45),
+    0 30px 60px -10px rgba(0, 0, 0, 0.95);
 }
 
-/* Top Badge */
-.card-badge {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 16px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(56, 189, 248, 0.15));
-  border: 1.5px solid rgba(56, 189, 248, 0.5);
+.auth-card-inner {
+  width: 100%;
+  background: rgba(8, 14, 28, 0.92);
+  border-radius: 24px;
+  padding: 30px 30px 24px;
+  backdrop-filter: blur(28px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top Card Header & Welcome Pill */
+.card-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 12px;
+}
+.card-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(59, 130, 246, 0.12));
+  border: 1.5px solid rgba(0, 242, 254, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-cyan);
-  box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+  font-family: 'Fira Code', monospace;
+  font-size: 19px;
+  font-weight: 700;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+}
+.welcome-status-pill {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #a7f3d0;
+}
+.welcome-status-pill .live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
 }
 
-.card-title {
+.auth-card-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 24px;
+  font-size: 23px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-align: center;
   color: #ffffff;
-  margin-bottom: 4px;
+  line-height: 1.15;
 }
-.card-title span {
+.auth-card-title span {
   color: var(--accent-cyan);
 }
-.card-subtitle {
-  font-size: 12.5px;
+.auth-card-subtitle {
+  font-size: 12px;
   color: var(--text-muted);
   text-align: center;
-  margin-bottom: 24px;
-  letter-spacing: 0.2px;
+  margin-top: 3px;
+  margin-bottom: 20px;
 }
 
-/* Google Sign-in Button */
-.google-btn {
+/* Social Buttons */
+.google-sso-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 13px 20px;
+  padding: 11.5px 18px;
   background: #ffffff;
-  color: #1e293b;
+  color: #0f172a;
   border: none;
   border-radius: 12px;
-  font-size: 14.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  margin-bottom: 12px;
+}
+.google-sso-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+}
+.google-sso-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.social-row-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.social-icon-btn {
+  flex: 1;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-  margin-bottom: 20px;
 }
-.google-btn:hover {
-  background: #f8fafc;
+.social-icon-btn:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(0, 242, 254, 0.5);
+  color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 14px rgba(0, 242, 254, 0.25);
 }
-.google-btn:active {
-  transform: translateY(0);
+.social-icon-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
-/* Divider */
-.or-divider {
+/* Or Divider */
+.section-or-divider {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
-.or-divider::before, .or-divider::after {
+.section-or-divider::before, .section-or-divider::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
 }
-.or-divider span {
-  font-size: 10.5px;
+.section-or-divider span {
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-dim);
-  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: #64748b;
+  font-weight: 700;
 }
 
-/* Tabs: Login / Register */
-.auth-tabs {
-  display: flex;
-  background: #080d1a;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 4px;
-  margin-bottom: 22px;
-}
-.auth-tab-btn {
-  flex: 1;
-  padding: 10px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-.auth-tab-btn.active {
-  background: var(--accent-blue);
-  color: #ffffff;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
-}
-
-/* Forms */
-.tab-pane {
+/* Tab Switching Panels */
+.auth-tab-view {
   display: none;
 }
-.tab-pane.active {
+.auth-tab-view.active {
   display: block;
-  animation: fadeIn 0.3s ease;
+  animation: fadeInPane 0.3s ease;
 }
-@keyframes fadeIn {
+@keyframes fadeInPane {
   from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.input-group {
-  margin-bottom: 16px;
+/* Form Fields */
+.form-field-group {
+  margin-bottom: 14px;
   text-align: left;
 }
-.input-label {
+.field-label {
   display: block;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10.5px;
+  font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 6px;
+  color: #94a3b8;
+  margin-bottom: 5px;
 }
-.input-wrapper {
+.field-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
   background: #090e1c;
   border: 1px solid #1e293b;
-  border-radius: 10px;
+  border-radius: 11px;
   padding: 0 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.25s ease;
 }
-.input-wrapper:focus-within {
+.field-input-wrapper:focus-within {
   border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15), 0 0 15px rgba(0, 242, 254, 0.1);
 }
-.input-icon {
+.field-prefix-icon {
   color: #64748b;
   display: flex;
   align-items: center;
@@ -435,20 +696,20 @@ body {
   margin-right: 10px;
   flex-shrink: 0;
 }
-.input-field {
+.field-input {
   width: 100%;
-  padding: 12px 0;
+  padding: 11px 0;
   background: transparent;
   border: none;
-  color: var(--text-main);
+  color: #f8fafc;
   font-size: 13.5px;
   outline: none;
   font-family: inherit;
 }
-.input-field::placeholder {
+.field-input::placeholder {
   color: #475569;
 }
-.toggle-pwd {
+.pwd-visibility-btn {
   background: none;
   border: none;
   color: #64748b;
@@ -459,285 +720,485 @@ body {
   padding: 4px;
   transition: color 0.2s;
 }
-.toggle-pwd:hover {
-  color: var(--text-main);
+.pwd-visibility-btn:hover {
+  color: var(--accent-cyan);
 }
 
-/* Action Submit Button */
-.auth-submit-btn {
-  width: 100%;
-  padding: 13px;
-  background: var(--accent-gradient);
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  font-size: 14.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 6px;
-  margin-bottom: 14px;
-}
-.auth-submit-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 25px rgba(37, 99, 235, 0.5);
-}
-.auth-submit-btn:active {
-  transform: translateY(0);
-}
-.auth-submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Checkbox and Forgot row */
-.auth-options {
+/* Remember Me & Forgot Password */
+.auth-remember-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  margin-bottom: 20px;
+  margin-top: 14px;
+  margin-bottom: 18px;
 }
-.remember-me {
+.custom-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--text-muted);
+  gap: 7px;
+  color: #94a3b8;
   cursor: pointer;
   user-select: none;
+  font-weight: 500;
 }
-.remember-me input {
-  accent-color: var(--accent-blue);
+.custom-checkbox-label input {
+  accent-color: #3b82f6;
   width: 15px;
   height: 15px;
   cursor: pointer;
 }
-.forgot-pwd-link {
-  color: var(--accent-cyan);
+.forgot-link-text {
+  color: #38bdf8;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   transition: color 0.2s;
 }
-.forgot-pwd-link:hover {
+.forgot-link-text:hover {
+  color: #7dd3fc;
+  text-decoration: underline;
+}
+
+/* Submit Action Button */
+.auth-gradient-submit-btn {
+  width: 100%;
+  padding: 12.5px;
+  background: var(--btn-gradient);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4), 0 0 25px rgba(217, 70, 239, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.auth-gradient-submit-btn:hover {
+  background: var(--btn-gradient-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 25px rgba(0, 242, 254, 0.5), 0 0 30px rgba(236, 72, 153, 0.45);
+}
+.auth-gradient-submit-btn:active {
+  transform: translateY(0);
+}
+.auth-gradient-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Switch Auth Link */
+.auth-switch-prompt {
+  text-align: center;
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+.auth-switch-prompt a {
+  color: var(--accent-cyan);
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.auth-switch-prompt a:hover {
   color: #7dd3fc;
   text-decoration: underline;
 }
 
 /* Legal Footer */
-.auth-footer {
+.auth-terms-footer {
   font-size: 11px;
-  color: var(--text-dim);
+  color: #64748b;
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.45;
 }
-.auth-footer a {
+.auth-terms-footer a {
   color: var(--accent-cyan);
   text-decoration: none;
 }
-.auth-footer a:hover {
+.auth-terms-footer a:hover {
   text-decoration: underline;
 }
 
-/* Messages */
-.status-msg {
+/* Status Feedback */
+.status-msg-banner {
   padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 12.5px;
+  border-radius: 9px;
+  font-size: 12px;
   margin-bottom: 14px;
   display: none;
 }
-.status-msg.error {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+.status-msg-banner.error {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.4);
   color: #fca5a5;
 }
-.status-msg.success {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+.status-msg-banner.success {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.4);
   color: #6ee7b7;
 }
 
 /* =================================================================
-   RIGHT SHOWCASE / DEVELOPER WORKSPACE SECTION
+   RIGHT COLUMN: ARTISTIC WORKSPACE & STATS
    ================================================================= */
-.showcase-section {
+.showcase-col {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  height: 100%;
-  min-height: 480px;
-  padding: 10px 0;
+  min-height: 520px;
+  padding-right: 6px;
 }
 
-.creative-slogan {
-  align-self: flex-start;
-  margin-left: 10px;
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  z-index: 2;
-}
-.slogan-text {
-  font-family: 'Caveat', cursive;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.12;
-  color: #38bdf8;
-  letter-spacing: 0.5px;
-  text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
-}
-.slogan-curve {
-  width: 76px;
-  height: 14px;
-  margin-top: -2px;
-}
-
-.developer-workspace-container {
+/* Ambient Neon Room Image & Floating Artwork */
+.room-art-container {
   position: relative;
   width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin: auto 0;
+  border-radius: 20px;
+  overflow: hidden;
 }
 
-.developer-showcase-img {
+.workspace-visual-frame {
+  position: relative;
   width: 100%;
-  max-width: 420px;
-  height: auto;
-  display: block;
-  border-radius: 16px;
-  object-fit: cover;
-  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.7));
-  transition: transform 0.3s ease;
-}
-.developer-showcase-img:hover {
-  transform: scale(1.02);
+  height: 290px;
+  border-radius: 20px;
+  background: radial-gradient(circle at 70% 30%, rgba(236, 72, 153, 0.25) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(3, 7, 18, 0.95) 100%), #050b1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.workspace-caption {
-  align-self: flex-end;
-  margin-right: 15px;
-  margin-bottom: 10px;
-  text-align: right;
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: #94a3b8;
-  z-index: 2;
+.workspace-bg-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+  mix-blend-mode: lighten;
+  transition: transform 0.5s ease;
 }
-.workspace-caption strong {
+.workspace-visual-frame:hover .workspace-bg-img {
+  transform: scale(1.04);
+}
+
+/* Neon Slogans Overlay */
+.neon-slogan-left {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 5;
+  font-family: 'Caveat', cursive;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #38bdf8;
+  text-shadow: 0 0 18px rgba(56, 189, 248, 0.8), 0 0 35px rgba(56, 189, 248, 0.4);
+}
+.neon-slogan-right {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  z-index: 5;
+  text-align: right;
+  font-family: 'Caveat', cursive;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #f472b6;
+  text-shadow: 0 0 15px rgba(244, 114, 182, 0.8);
+}
+.neon-poster-box {
+  position: absolute;
+  right: 22px;
+  top: 75px;
+  z-index: 5;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 8px;
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   color: #e2e8f0;
-  font-weight: 600;
-  display: block;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
+
+/* Floating Badges */
+.floating-hex-code {
+  position: absolute;
+  right: -10px;
+  top: 185px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.5);
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fira Code', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.35);
+  z-index: 6;
+}
+
+/* 4 Metric Stats Cards Grid */
+.stats-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+.stat-glass-card {
+  background: rgba(13, 20, 38, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  backdrop-filter: blur(14px);
+  transition: all 0.25s ease;
+}
+.stat-glass-card:hover {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(0, 242, 254, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 242, 254, 0.2);
+}
+.stat-icon {
+  font-size: 16px;
+  margin-bottom: 3px;
+  display: inline-block;
+}
+.stat-number {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Bottom Right Neon Script and Badge */
+.showcase-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+.handwritten-neon-script {
+  font-family: 'Caveat', cursive;
+  font-size: 20px;
+  font-weight: 700;
+  color: #c084fc;
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+}
+.terminal-explore-badge {
+  font-family: 'Fira Code', monospace;
+  font-size: 9.5px;
+  color: #38bdf8;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 6px 10px;
+  border-radius: 8px;
+  line-height: 1.35;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+/* Footer Tagline */
+.bottom-tagline-bar {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 16px 0 20px;
+  position: relative;
+  z-index: 10;
 }
 
 /* =================================================================
    RESPONSIVENESS
    ================================================================= */
-@media (max-width: 1100px) {
-  .page-wrapper {
+@media (max-width: 1200px) {
+  .main-wrapper {
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 24px;
   }
-  .showcase-section {
-    display: none;
+  .showcase-col {
+    grid-column: span 2;
+    min-height: auto;
+    margin-top: 10px;
+  }
+  .stats-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  body {
-    padding: 16px 12px;
+@media (max-width: 900px) {
+  .top-navbar {
+    padding: 14px 16px;
   }
-  .page-wrapper {
+  .nav-pill-menu {
+    display: none;
+  }
+  .main-wrapper {
     grid-template-columns: 1fr;
     gap: 32px;
-    min-height: auto;
+    padding: 10px 16px;
   }
-  .hero-section {
+  .hero-col {
     align-items: center;
     text-align: center;
-    padding-right: 0;
+    padding-left: 0;
   }
-  .hero-heading {
-    font-size: 36px;
+  .hero-title {
+    font-size: 38px;
   }
-  .features-list {
-    align-items: flex-start;
-    max-width: 320px;
-    margin: 0 auto;
+  .hero-desc {
+    max-width: 100%;
   }
-  .quote-card {
-    margin: 0 auto;
+  .feature-cards-stack, .quote-banner-card {
+    max-width: 100%;
   }
-  .auth-card {
-    padding: 28px 20px;
+  .showcase-col {
+    grid-column: span 1;
+  }
+  .stats-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card-inner {
+    padding: 24px 18px 20px;
+  }
+  .hero-title {
+    font-size: 32px;
   }
 }
 </style>
 </head>
 <body>
 
-<!-- Background Glow Orbs -->
+<!-- Ambient Glow Orbs -->
 <div class="bg-ambient-orb orb-1"></div>
 <div class="bg-ambient-orb orb-2"></div>
 <div class="bg-ambient-orb orb-3"></div>
 
-<div class="page-wrapper">
+<!-- Top Floating Navigation Bar -->
+<header class="top-navbar">
+  <!-- Brand Logo -->
+  <a href="/compiler.html" class="brand-container">
+    <div class="brand-icon-sq">&lt;/&gt;</div>
+    <div class="brand-text-col">
+      <div class="brand-main-title">KARTIK<span>TERMINAL</span></div>
+      <div class="brand-sub-tag">Code • Learn • Build • Grow</div>
+    </div>
+  </a>
+
+  <!-- Center Pill Capsule Menu -->
+  <nav class="nav-pill-menu">
+    <a href="/compiler.html" class="nav-pill-item active">Home</a>
+    <a href="#features" class="nav-pill-item">Features</a>
+    <a href="#community" class="nav-pill-item">Community</a>
+    <a href="#pricing" class="nav-pill-item">Pricing</a>
+    <a href="#about" class="nav-pill-item">About</a>
+  </nav>
+
+  <!-- Right Actions -->
+  <div class="nav-actions">
+    <button class="theme-pill-toggle" id="themeToggle" title="Toggle Theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;" id="moonIcon">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    <a href="/compiler.html" class="nav-btn-gradient">
+      Get Started <span>→</span>
+    </a>
+  </div>
+</header>
+
+<!-- Main 3-Column Content Layout -->
+<main class="main-wrapper">
 
   <!-- =============================================================
-       LEFT COLUMN: Hero & Features
+       LEFT COLUMN: Hero & Feature Cards
        ============================================================= -->
-  <div class="hero-section">
-    <!-- Brand -->
-    <div class="brand-header">
-      <div class="brand-icon-box">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </svg>
-      </div>
-      <div class="brand-text-group">
-        <div class="brand-title">KARTIK<span>TERMINAL</span></div>
-        <div class="brand-subtitle">Code · Learn · Build · Grow</div>
-      </div>
+  <section class="hero-col">
+    <!-- Floating code bracket badge -->
+    <div class="floating-bracket-badge">{ }</div>
+
+    <!-- Pill Badge -->
+    <div class="hero-pill-badge">
+      <span>⚡ A Smarter Way to Code</span>
+      <span class="dot"></span>
     </div>
 
-    <!-- Main Headings -->
+    <!-- Main Title -->
     <div>
-      <h1 class="hero-heading">
+      <h1 class="hero-title">
         Your
         <span class="gradient-text">Development</span>
         Workspace
       </h1>
-      <p class="hero-description" style="margin-top: 10px;">
-        A powerful online IDE built for learners, developers and dreamers.
+      <p class="hero-desc" style="margin-top: 10px;">
+        A powerful online IDE built for learners, developers and dreamers. Code, collaborate and create without limits.
       </p>
     </div>
 
-    <!-- Features -->
-    <div class="features-list">
-      <div class="feature-item">
-        <div class="feature-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+    <!-- Feature Cards List -->
+    <div class="feature-cards-stack" id="features">
+      <div class="feature-card">
+        <div class="feature-icon-box icon-purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
           </svg>
         </div>
-        <div class="feature-content">
-          <div class="feature-title">Write & Run Code Online</div>
-          <div class="feature-desc">Support for multiple languages</div>
+        <div class="feature-text-group">
+          <div class="feature-title-text">Write & Run Code Online</div>
+          <div class="feature-desc-text">Support for multiple languages</div>
         </div>
       </div>
 
-      <div class="feature-item">
-        <div class="feature-icon">
+      <div class="feature-card">
+        <div class="feature-icon-box icon-blue">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
@@ -745,259 +1206,332 @@ body {
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
         </div>
-        <div class="feature-content">
-          <div class="feature-title">Learn & Practice</div>
-          <div class="feature-desc">Quizzes, DSA, and more</div>
+        <div class="feature-text-group">
+          <div class="feature-title-text">Learn & Practice</div>
+          <div class="feature-desc-text">Quizzes, DSA, and more</div>
         </div>
       </div>
 
-      <div class="feature-item">
-        <div class="feature-icon">
+      <div class="feature-card">
+        <div class="feature-icon-box icon-cyan">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
           </svg>
         </div>
-        <div class="feature-content">
-          <div class="feature-title">Build & Deploy</div>
-          <div class="feature-desc">Cloud powered environment</div>
+        <div class="feature-text-group">
+          <div class="feature-title-text">Build & Deploy</div>
+          <div class="feature-desc-text">Cloud powered environment</div>
         </div>
       </div>
 
-      <div class="feature-item">
-        <div class="feature-icon">
+      <div class="feature-card">
+        <div class="feature-icon-box icon-indigo">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"></line>
             <line x1="12" y1="20" x2="12" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="14"></line>
           </svg>
         </div>
-        <div class="feature-content">
-          <div class="feature-title">Track Your Progress</div>
-          <div class="feature-desc">Leaderboards & analytics</div>
+        <div class="feature-text-group">
+          <div class="feature-title-text">Track Your Progress</div>
+          <div class="feature-desc-text">Leaderboards & analytics</div>
         </div>
       </div>
     </div>
 
     <!-- Quote Card -->
-    <div class="quote-card">
-      <div class="quote-symbol">“</div>
-      <div class="quote-body">
-        <div class="quote-text">Code today,<br>a better tomorrow."</div>
-        <div class="quote-author">— KartikTerminal</div>
+    <div class="quote-banner-card">
+      <div class="quote-icon-quote">“</div>
+      <div class="quote-content">
+        <div class="quote-statement">Code today,<br>a better tomorrow. ”</div>
+        <div class="quote-sig">— KartikTerminal</div>
       </div>
     </div>
-  </div>
-
+  </section>
 
   <!-- =============================================================
-       CENTER COLUMN: Auth Card
+       CENTER COLUMN: Neon Authentication Card
        ============================================================= -->
-  <div class="auth-card-container">
-    <div class="auth-card">
-      <!-- Badge icon -->
-      <div class="card-badge">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </svg>
-      </div>
+  <section class="auth-col">
+    <div class="auth-card-neon-wrapper">
+      <div class="auth-card-inner">
+        <!-- Top Icon & Welcome Back Pill -->
+        <div class="card-top-bar">
+          <div class="card-icon-badge">&lt;/&gt;</div>
+          <div class="welcome-status-pill">
+            <span class="live-dot"></span>
+            <span>Welcome Back 👑</span>
+          </div>
+        </div>
 
-      <div class="card-title">KARTIK<span>TERMINAL</span></div>
-      <div class="card-subtitle">Developer's Cloud Execution Platform</div>
+        <div class="auth-card-title">KARTIK<span>TERMINAL</span></div>
+        <div class="auth-card-subtitle">Developer's Cloud Execution Platform</div>
 
-      <!-- OAuth / System Error Message -->
-      <div class="status-msg error" id="oauthError"></div>
+        <!-- OAuth / Status Banner -->
+        <div class="status-msg-banner error" id="oauthError"></div>
 
-      <!-- Google Button -->
-      <a class="google-btn" href="/oauth2/authorization/google" id="googleBtn">
-        <svg width="18" height="18" viewBox="0 0 48 48">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        </svg>
-        Continue with Google
-      </a>
+        <!-- Google SSO Primary Button -->
+        <a class="google-sso-btn" href="/oauth2/authorization/google" id="googleBtn">
+          <svg viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          Continue with Google
+        </a>
 
-      <div class="or-divider">
-        <span>OR LOGIN WITH EMAIL</span>
-      </div>
+        <!-- 3 Social Buttons Row (GitHub, Microsoft, LinkedIn) -->
+        <div class="social-row-icons">
+          <!-- GitHub -->
+          <a class="social-icon-btn" href="/oauth2/authorization/google" title="Sign in with GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </a>
 
-      <!-- Tabs Switcher -->
-      <div class="auth-tabs">
-        <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchTab('login')">Login</button>
-        <button class="auth-tab-btn" id="tabBtnRegister" onclick="switchTab('register')">Register</button>
-      </div>
+          <!-- Microsoft -->
+          <a class="social-icon-btn" href="/oauth2/authorization/google" title="Sign in with Microsoft">
+            <svg viewBox="0 0 23 23">
+              <path fill="#f35325" d="M1 1h10v10H1z"/>
+              <path fill="#81bc06" d="M12 1h10v10H12z"/>
+              <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+              <path fill="#ffba08" d="M12 12h10v10H12z"/>
+            </svg>
+          </a>
 
-      <!-- ================= LOGIN FORM ================= -->
-      <div class="tab-pane active" id="tab-login">
-        <div class="status-msg" id="loginMsg"></div>
+          <!-- LinkedIn -->
+          <a class="social-icon-btn" href="/oauth2/authorization/google" title="Sign in with LinkedIn">
+            <svg viewBox="0 0 24 24" fill="#0077b5">
+              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+            </svg>
+          </a>
+        </div>
 
-        <div class="input-group">
-          <label class="input-label" for="loginUser">Email Address</label>
-          <div class="input-wrapper">
-            <div class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
+        <div class="section-or-divider">
+          <span>OR LOGIN WITH EMAIL</span>
+        </div>
+
+        <!-- ================= LOGIN TAB PANE ================= -->
+        <div class="auth-tab-view active" id="view-login">
+          <div class="status-msg-banner" id="loginMsg"></div>
+
+          <div class="form-field-group">
+            <label class="field-label" for="loginUser">Email Address</label>
+            <div class="field-input-wrapper">
+              <div class="field-prefix-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <input type="text" id="loginUser" class="field-input" placeholder="kartikry122@gmail.com" autocomplete="username">
             </div>
-            <input type="text" id="loginUser" class="input-field" placeholder="kartikey1729@gmail.com" autocomplete="username">
           </div>
-        </div>
 
-        <div class="input-group">
-          <label class="input-label" for="loginPass">Password</label>
-          <div class="input-wrapper">
-            <div class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
+          <div class="form-field-group">
+            <label class="field-label" for="loginPass">Password</label>
+            <div class="field-input-wrapper">
+              <div class="field-prefix-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <input type="password" id="loginPass" class="field-input" placeholder="••••••••••••" autocomplete="current-password">
+              <button type="button" class="pwd-visibility-btn" onclick="togglePasswordVisibility('loginPass', this)" title="Toggle password visibility">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
             </div>
-            <input type="password" id="loginPass" class="input-field" placeholder="••••••••" autocomplete="current-password">
-            <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility('loginPass', this)" title="Toggle password visibility">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
+          </div>
+
+          <div class="auth-remember-row">
+            <label class="custom-checkbox-label">
+              <input type="checkbox" id="rememberMe" checked>
+              Remember me
+            </label>
+            <a href="#" class="forgot-link-text" onclick="alert('Please contact your administrator or sign in with Google.'); return false;">Forgot password?</a>
+          </div>
+
+          <button class="auth-gradient-submit-btn" id="loginBtn" onclick="handleLogin()">
+            Login <span>→</span>
+          </button>
+
+          <div class="auth-switch-prompt">
+            Don't have an account? <a onclick="toggleAuthMode('register')">Register</a>
           </div>
         </div>
 
-        <button class="auth-submit-btn" id="loginBtn" onclick="handleLogin()">
-          Login <span>→</span>
-        </button>
+        <!-- ================= REGISTER TAB PANE ================= -->
+        <div class="auth-tab-view" id="view-register">
+          <div class="status-msg-banner" id="registerMsg"></div>
 
-        <div class="auth-options">
-          <label class="remember-me">
-            <input type="checkbox" id="rememberMe" checked>
-            Remember me
-          </label>
-          <a href="#" class="forgot-pwd-link" onclick="alert('Please contact your administrator or sign in with Google.'); return false;">Forgot password?</a>
-        </div>
-      </div>
-
-      <!-- ================= REGISTER FORM ================= -->
-      <div class="tab-pane" id="tab-register">
-        <div class="status-msg" id="registerMsg"></div>
-
-        <div class="input-group">
-          <label class="input-label" for="regName">Full Name</label>
-          <div class="input-wrapper">
-            <div class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+          <div class="form-field-group">
+            <label class="field-label" for="regName">Full Name</label>
+            <div class="field-input-wrapper">
+              <div class="field-prefix-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <input type="text" id="regName" class="field-input" placeholder="Kartik Sharma">
             </div>
-            <input type="text" id="regName" class="input-field" placeholder="Kartik Sharma">
           </div>
-        </div>
 
-        <div class="input-group">
-          <label class="input-label" for="regUser">Username</label>
-          <div class="input-wrapper">
-            <div class="input-icon">
-              <span style="font-size:14px; font-weight:700;">@</span>
+          <div class="form-field-group">
+            <label class="field-label" for="regUser">Username</label>
+            <div class="field-input-wrapper">
+              <div class="field-prefix-icon" style="font-weight: 700; font-size: 14px;">@</div>
+              <input type="text" id="regUser" class="field-input" placeholder="kartik_dev" oninput="checkUsername(this.value)">
             </div>
-            <input type="text" id="regUser" class="input-field" placeholder="kartik_dev" oninput="checkUsername(this.value)">
+            <div id="usernameFeedback" style="font-size:11px; margin-top:4px; padding-left:4px;"></div>
           </div>
-          <div id="usernameFeedback" style="font-size:11px; margin-top:4px; padding-left:4px;"></div>
-        </div>
 
-        <div class="input-group">
-          <label class="input-label" for="regEmail">Email Address</label>
-          <div class="input-wrapper">
-            <div class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
+          <div class="form-field-group">
+            <label class="field-label" for="regEmail">Email Address</label>
+            <div class="field-input-wrapper">
+              <div class="field-prefix-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <input type="email" id="regEmail" class="field-input" placeholder="email@example.com">
             </div>
-            <input type="email" id="regEmail" class="input-field" placeholder="email@example.com">
           </div>
-        </div>
 
-        <div class="input-group">
-          <label class="input-label" for="regPass">Password</label>
-          <div class="input-wrapper">
-            <div class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
+          <div class="form-field-group">
+            <label class="field-label" for="regPass">Password</label>
+            <div class="field-input-wrapper">
+              <div class="field-prefix-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <input type="password" id="regPass" class="field-input" placeholder="Min 6 characters">
+              <button type="button" class="pwd-visibility-btn" onclick="togglePasswordVisibility('regPass', this)" title="Toggle password visibility">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
             </div>
-            <input type="password" id="regPass" class="input-field" placeholder="Min 6 characters">
-            <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility('regPass', this)" title="Toggle password visibility">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
+          </div>
+
+          <div class="form-field-group" style="margin-top: 10px; margin-bottom: 12px;">
+            <label class="custom-checkbox-label" style="font-size: 12px; color: #f8fafc;">
+              <input type="checkbox" id="regIsCompany" onchange="toggleCompanyField()">
+              Register under a Company / College?
+            </label>
+          </div>
+
+          <div class="form-field-group" id="companyFieldContainer" style="display: none; opacity: 0; transform: translateY(-8px); transition: all 0.3s ease;">
+            <label class="field-label" for="regCompany">Company / College Name</label>
+            <div class="field-input-wrapper">
+              <input type="text" id="regCompany" class="field-input" placeholder="e.g. Google or MIT">
+            </div>
+          </div>
+
+          <button class="auth-gradient-submit-btn" id="registerBtn" onclick="handleRegister()">
+            Create Account <span>→</span>
+          </button>
+
+          <div class="auth-switch-prompt">
+            Already have an account? <a onclick="toggleAuthMode('login')">Login</a>
           </div>
         </div>
 
-        <div class="input-group" style="margin-top: 14px; margin-bottom: 14px;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; font-size: 12.5px; color: var(--text-main);">
-            <input type="checkbox" id="regIsCompany" onchange="toggleCompanyField()" style="width: 15px; height: 15px; accent-color: var(--accent-blue); cursor: pointer;">
-            Register under a Company / College?
-          </label>
+        <!-- Terms Footer -->
+        <div class="auth-terms-footer">
+          By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
         </div>
-
-        <div class="input-group" id="companyFieldContainer" style="display: none; opacity: 0; transform: translateY(-8px); transition: all 0.3s ease;">
-          <label class="input-label" for="regCompany">Company / College Name</label>
-          <div class="input-wrapper">
-            <input type="text" id="regCompany" class="input-field" placeholder="e.g. Google or MIT">
-          </div>
-        </div>
-
-        <button class="auth-submit-btn" id="registerBtn" onclick="handleRegister()">
-          Create Account <span>→</span>
-        </button>
-      </div>
-
-      <!-- Legal footer -->
-      <div class="auth-footer">
-        By continuing, you agree to our <a href="#">Terms of Service</a><br>
-        and <a href="#">Privacy Policy</a>.
       </div>
     </div>
-  </div>
-
+  </section>
 
   <!-- =============================================================
-       RIGHT COLUMN: Artistic Slogan & Developer Workspace Showcase
+       RIGHT COLUMN: Neon Atmosphere & Metrics Stats
        ============================================================= -->
-  <div class="showcase-section">
-    <!-- Handwritten artistic slogan -->
-    <div class="creative-slogan">
-      <div class="slogan-text">
-        Build<br>
-        Execute<br>
-        Innovate
+  <section class="showcase-col">
+    <!-- Atmospheric Workspace Visual Card -->
+    <div class="room-art-container">
+      <div class="workspace-visual-frame">
+        <img src="/workspace-showcase.png" alt="Developer Workspace Setup" class="workspace-bg-img" onerror="this.style.display='none'">
+        
+        <!-- Left Slogan: Build Execute Innovate -->
+        <div class="neon-slogan-left">
+          Build<br>Execute<br>Innovate
+        </div>
+
+        <!-- Right Slogan: Better Developers Brighter Tomorrow -->
+        <div class="neon-slogan-right">
+          Better<br>Developers<br>Brighter<br>Tomorrow
+        </div>
+
+        <!-- Wall Poster: Discipline Creates Freedom -->
+        <div class="neon-poster-box">
+          DISCIPLINE<br>CREATES<br>FREEDOM<br>
+          <span style="color:var(--accent-cyan); font-family:'Fira Code'; font-size:11px;">&lt;/&gt;</span>
+        </div>
       </div>
-      <svg class="slogan-curve" viewBox="0 0 100 20" fill="none">
-        <path d="M 5 5 Q 50 20 95 8" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
-      </svg>
+
+      <!-- Floating hex badge -->
+      <div class="floating-hex-code">&lt;/&gt;</div>
     </div>
 
-    <!-- Developer Workspace Showcase Image -->
-    <div class="developer-workspace-container">
-      <img src="/workspace-showcase.png" alt="Developer Workspace - Coding with KartikTerminal" class="developer-showcase-img">
+    <!-- 4 Glassmorphism Stat Cards -->
+    <div class="stats-cards-grid">
+      <div class="stat-glass-card">
+        <div class="stat-icon" style="color: #60a5fa;">👥</div>
+        <div class="stat-number">50K+</div>
+        <div class="stat-label">Active Learners</div>
+      </div>
+
+      <div class="stat-glass-card">
+        <div class="stat-icon" style="color: #38bdf8;">&lt;/&gt;</div>
+        <div class="stat-number">100+</div>
+        <div class="stat-label">Languages</div>
+      </div>
+
+      <div class="stat-glass-card">
+        <div class="stat-icon" style="color: #a855f7;">☁️</div>
+        <div class="stat-number">99.9%</div>
+        <div class="stat-label">Uptime</div>
+      </div>
+
+      <div class="stat-glass-card">
+        <div class="stat-icon" style="color: #fbbf24;">🏆</div>
+        <div class="stat-number">#1</div>
+        <div class="stat-label">Learning Platform</div>
+      </div>
     </div>
 
-    <!-- Bottom Caption -->
-    <div class="workspace-caption">
-      <strong>More than a Compiler,</strong>
-      A Developer's Companion.
+    <!-- Bottom Showcase Row -->
+    <div class="showcase-bottom-row">
+      <div class="handwritten-neon-script">Code • Learn • Build • Grow</div>
+      <div class="terminal-explore-badge">
+        &gt;_ Create<br>
+        &nbsp;&nbsp;&nbsp;Explore<br>
+        &nbsp;&nbsp;&nbsp;Innovate<br>
+        &nbsp;&nbsp;&nbsp;Repeat
+      </div>
     </div>
-  </div>
+  </section>
 
+</main>
+
+<!-- Bottom Center Tagline -->
+<div class="bottom-tagline-bar">
+  IDEAS TODAY &nbsp;|&nbsp; IMPACT TOMORROW
 </div>
 
 <!-- =============================================================
-     AUTHENTICATION & SCRIPT LOGIC
+     AUTHENTICATION LOGIC
      ============================================================= -->
 <script>
 const API = '';  // Same origin
@@ -1011,7 +1545,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ── Handle ?error= or ?msg= from OAuth2 failure redirect ──
+// ── Handle ?error= or ?msg= from OAuth2 redirect ──
 const params = new URLSearchParams(location.search);
 if (params.get('error')) {
   const el = document.getElementById('oauthError');
@@ -1028,15 +1562,20 @@ if (localStorage.getItem('kt_token')) {
   location.href = '/compiler.html';
 }
 
-// ── Switch Tabs (Login / Register) ──
-function switchTab(tab) {
-  document.getElementById('tabBtnLogin').classList.toggle('active', tab === 'login');
-  document.getElementById('tabBtnRegister').classList.toggle('active', tab === 'register');
-  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+// ── Toggle Auth Mode (Login / Register) ──
+function toggleAuthMode(mode) {
+  const viewLogin = document.getElementById('view-login');
+  const viewRegister = document.getElementById('view-register');
+  if (mode === 'register') {
+    viewLogin.classList.remove('active');
+    viewRegister.classList.add('active');
+  } else {
+    viewRegister.classList.remove('active');
+    viewLogin.classList.add('active');
+  }
 }
 
-// ── Toggle Password Visibility ──
+// ── Password Visibility Toggle ──
 function togglePasswordVisibility(fieldId, btn) {
   const input = document.getElementById(fieldId);
   if (!input) return;
@@ -1058,8 +1597,9 @@ function togglePasswordVisibility(fieldId, btn) {
 // ── Show Feedback Messages ──
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
+  if (!el) return;
   el.textContent = text;
-  el.className = `status-msg ${type}`;
+  el.className = `status-msg-banner ${type}`;
   el.style.display = 'block';
 }
 
@@ -1205,8 +1745,8 @@ function saveAuthAndRedirect(data) {
 // ── Keyboard Enter Support ──
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
-    const activeTab = document.querySelector('.tab-pane.active').id;
-    if (activeTab === 'tab-login') handleLogin();
+    const loginActive = document.getElementById('view-login').classList.contains('active');
+    if (loginActive) handleLogin();
     else handleRegister();
   }
 });
