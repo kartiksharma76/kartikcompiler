@@ -18,7 +18,7 @@
 :root {
   --bg: #030712;
   --bg-deep: #02040a;
-  --card-bg: rgba(8, 14, 28, 0.9);
+  --card-bg: rgba(8, 14, 28, 0.92);
   --border-subtle: rgba(255, 255, 255, 0.08);
   --text-main: #ffffff;
   --text-muted: #94a3b8;
@@ -43,7 +43,7 @@ html, body {
   justify-content: space-between;
 }
 
-/* Pure CSS Cyber Gradient Background (No double images / no background glitches) */
+/* Background Atmosphere */
 body {
   background-image: 
     radial-gradient(circle at 12% 18%, rgba(0, 242, 254, 0.18) 0%, transparent 45%),
@@ -56,7 +56,7 @@ body {
   background-position: 0 0, 0 0, 0 0, 0 0, center center, center center;
 }
 
-/* Background Ambient Glow Orbs */
+/* Ambient Glow Orbs */
 .bg-ambient-orb {
   position: fixed;
   border-radius: 50%;
@@ -100,6 +100,7 @@ body {
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  cursor: pointer;
 }
 .brand-icon-sq {
   width: 42px;
@@ -165,10 +166,11 @@ body {
   border-radius: 9999px;
   position: relative;
   transition: all 0.25s ease;
+  cursor: pointer;
 }
 .nav-pill-item:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
 }
 .nav-pill-item.active {
   color: #ffffff;
@@ -349,7 +351,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(12px);
   transition: all 0.25s ease;
-  cursor: default;
+  cursor: pointer;
 }
 .feature-card:hover {
   background: rgba(15, 23, 42, 0.9);
@@ -832,29 +834,32 @@ body {
 }
 
 /* =================================================================
-   RIGHT COLUMN: EXACT WORKSPACE ROOM ARTWORK & STATS
+   RIGHT COLUMN: PROMINENT LARGE WORKSPACE ROOM ARTWORK
    ================================================================= */
 .showcase-col {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   position: relative;
-  min-height: 480px;
+  height: 100%;
 }
 
 .room-art-container {
   position: relative;
   width: 100%;
-  border-radius: 20px;
+  border-radius: 24px;
 }
 
 .workspace-visual-frame {
   position: relative;
   width: 100%;
-  height: 280px;
-  border-radius: 20px;
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.65), 0 0 30px rgba(168, 85, 247, 0.2);
+  height: 480px;
+  border-radius: 24px;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 
+    0 20px 45px rgba(0, 0, 0, 0.75),
+    0 0 35px rgba(168, 85, 247, 0.25),
+    0 0 25px rgba(0, 242, 254, 0.2);
   overflow: hidden;
   background: #020617;
 }
@@ -864,7 +869,7 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.5s ease;
+  transition: transform 0.6s ease;
 }
 .workspace-visual-frame:hover .workspace-bg-img {
   transform: scale(1.03);
@@ -874,62 +879,21 @@ body {
 .floating-hex-code {
   position: absolute;
   right: -12px;
-  top: 180px;
-  width: 38px;
-  height: 38px;
+  top: 210px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
-  background: rgba(13, 20, 38, 0.9);
-  border: 1.5px solid rgba(0, 242, 254, 0.5);
+  background: rgba(13, 20, 38, 0.92);
+  border: 1.5px solid rgba(0, 242, 254, 0.6);
   color: var(--accent-cyan);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Fira Code', monospace;
   font-weight: 700;
-  font-size: 15px;
-  box-shadow: 0 0 18px rgba(0, 242, 254, 0.4);
+  font-size: 16px;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.45);
   z-index: 6;
-}
-
-/* 4 Metric Stats Cards Grid */
-.stats-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 14px;
-}
-.stat-glass-card {
-  background: rgba(13, 20, 38, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px 6px;
-  text-align: center;
-  backdrop-filter: blur(14px);
-  transition: all 0.25s ease;
-}
-.stat-glass-card:hover {
-  background: rgba(15, 23, 42, 0.9);
-  border-color: rgba(0, 242, 254, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 242, 254, 0.2);
-}
-.stat-icon {
-  font-size: 15px;
-  margin-bottom: 2px;
-  display: inline-block;
-}
-.stat-number {
-  font-family: 'Outfit', sans-serif;
-  font-size: 17px;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.1;
-}
-.stat-label {
-  font-size: 9.5px;
-  color: #94a3b8;
-  margin-top: 2px;
-  white-space: nowrap;
 }
 
 /* Bottom Right Neon Script and Badge */
@@ -937,27 +901,27 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 12px;
-  padding: 0 4px;
+  margin-top: 14px;
+  padding: 0 6px;
 }
 .handwritten-neon-script {
   font-family: 'Caveat', cursive;
-  font-size: 21px;
+  font-size: 23px;
   font-weight: 700;
   color: #c084fc;
   letter-spacing: 0.8px;
-  text-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+  text-shadow: 0 0 14px rgba(192, 132, 252, 0.7);
 }
 .terminal-explore-badge {
   font-family: 'Fira Code', monospace;
-  font-size: 9px;
+  font-size: 9.5px;
   color: #38bdf8;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  padding: 6px 10px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 6px 12px;
   border-radius: 8px;
-  line-height: 1.35;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+  line-height: 1.4;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
 }
 
 /* Footer Tagline */
@@ -974,6 +938,163 @@ body {
 }
 
 /* =================================================================
+   INTERACTIVE MODALS (ABOUT, FEATURES, COMMUNITY, PRICING)
+   ================================================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(14px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-content-box {
+  width: 100%;
+  max-width: 620px;
+  background: rgba(9, 14, 28, 0.96);
+  border: 1.5px solid rgba(0, 242, 254, 0.4);
+  border-radius: 22px;
+  padding: 30px;
+  box-shadow: 0 0 45px rgba(0, 242, 254, 0.25), 0 25px 60px rgba(0, 0, 0, 0.9);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalPop {
+  from { transform: scale(0.92) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+.modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.modal-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(0, 242, 254, 0.12);
+  border: 1px solid rgba(0, 242, 254, 0.4);
+  color: var(--accent-cyan);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.modal-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+.modal-title span {
+  color: var(--accent-cyan);
+}
+.modal-desc {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.modal-grid-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.modal-feature-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+}
+.modal-feature-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.modal-feature-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.creator-highlight-card {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.12), rgba(168, 85, 247, 0.12));
+  border: 1.5px solid rgba(0, 242, 254, 0.35);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.creator-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00f2fe, #a855f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.4);
+}
+.creator-info h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.creator-info p {
+  font-size: 12.5px;
+  color: #cbd5e1;
+  margin-top: 2px;
+}
+
+/* =================================================================
    RESPONSIVENESS
    ================================================================= */
 @media (max-width: 1200px) {
@@ -986,8 +1107,8 @@ body {
     min-height: auto;
     margin-top: 10px;
   }
-  .stats-cards-grid {
-    grid-template-columns: repeat(4, 1fr);
+  .workspace-visual-frame {
+    height: 380px;
   }
 }
 
@@ -1020,8 +1141,8 @@ body {
   .showcase-col {
     grid-column: span 1;
   }
-  .stats-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .workspace-visual-frame {
+    height: 300px;
   }
 }
 
@@ -1031,6 +1152,9 @@ body {
   }
   .hero-title {
     font-size: 30px;
+  }
+  .modal-grid-features {
+    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -1055,15 +1179,15 @@ body {
   <!-- Center Pill Capsule Menu -->
   <nav class="nav-pill-menu">
     <a href="/compiler.html" class="nav-pill-item active">Home</a>
-    <a href="#features" class="nav-pill-item">Features</a>
-    <a href="#community" class="nav-pill-item">Community</a>
-    <a href="#pricing" class="nav-pill-item">Pricing</a>
-    <a href="#about" class="nav-pill-item">About</a>
+    <a onclick="openModal('featuresModal')" class="nav-pill-item">Features</a>
+    <a onclick="openModal('communityModal')" class="nav-pill-item">Community</a>
+    <a onclick="openModal('pricingModal')" class="nav-pill-item">Pricing</a>
+    <a onclick="openModal('aboutModal')" class="nav-pill-item">About</a>
   </nav>
 
   <!-- Right Actions -->
   <div class="nav-actions">
-    <button class="theme-pill-toggle" id="themeToggle" title="Toggle Theme">
+    <button class="theme-pill-toggle" id="themeToggle" title="Toggle Theme" onclick="toggleDarkMode()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"></circle>
         <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -1112,7 +1236,7 @@ body {
 
     <!-- Feature Cards List -->
     <div class="feature-cards-stack" id="features">
-      <div class="feature-card">
+      <div class="feature-card" onclick="openModal('featuresModal')">
         <div class="feature-icon-box icon-purple">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"></polyline>
@@ -1125,7 +1249,7 @@ body {
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" onclick="openModal('featuresModal')">
         <div class="feature-icon-box icon-blue">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -1140,7 +1264,7 @@ body {
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" onclick="openModal('featuresModal')">
         <div class="feature-icon-box icon-cyan">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
@@ -1152,7 +1276,7 @@ body {
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" onclick="openModal('communityModal')">
         <div class="feature-icon-box icon-indigo">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -1211,14 +1335,14 @@ body {
 
         <!-- 3 Social Buttons Row (GitHub, Microsoft, LinkedIn) -->
         <div class="social-row-icons">
-          <!-- GitHub -->
-          <a class="social-icon-btn" href="/oauth2/authorization/google" title="Sign in with GitHub">
+          <!-- GitHub Link -->
+          <a class="social-icon-btn" href="https://github.com/kartiksharma76/kartikcompiler" target="_blank" title="KartikTerminal GitHub Repository">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
             </svg>
           </a>
 
-          <!-- Microsoft -->
+          <!-- Microsoft Link -->
           <a class="social-icon-btn" href="/oauth2/authorization/google" title="Sign in with Microsoft">
             <svg viewBox="0 0 23 23">
               <path fill="#f35325" d="M1 1h10v10H1z"/>
@@ -1228,8 +1352,8 @@ body {
             </svg>
           </a>
 
-          <!-- LinkedIn -->
-          <a class="social-icon-btn" href="/oauth2/authorization/google" title="Sign in with LinkedIn">
+          <!-- LinkedIn Link -->
+          <a class="social-icon-btn" href="https://www.linkedin.com" target="_blank" title="Connect on LinkedIn">
             <svg viewBox="0 0 24 24" fill="#0077b5">
               <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
             </svg>
@@ -1281,7 +1405,7 @@ body {
               <input type="checkbox" id="rememberMe" checked>
               Remember me
             </label>
-            <a href="#" class="forgot-link-text" onclick="alert('Please contact your administrator or sign in with Google.'); return false;">Forgot password?</a>
+            <a href="#" class="forgot-link-text" onclick="alert('Please sign in with Google or create a new account.'); return false;">Forgot password?</a>
           </div>
 
           <button class="auth-gradient-submit-btn" id="loginBtn" onclick="handleLogin()">
@@ -1306,7 +1430,7 @@ body {
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
               </div>
-              <input type="text" id="regName" class="field-input" placeholder="Kartik Sharma">
+              <input type="text" id="regName" class="field-input" placeholder="Kartikey Sharma">
             </div>
           </div>
 
@@ -1376,54 +1500,27 @@ body {
 
         <!-- Terms Footer -->
         <div class="auth-terms-footer">
-          By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+          By continuing, you agree to our <a onclick="openModal('aboutModal')">Terms of Service</a> and <a onclick="openModal('aboutModal')">Privacy Policy</a>.
         </div>
       </div>
     </div>
   </section>
 
   <!-- =============================================================
-       RIGHT COLUMN: WORKSPACE ROOM ARTWORK & STATS
+       RIGHT COLUMN: LARGE WORKSPACE ROOM ARTWORK
        ============================================================= -->
   <section class="showcase-col">
     <!-- Atmospheric Workspace Visual Card -->
     <div class="room-art-container">
       <div class="workspace-visual-frame">
-        <img src="/room-artwork.png" alt="Developer Workspace Setup" class="workspace-bg-img">
+        <img src="/room-artwork.png" alt="Developer Workspace Setup - KartikTerminal" class="workspace-bg-img">
       </div>
 
       <!-- Floating hex badge -->
       <div class="floating-hex-code">&lt;/&gt;</div>
     </div>
 
-    <!-- 4 Glassmorphism Stat Cards -->
-    <div class="stats-cards-grid">
-      <div class="stat-glass-card">
-        <div class="stat-icon" style="color: #60a5fa;">👥</div>
-        <div class="stat-number">50K+</div>
-        <div class="stat-label">Active Learners</div>
-      </div>
-
-      <div class="stat-glass-card">
-        <div class="stat-icon" style="color: #38bdf8;">&lt;/&gt;</div>
-        <div class="stat-number">100+</div>
-        <div class="stat-label">Languages</div>
-      </div>
-
-      <div class="stat-glass-card">
-        <div class="stat-icon" style="color: #a855f7;">☁️</div>
-        <div class="stat-number">99.9%</div>
-        <div class="stat-label">Uptime</div>
-      </div>
-
-      <div class="stat-glass-card">
-        <div class="stat-icon" style="color: #fbbf24;">🏆</div>
-        <div class="stat-number">#1</div>
-        <div class="stat-label">Learning Platform</div>
-      </div>
-    </div>
-
-    <!-- Bottom Showcase Row -->
+    <!-- Bottom Right Neon Script and Badge -->
     <div class="showcase-bottom-row">
       <div class="handwritten-neon-script">Code • Learn • Build • Grow</div>
       <div class="terminal-explore-badge">
@@ -1443,7 +1540,142 @@ body {
 </div>
 
 <!-- =============================================================
-     AUTHENTICATION LOGIC
+     INTERACTIVE MODALS
+     ============================================================= -->
+
+<!-- 1. ABOUT MODAL (KartikTerminal & Founder Kartikey Sharma) -->
+<div class="modal-overlay" id="aboutModal" onclick="closeModalOutside(event, 'aboutModal')">
+  <div class="modal-content-box">
+    <button class="modal-close-btn" onclick="closeModal('aboutModal')">✕</button>
+    <div class="modal-header-badge">🚀 Platform Architecture & Creator</div>
+    <h2 class="modal-title">About <span>KartikTerminal</span></h2>
+    <p class="modal-desc">
+      <strong>KartikTerminal</strong> is a next-generation high-performance Cloud Execution Platform and Online IDE created by <strong>Kartikey Sharma</strong>. Designed for competitive programmers, colleges, developers, and learners.
+    </p>
+
+    <div class="creator-highlight-card">
+      <div class="creator-avatar">KS</div>
+      <div class="creator-info">
+        <h4>Kartikey Sharma</h4>
+        <p>Founder & Full-Stack Cloud Architect of KartikTerminal</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 16px; margin-bottom: 12px; color: #fff; font-family:'Outfit', sans-serif;">⚡ How the Cloud Compiler Works:</h3>
+    <div class="modal-grid-features">
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">🐳 Dockerized Sandboxing</div>
+        <div class="modal-feature-desc">Every execution runs in secure, ephemeral micro-containers with strict CPU, memory, and timeout caps.</div>
+      </div>
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">⚡ High-Speed Multi-Language</div>
+        <div class="modal-feature-desc">Native support for C, C++, Java, Python, Rust, Go, JS, and PHP with instant compilation.</div>
+      </div>
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">🧠 Real-Time AI Diagnostics</div>
+        <div class="modal-feature-desc">Integrated AI code assistant providing instant error fixing, syntax explanations, and memory profiling.</div>
+      </div>
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">🛡️ Anti-Cheat & Plagiarism</div>
+        <div class="modal-feature-desc">Advanced AST & token-based similarity verification for secure college examinations and contests.</div>
+      </div>
+    </div>
+
+    <div style="text-align: right;">
+      <a href="https://github.com/kartiksharma76/kartikcompiler" target="_blank" class="nav-btn-gradient" style="font-size:12.5px; padding: 7px 16px;">View on GitHub ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- 2. FEATURES MODAL -->
+<div class="modal-overlay" id="featuresModal" onclick="closeModalOutside(event, 'featuresModal')">
+  <div class="modal-content-box">
+    <button class="modal-close-btn" onclick="closeModal('featuresModal')">✕</button>
+    <div class="modal-header-badge">✨ Core Features</div>
+    <h2 class="modal-title">Platform <span>Capabilities</span></h2>
+    <p class="modal-desc">Everything you need to write, run, debug, and scale your code directly from the browser.</p>
+
+    <div class="modal-grid-features">
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">💻 Monaco IDE Editor</div>
+        <div class="modal-feature-desc">VS Code-grade editor with multi-cursor support, auto-complete, and theme customizers.</div>
+      </div>
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">⚡ Interactive Stdin / Stdout</div>
+        <div class="modal-feature-desc">Full terminal emulation supporting custom test inputs and live streaming outputs.</div>
+      </div>
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">📊 Leaderboards & Analytics</div>
+        <div class="modal-feature-desc">Real-time performance tracking, submission history, and global algorithmic rankings.</div>
+      </div>
+      <div class="modal-feature-card">
+        <div class="modal-feature-title">🏫 College & Team Exams</div>
+        <div class="modal-feature-desc">Dedicated examination studio with proctoring logs, anti-cheat detection, and auto-grading.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. COMMUNITY MODAL -->
+<div class="modal-overlay" id="communityModal" onclick="closeModalOutside(event, 'communityModal')">
+  <div class="modal-content-box">
+    <button class="modal-close-btn" onclick="closeModal('communityModal')">✕</button>
+    <div class="modal-header-badge">🌐 Global Developer Network</div>
+    <h2 class="modal-title">Join the <span>Community</span></h2>
+    <p class="modal-desc">Connect with fellow coders, participate in weekly algorithmic contests, and climb the leaderboards.</p>
+    
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+      <a href="/leaderboard.html" class="modal-feature-card" style="text-decoration:none; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div class="modal-feature-title">🏆 Global Leaderboard</div>
+          <div class="modal-feature-desc">See the top coders and solve challenges to rank up.</div>
+        </div>
+        <span style="color:var(--accent-cyan); font-weight:700;">Open →</span>
+      </a>
+      <a href="https://github.com/kartiksharma76/kartikcompiler" target="_blank" class="modal-feature-card" style="text-decoration:none; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div class="modal-feature-title">⭐ GitHub Discussions & Issues</div>
+          <div class="modal-feature-desc">Collaborate on open-source improvements and feature suggestions.</div>
+        </div>
+        <span style="color:var(--accent-cyan); font-weight:700;">Visit →</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 4. PRICING MODAL -->
+<div class="modal-overlay" id="pricingModal" onclick="closeModalOutside(event, 'pricingModal')">
+  <div class="modal-content-box">
+    <button class="modal-close-btn" onclick="closeModal('pricingModal')">✕</button>
+    <div class="modal-header-badge">💎 Transparent Pricing</div>
+    <h2 class="modal-title">Free for <span>Learners</span></h2>
+    <p class="modal-desc">KartikTerminal is 100% free for individual learners, developers, and open-source contributors.</p>
+
+    <div class="modal-grid-features">
+      <div class="modal-feature-card" style="border-color: rgba(0, 242, 254, 0.4);">
+        <div class="modal-feature-title">🎉 Free Tier ($0/mo)</div>
+        <div class="modal-feature-desc">
+          • Unlimited Code Runs<br>
+          • All Multi-Languages<br>
+          • AI Debug Assistant<br>
+          • Community Leaderboard
+        </div>
+      </div>
+      <div class="modal-feature-card" style="border-color: rgba(168, 85, 247, 0.4);">
+        <div class="modal-feature-title">🏫 University / Teams</div>
+        <div class="modal-feature-desc">
+          • Custom Exam Portals<br>
+          • Anti-Cheat & Plagiarism<br>
+          • Bulk Student Roster<br>
+          • Dedicated Cloud Workers
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================
+     AUTHENTICATION & MODAL LOGIC
      ============================================================= -->
 <script>
 const API = '';  // Same origin
@@ -1472,6 +1704,24 @@ if (params.get('error')) {
 // ── If already logged in, go to compiler ──
 if (localStorage.getItem('kt_token')) {
   location.href = '/compiler.html';
+}
+
+// ── Modal Controllers (About, Features, Community, Pricing) ──
+function openModal(modalId) {
+  const m = document.getElementById(modalId);
+  if (m) m.classList.add('active');
+}
+function closeModal(modalId) {
+  const m = document.getElementById(modalId);
+  if (m) m.classList.remove('active');
+}
+function closeModalOutside(e, modalId) {
+  if (e.target.id === modalId) closeModal(modalId);
+}
+
+// ── Dark Mode Toggle ──
+function toggleDarkMode() {
+  document.body.classList.toggle('light-theme');
 }
 
 // ── Toggle Auth Mode (Login / Register) ──
@@ -1660,6 +1910,9 @@ document.addEventListener('keydown', e => {
     const loginActive = document.getElementById('view-login').classList.contains('active');
     if (loginActive) handleLogin();
     else handleRegister();
+  }
+  if (e.key === 'Escape') {
+    ['aboutModal', 'featuresModal', 'communityModal', 'pricingModal'].forEach(id => closeModal(id));
   }
 });
 </script>
