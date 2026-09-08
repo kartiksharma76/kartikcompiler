@@ -27,8 +27,8 @@
   --accent-blue: #3b82f6;
   --accent-purple: #a855f7;
   --accent-pink: #ec4899;
-  --btn-gradient: linear-gradient(90deg, #00b4d8 0%, #3b82f6 32%, #9333ea 68%, #ec4899 100%);
-  --btn-gradient-hover: linear-gradient(90deg, #00f2fe 0%, #60a5fa 32%, #a855f7 68%, #f472b6 100%);
+  --btn-gradient: linear-gradient(90deg, #00b4d8 0%, #3b82f6 30%, #9333ea 65%, #ec4899 100%);
+  --btn-gradient-hover: linear-gradient(90deg, #00f2fe 0%, #60a5fa 30%, #a855f7 65%, #f472b6 100%);
 }
 
 html, body {
@@ -43,20 +43,21 @@ html, body {
   justify-content: space-between;
 }
 
-/* Background Atmosphere */
+/* Background Cyber Atmosphere with Cyan/Purple Flares */
 body {
   background-image: 
-    radial-gradient(circle at 12% 18%, rgba(0, 242, 254, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 88% 22%, rgba(168, 85, 247, 0.2) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 60%),
-    radial-gradient(circle at 50% 95%, rgba(236, 72, 153, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 8% 22%, rgba(0, 242, 254, 0.16) 0%, transparent 40%),
+    radial-gradient(circle at 4% 65%, rgba(168, 85, 247, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 92% 20%, rgba(168, 85, 247, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 50% 98%, rgba(236, 72, 153, 0.12) 0%, transparent 50%),
     linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-  background-position: 0 0, 0 0, 0 0, 0 0, center center, center center;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, center center, center center;
 }
 
-/* Ambient Glow Orbs */
+/* Background Ambient Glow Orbs */
 .bg-ambient-orb {
   position: fixed;
   border-radius: 50%;
@@ -68,14 +69,14 @@ body {
 .orb-1 {
   width: 480px;
   height: 480px;
-  background: radial-gradient(circle, rgba(0, 242, 254, 0.3), rgba(59, 130, 246, 0.05));
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.28), rgba(59, 130, 246, 0.05));
   top: 2%;
   left: 2%;
 }
 .orb-2 {
   width: 560px;
   height: 560px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.28), rgba(236, 72, 153, 0.05));
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.26), rgba(236, 72, 153, 0.05));
   top: 10%;
   right: 2%;
 }
@@ -245,10 +246,10 @@ body {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 10px 32px 18px;
+  padding: 6px 32px 14px;
   display: grid;
-  grid-template-columns: 1.02fr 1.16fr 1.05fr;
-  gap: 30px;
+  grid-template-columns: 1fr 1.15fr 1.08fr;
+  gap: 28px;
   align-items: center;
   flex: 1;
 }
@@ -259,33 +260,8 @@ body {
 .hero-col {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   position: relative;
-}
-
-/* Floating Code Bubble */
-.floating-bracket-badge {
-  position: absolute;
-  top: 140px;
-  left: -20px;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(13, 20, 38, 0.85);
-  border: 1.5px solid rgba(0, 242, 254, 0.4);
-  color: var(--accent-cyan);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Fira Code', monospace;
-  font-weight: 700;
-  font-size: 15px;
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
-  animation: floatSubtle 4s ease-in-out infinite alternate;
-}
-@keyframes floatSubtle {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-8px); }
 }
 
 /* Top Pill Badge */
@@ -294,21 +270,21 @@ body {
   align-items: center;
   gap: 8px;
   align-self: flex-start;
-  padding: 6px 14px;
+  padding: 5px 14px;
   border-radius: 9999px;
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.45);
+  background: rgba(0, 242, 254, 0.08);
+  border: 1px solid rgba(0, 242, 254, 0.45);
   color: #f1f5f9;
   font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
 }
 .hero-pill-badge .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #c084fc;
-  box-shadow: 0 0 8px #c084fc;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
 }
 
 /* Hero Title */
@@ -321,25 +297,25 @@ body {
   color: #ffffff;
 }
 .hero-title .gradient-text {
-  background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 30%, #818cf8 65%, #c084fc 100%);
+  background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 35%, #ec4899 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: block;
 }
 
 .hero-desc {
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 13.5px;
+  line-height: 1.5;
   color: var(--text-muted);
-  max-width: 390px;
+  max-width: 380px;
 }
 
-/* Feature Cards Stack */
+/* Feature Cards Stack (Consistent with Reference Image) */
 .feature-cards-stack {
   display: flex;
   flex-direction: column;
-  gap: 11px;
-  max-width: 390px;
+  gap: 10px;
+  max-width: 380px;
 }
 .feature-card {
   display: flex;
@@ -367,32 +343,10 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 15px;
-}
-.icon-purple {
-  background: rgba(147, 51, 234, 0.2);
-  border-color: rgba(168, 85, 247, 0.45);
-  color: #c084fc;
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
-}
-.icon-blue {
-  background: rgba(37, 99, 235, 0.2);
-  border-color: rgba(59, 130, 246, 0.45);
-  color: #60a5fa;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-}
-.icon-cyan {
-  background: rgba(6, 182, 212, 0.2);
-  border-color: rgba(0, 242, 254, 0.45);
-  color: #38bdf8;
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
-}
-.icon-indigo {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: rgba(129, 140, 248, 0.45);
-  color: #818cf8;
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+  background: rgba(0, 242, 254, 0.12);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
 }
 .feature-text-group {
   display: flex;
@@ -404,7 +358,7 @@ body {
   color: #f8fafc;
 }
 .feature-desc-text {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #94a3b8;
   margin-top: 1px;
 }
@@ -414,16 +368,16 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 13px 18px;
+  padding: 12px 18px;
   border-radius: 14px;
   background: rgba(13, 20, 38, 0.65);
   border: 1px solid rgba(0, 242, 254, 0.18);
   backdrop-filter: blur(14px);
-  max-width: 390px;
+  max-width: 380px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 .quote-icon-quote {
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
   color: #818cf8;
   font-family: 'Outfit', sans-serif;
@@ -432,16 +386,16 @@ body {
 .quote-content {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 .quote-statement {
-  font-size: 13px;
+  font-size: 12.5px;
   font-style: italic;
   color: #e2e8f0;
   line-height: 1.4;
 }
 .quote-sig {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--accent-cyan);
 }
@@ -551,14 +505,14 @@ body {
   margin-bottom: 18px;
 }
 
-/* Social Buttons */
+/* Single Google SSO Button (Exact as Reference Image) */
 .google-sso-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 11px 18px;
+  padding: 11.5px 18px;
   background: #ffffff;
   color: #0f172a;
   border: none;
@@ -569,7 +523,7 @@ body {
   text-decoration: none;
   transition: all 0.25s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  margin-bottom: 11px;
+  margin-bottom: 16px;
 }
 .google-sso-btn:hover {
   background: #f8fafc;
@@ -579,38 +533,6 @@ body {
 .google-sso-btn svg {
   width: 17px;
   height: 17px;
-}
-
-.social-row-icons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.social-icon-btn {
-  flex: 1;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #cbd5e1;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-.social-icon-btn:hover {
-  background: rgba(30, 41, 59, 0.9);
-  border-color: rgba(0, 242, 254, 0.5);
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(0, 242, 254, 0.25);
-}
-.social-icon-btn svg {
-  width: 18px;
-  height: 18px;
 }
 
 /* Or Divider */
@@ -834,7 +756,7 @@ body {
 }
 
 /* =================================================================
-   RIGHT COLUMN: PROMINENT LARGE WORKSPACE ROOM ARTWORK
+   RIGHT COLUMN: EXACT WORKSPACE ROOM ARTWORK
    ================================================================= */
 .showcase-col {
   display: flex;
@@ -844,84 +766,24 @@ body {
   height: 100%;
 }
 
-.room-art-container {
-  position: relative;
-  width: 100%;
-  border-radius: 24px;
-}
-
 .workspace-visual-frame {
   position: relative;
   width: 100%;
-  height: 380px;
-  border-radius: 24px;
-  border: 1.5px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 
-    0 20px 45px rgba(0, 0, 0, 0.75),
-    0 0 35px rgba(168, 85, 247, 0.25),
-    0 0 25px rgba(0, 242, 254, 0.2);
+  max-width: 440px;
+  border-radius: 20px;
   overflow: hidden;
-  background: #020617;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+  transition: transform 0.4s ease;
 }
-
+.workspace-visual-frame:hover {
+  transform: scale(1.02);
+}
 .workspace-bg-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
-  transition: transform 0.6s ease;
-}
-.workspace-visual-frame:hover .workspace-bg-img {
-  transform: scale(1.03);
-}
-
-/* Floating hex badge on right frame */
-.floating-hex-code {
-  position: absolute;
-  right: -12px;
-  top: 170px;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(13, 20, 38, 0.92);
-  border: 1.5px solid rgba(0, 242, 254, 0.6);
-  color: var(--accent-cyan);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Fira Code', monospace;
-  font-weight: 700;
-  font-size: 16px;
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.45);
-  z-index: 6;
-}
-
-/* Bottom Right Neon Script and Badge */
-.showcase-bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-  padding: 0 6px;
-}
-.handwritten-neon-script {
-  font-family: 'Caveat', cursive;
-  font-size: 23px;
-  font-weight: 700;
-  color: #c084fc;
-  letter-spacing: 0.8px;
-  text-shadow: 0 0 14px rgba(192, 132, 252, 0.7);
-}
-.terminal-explore-badge {
-  font-family: 'Fira Code', monospace;
-  font-size: 9.5px;
-  color: #38bdf8;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  padding: 6px 12px;
-  border-radius: 8px;
-  line-height: 1.4;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+  object-fit: contain;
+  border-radius: 20px;
 }
 
 /* Footer Tagline */
@@ -938,7 +800,7 @@ body {
 }
 
 /* =================================================================
-   INTERACTIVE MODALS (ABOUT, FEATURES, COMMUNITY, PRICING)
+   INTERACTIVE MODALS
    ================================================================= */
 .modal-overlay {
   position: fixed;
@@ -1104,11 +966,7 @@ body {
   }
   .showcase-col {
     grid-column: span 2;
-    min-height: auto;
     margin-top: 10px;
-  }
-  .workspace-visual-frame {
-    height: 350px;
   }
 }
 
@@ -1127,7 +985,6 @@ body {
   .hero-col {
     align-items: center;
     text-align: center;
-    padding-left: 0;
   }
   .hero-title {
     font-size: 36px;
@@ -1140,9 +997,6 @@ body {
   }
   .showcase-col {
     grid-column: span 1;
-  }
-  .workspace-visual-frame {
-    height: 280px;
   }
 }
 
@@ -1213,9 +1067,6 @@ body {
        LEFT COLUMN: Hero & Feature Cards
        ============================================================= -->
   <section class="hero-col">
-    <!-- Floating code bracket badge -->
-    <div class="floating-bracket-badge">{ }</div>
-
     <!-- Pill Badge -->
     <div class="hero-pill-badge">
       <span>⚡ A Smarter Way to Code</span>
@@ -1234,13 +1085,12 @@ body {
       </p>
     </div>
 
-    <!-- Feature Cards List -->
+    <!-- Feature Cards List (Matches Reference Image) -->
     <div class="feature-cards-stack" id="features">
       <div class="feature-card" onclick="openModal('featuresModal')">
-        <div class="feature-icon-box icon-purple">
+        <div class="feature-icon-box">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
         </div>
         <div class="feature-text-group">
@@ -1250,7 +1100,7 @@ body {
       </div>
 
       <div class="feature-card" onclick="openModal('featuresModal')">
-        <div class="feature-icon-box icon-blue">
+        <div class="feature-icon-box">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
@@ -1265,7 +1115,7 @@ body {
       </div>
 
       <div class="feature-card" onclick="openModal('featuresModal')">
-        <div class="feature-icon-box icon-cyan">
+        <div class="feature-icon-box">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
           </svg>
@@ -1277,7 +1127,7 @@ body {
       </div>
 
       <div class="feature-card" onclick="openModal('communityModal')">
-        <div class="feature-icon-box icon-indigo">
+        <div class="feature-icon-box">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"></line>
             <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -1302,7 +1152,7 @@ body {
   </section>
 
   <!-- =============================================================
-       CENTER COLUMN: Exact Neon Authentication Card
+       CENTER COLUMN: EXACT NEON AUTH CARD (Exact 1:1)
        ============================================================= -->
   <section class="auth-col">
     <div class="auth-card-neon-wrapper">
@@ -1322,7 +1172,7 @@ body {
         <!-- OAuth / Status Banner -->
         <div class="status-msg-banner error" id="oauthError"></div>
 
-        <!-- Google SSO Primary Button -->
+        <!-- Single Google SSO Button -->
         <a class="google-sso-btn" href="/oauth2/authorization/google" id="googleBtn">
           <svg viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -1332,26 +1182,6 @@ body {
           </svg>
           Continue with Google
         </a>
-
-        <!-- 2 Social Buttons Row (Microsoft, LinkedIn) - Zero GitHub trace -->
-        <div class="social-row-icons">
-          <!-- Microsoft Link -->
-          <a class="social-icon-btn" href="/oauth2/authorization/google" title="Sign in with Microsoft">
-            <svg viewBox="0 0 23 23">
-              <path fill="#f35325" d="M1 1h10v10H1z"/>
-              <path fill="#81bc06" d="M12 1h10v10H12z"/>
-              <path fill="#05a6f0" d="M1 12h10v10H1z"/>
-              <path fill="#ffba08" d="M12 12h10v10H12z"/>
-            </svg>
-          </a>
-
-          <!-- LinkedIn Link -->
-          <a class="social-icon-btn" href="https://www.linkedin.com" target="_blank" title="Connect on LinkedIn">
-            <svg viewBox="0 0 24 24" fill="#0077b5">
-              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-            </svg>
-          </a>
-        </div>
 
         <div class="section-or-divider">
           <span>OR LOGIN WITH EMAIL</span>
@@ -1500,28 +1330,11 @@ body {
   </section>
 
   <!-- =============================================================
-       RIGHT COLUMN: LARGE WORKSPACE ROOM ARTWORK (NO STAT CARDS)
+       RIGHT COLUMN: EXACT WORKSPACE ROOM ARTWORK
        ============================================================= -->
   <section class="showcase-col">
-    <!-- Atmospheric Workspace Visual Card -->
-    <div class="room-art-container">
-      <div class="workspace-visual-frame">
-        <img src="/room-artwork.png" alt="Developer Workspace Setup - KartikTerminal" class="workspace-bg-img">
-      </div>
-
-      <!-- Floating hex badge -->
-      <div class="floating-hex-code">&lt;/&gt;</div>
-    </div>
-
-    <!-- Bottom Right Neon Script and Badge -->
-    <div class="showcase-bottom-row">
-      <div class="handwritten-neon-script">Code • Learn • Build • Grow</div>
-      <div class="terminal-explore-badge">
-        &gt;_ Create<br>
-        &nbsp;&nbsp;&nbsp;Explore<br>
-        &nbsp;&nbsp;&nbsp;Innovate<br>
-        &nbsp;&nbsp;&nbsp;Repeat
-      </div>
+    <div class="workspace-visual-frame">
+      <img src="/room-artwork.png" alt="Developer Workspace Setup - KartikTerminal" class="workspace-bg-img">
     </div>
   </section>
 
