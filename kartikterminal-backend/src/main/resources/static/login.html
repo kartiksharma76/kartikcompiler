@@ -18,7 +18,7 @@
 :root {
   --bg: #030712;
   --bg-deep: #02040a;
-  --card-bg: rgba(8, 14, 28, 0.94);
+  --card-bg: rgba(8, 14, 28, 0.92);
   --border-subtle: rgba(255, 255, 255, 0.08);
   --text-main: #ffffff;
   --text-muted: #94a3b8;
@@ -34,9 +34,6 @@
 html, body {
   min-height: 100vh;
   background-color: var(--bg);
-  background: #030712 url('/login-cyber-bg.png') no-repeat center center;
-  background-size: cover;
-  background-attachment: fixed;
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
   overflow-x: hidden;
@@ -44,6 +41,21 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+/* Pure Single-Layer Cyber Ambient Background (NO double background images) */
+body {
+  background-color: #030712;
+  background-image: 
+    radial-gradient(circle at 10% 18%, rgba(0, 242, 254, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 6% 68%, rgba(168, 85, 247, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 88% 25%, rgba(168, 85, 247, 0.2) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 50% 98%, rgba(236, 72, 153, 0.12) 0%, transparent 50%),
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, center center, center center;
 }
 
 /* =================================================================
@@ -198,7 +210,7 @@ html, body {
   transition: all 0.25s ease;
 }
 .nav-btn-gradient:hover {
-  transform: translateY(-1px scale(1.02));
+  transform: translateY(-1px) scale(1.02);
   box-shadow: 0 0 28px rgba(192, 38, 211, 0.65);
 }
 
@@ -213,7 +225,7 @@ html, body {
   margin: 0 auto;
   padding: 6px 32px 14px;
   display: grid;
-  grid-template-columns: 1fr 1.15fr 1.08fr;
+  grid-template-columns: 1fr 1.15fr 1.05fr;
   gap: 28px;
   align-items: center;
   flex: 1;
@@ -288,9 +300,9 @@ html, body {
   gap: 14px;
   padding: 10px 16px;
   border-radius: 14px;
-  background: rgba(13, 20, 38, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
+  background: rgba(13, 20, 38, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
   transition: all 0.25s ease;
   cursor: pointer;
 }
@@ -335,8 +347,8 @@ html, body {
   gap: 14px;
   padding: 12px 18px;
   border-radius: 14px;
-  background: rgba(13, 20, 38, 0.7);
-  border: 1px solid rgba(0, 242, 254, 0.2);
+  background: rgba(13, 20, 38, 0.65);
+  border: 1px solid rgba(0, 242, 254, 0.18);
   backdrop-filter: blur(14px);
   max-width: 380px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
@@ -396,7 +408,7 @@ html, body {
 
 .auth-card-inner {
   width: 100%;
-  background: rgba(8, 13, 27, 0.95);
+  background: rgba(8, 13, 27, 0.94);
   border-radius: 24px;
   padding: 28px 28px 22px;
   backdrop-filter: blur(28px);
@@ -721,12 +733,34 @@ html, body {
 }
 
 /* =================================================================
-   RIGHT COLUMN: TRANSPARENT SPACER (BACKGROUND SHINES THROUGH NATURALLY)
+   RIGHT COLUMN: NATURAL BLENDED DEVELOPER ROOM (NO BOX, NO DOUBLE IMAGE)
    ================================================================= */
 .showcase-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   min-height: 480px;
+}
+
+.seamless-artwork-blend {
   width: 100%;
-  pointer-events: none;
+  max-width: 440px;
+  position: relative;
+  /* Seamless fade mask on left edge so it smoothly merges into the background */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
+  transition: transform 0.4s ease;
+}
+.seamless-artwork-blend:hover {
+  transform: scale(1.02);
+}
+.seamless-artwork-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 0 35px rgba(168, 85, 247, 0.25));
 }
 
 /* Footer Tagline */
@@ -1020,7 +1054,7 @@ html, body {
       </p>
     </div>
 
-    <!-- Feature Cards List (Matches Reference Image) -->
+    <!-- Feature Cards List -->
     <div class="feature-cards-stack" id="features">
       <div class="feature-card" onclick="openModal('featuresModal')">
         <div class="feature-icon-box">
@@ -1265,9 +1299,13 @@ html, body {
   </section>
 
   <!-- =============================================================
-       RIGHT COLUMN: SEAMLESS BACKGROUND VIEW (NO EXTRA BOX / NO DUPLICATE)
+       RIGHT COLUMN: SEAMLESS ARTWORK BLEND (NO BOX / NO HARD EDGES)
        ============================================================= -->
-  <section class="showcase-col"></section>
+  <section class="showcase-col">
+    <div class="seamless-artwork-blend">
+      <img src="/room-artwork.png" alt="Developer Workspace Artwork - KartikTerminal" class="seamless-artwork-img">
+    </div>
+  </section>
 
 </main>
 
