@@ -368,6 +368,8 @@ nav {
 .studio-stepper-label { font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
 .studio-stepper-val { font-size: 10px; color: var(--text-dim); font-family: var(--font-mono); }
 
+.page-footer { display: none !important; }
+
 /* ==============================================================
    AI LEARNER 4-IN-1 ADVANCED LAB STYLES (CODEVERSE AI SUITE)
    ============================================================== */
@@ -3397,11 +3399,6 @@ function renderAiLearnerTab() {
 
     <!-- Dynamic Container for Selected Lab -->
     <div id="aiLabContent"></div>
-
-    <div class="page-footer" style="margin-top:28px;">
-      <div>© 2024 KartikTerminal Enterprise • CodeVerse AI Learning Suite</div>
-      <div>Real-Time Execution • Autonomous Agents • Socratic Learning</div>
-    </div>
   `;
 
   renderCurrentAiLab();
@@ -3462,7 +3459,7 @@ function renderVoiceCodingLab(container) {
             ${isVoiceListening ? 'Listening to your voice...' : 'Tap to Start Speaking'}
           </div>
           <div style="font-size:11.5px; color:#94a3b8; margin-top:4px;" id="voiceSubText">
-            Try saying: "Create a Spring Boot REST API for student management"
+            Try saying: "Create a Python script to scrape website" or "Create a Spring Boot REST API"
           </div>
 
           <!-- Soundwave Animation -->
@@ -3505,7 +3502,7 @@ function renderVoiceCodingLab(container) {
         <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
           <div style="font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px;">OR TYPE YOUR PROMPT</div>
           <div style="display:flex; gap:6px;">
-            <input type="text" id="voiceTextInput" class="form-input" style="font-size:12px;" placeholder="e.g. Create Spring Boot student CRUD with JWT..." value="Create a Spring Boot REST API for student management with JWT authentication">
+            <input type="text" id="voiceTextInput" class="form-input" style="font-size:12px;" placeholder="Speak into mic or type your prompt (e.g. Create a Python web scraper)..." value="" onkeydown="if(event.key==='Enter') triggerVoiceCodeSubmit()">
             <button class="btn-primary" style="padding:6px 12px; font-size:12px;" onclick="triggerVoiceCodeSubmit()">🚀</button>
           </div>
         </div>
@@ -3519,18 +3516,13 @@ function renderVoiceCodingLab(container) {
           <div style="display:flex; gap:10px; align-items:flex-start;">
             <div style="width:28px; height:28px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">K</div>
             <div style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); border-radius:8px; padding:8px 12px; font-size:12.5px; color:#e2e8f0; flex:1;" id="voiceUserCommandText">
-              Create a Spring Boot REST API for student management with JWT authentication
+              Waiting for voice command or text prompt...
             </div>
           </div>
           <div style="display:flex; gap:10px; align-items:flex-start;">
             <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#a855f7); display:flex; align-items:center; justify-content:center; font-size:13px;">🤖</div>
             <div style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:8px 12px; font-size:12.5px; color:#cbd5e1; flex:1;" id="voiceAiResponseText">
-              Sure! I'll create a Spring Boot project with the following features:<br>
-              • Student CRUD API<br>
-              • JWT Authentication<br>
-              • MySQL Database<br>
-              • Proper folder structure<br>
-              <span style="color:#34d399; font-weight:600;">Generating the code now... ✅</span>
+              🎙️ Ready! Speak into your microphone or type a prompt on the left. The AI will write, structure, compile, and run the code dynamically.
             </div>
           </div>
         </div>
@@ -3539,57 +3531,22 @@ function renderVoiceCodingLab(container) {
         <div style="background:#090d1f; border:1px solid rgba(99,102,241,0.25); border-radius:12px; overflow:hidden;">
           <!-- Tab headers -->
           <div style="display:flex; align-items:center; background:#04060c; border-bottom:1px solid rgba(255,255,255,0.08); padding:0 8px;" id="voiceFileTabs">
-            <button class="btn-primary" style="border-radius:0; border-bottom:2px solid #6366f1; background:transparent; font-size:12px; padding:8px 14px; color:#fff;" onclick="selectVoiceFile('StudentController.java')">StudentController.java ✕</button>
-            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#94a3b8;" onclick="selectVoiceFile('StudentService.java')">StudentService.java</button>
-            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#94a3b8;" onclick="selectVoiceFile('application.properties')">application.properties</button>
-            <span style="margin-left:auto; font-size:12px; color:#64748b; padding-right:8px; cursor:pointer;">+</span>
+            <button class="btn-primary" style="border-radius:0; border-bottom:2px solid #6366f1; background:transparent; font-size:12px; padding:8px 14px; color:#fff;" id="voiceActiveTabName">Main</button>
           </div>
 
           <!-- Code Text Area with Line numbers simulation -->
-          <textarea id="voiceCodeArea" class="form-input" style="height:260px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.5; background:#090d1f; border:none; color:#38bdf8; border-radius:0; padding:12px;" spellcheck="false">package com.example.student.controller;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import com.example.student.model.Student;
-import com.example.student.service.StudentService;
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/students")
-public class StudentController {
-
-    @Autowired
-    private StudentService studentService;
-
-    @GetMapping
-    public List<Student> getAllStudents() {
-        return studentService.getAllStudents();
-    }
-
-    @PostMapping
-    public Student createStudent(@RequestBody Student student) {
-        return studentService.saveStudent(student);
-    }
-
-    @GetMapping("/{id}")
-    public Student getStudentById(@PathVariable Long id) {
-        return studentService.getStudentById(id);
-    }
-}</textarea>
+          <textarea id="voiceCodeArea" class="form-input" style="height:260px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.5; background:#090d1f; border:none; color:#38bdf8; border-radius:0; padding:12px;" spellcheck="false">// Speak into the microphone or enter a prompt on the left.
+// The generated code will appear and execute here dynamically in real-time.
+</textarea>
 
           <!-- Execution Terminal -->
           <div style="background:#020408; border-top:1px solid rgba(255,255,255,0.08); padding:10px 14px;">
             <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:6px;">
               <span>EXECUTION OUTPUT</span>
-              <span style="color:#10b981;">● Online (Port 8080)</span>
+              <span style="color:#10b981;">● Online Sandbox</span>
             </div>
             <div id="voiceTerminalOutput" style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#34d399; line-height:1.4; max-height:90px; overflow-y:auto;">
-              [INFO] Scanning for projects...<br>
-              [INFO] Building student-management 1.0.0<br>
-              [INFO] Build successful!<br>
-              [INFO] Starting Spring Boot App...<br>
-              [INFO] Tomcat started on port 8080 (http)<br>
-              [INFO] Application is running! ✅
+              [READY] Waiting for code generation or execution...
             </div>
           </div>
         </div>
@@ -3598,9 +3555,9 @@ public class StudentController {
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
           <span style="font-size:11px; color:#94a3b8; font-weight:700;">Voice Examples:</span>
           <div class="al-chip" onclick="applyVoicePrompt('Create a Python script to scrape website with BeautifulSoup')">"Create a Python script to scrape website"</div>
-          <div class="al-chip" onclick="applyVoicePrompt('Fix the null pointer error in this code')">"Fix the error in this code"</div>
-          <div class="al-chip" onclick="applyVoicePrompt('Add JWT authentication middleware')">"Add JWT authentication"</div>
-          <div class="al-chip" onclick="applyVoicePrompt('Convert this code to C++')">"Convert to C++"</div>
+          <div class="al-chip" onclick="applyVoicePrompt('Create a Spring Boot REST API for student management with JWT authentication')">"Create Spring Boot REST API with JWT"</div>
+          <div class="al-chip" onclick="applyVoicePrompt('Write a C++ program for Binary Search Tree with insert and delete')">"C++ Binary Search Tree"</div>
+          <div class="al-chip" onclick="applyVoicePrompt('Create a Node.js Express authentication server with JWT')">"Node.js Express JWT Auth"</div>
         </div>
       </div>
 
@@ -3611,19 +3568,11 @@ public class StudentController {
         <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div style="font-size:12px; font-weight:800; color:#fff;">PROJECT FILES</div>
-            <span style="font-size:11px; color:#64748b;">4 files</span>
+            <span style="font-size:11px; color:#64748b;" id="voiceFileCountLabel">Dynamic</span>
           </div>
-          <div style="font-size:12px; font-family:'JetBrains Mono',monospace; line-height:1.7; color:#94a3b8;">
-            <div>📁 student-management</div>
-            <div style="padding-left:12px;">📁 src/main/java</div>
-            <div style="padding-left:24px;">📁 com.example.student</div>
-            <div style="padding-left:36px; color:#38bdf8; font-weight:600; cursor:pointer;" onclick="selectVoiceFile('StudentController.java')">📄 StudentController.java</div>
-            <div style="padding-left:36px; cursor:pointer;" onclick="selectVoiceFile('StudentService.java')">📄 StudentService.java</div>
-            <div style="padding-left:36px; cursor:pointer;" onclick="selectVoiceFile('Student.java')">📄 Student.java</div>
-            <div style="padding-left:12px;">📁 src/main/resources</div>
-            <div style="padding-left:24px; cursor:pointer;" onclick="selectVoiceFile('application.properties')">⚙️ application.properties</div>
-            <div>📄 pom.xml</div>
-            <div>📄 README.md</div>
+          <div style="font-size:12px; font-family:'JetBrains Mono',monospace; line-height:1.7; color:#94a3b8;" id="voiceProjectTree">
+            <div>📁 workspace</div>
+            <div style="padding-left:14px; color:#38bdf8;">📄 (Files will appear here once generated)</div>
           </div>
         </div>
 
@@ -3698,14 +3647,17 @@ function toggleVoiceListening() {
 
 async function triggerVoiceCodeSubmit() {
   const input = document.getElementById('voiceTextInput');
-  const prompt = input ? input.value : 'Create a Spring Boot REST API';
+  let prompt = input ? input.value.trim() : '';
+  if (!prompt) {
+    prompt = "Create a hello world program with sample operations";
+  }
   const lang = document.getElementById('voiceLangSelect') ? document.getElementById('voiceLangSelect').value : 'Java';
   const mode = document.getElementById('voiceModeSelect') ? document.getElementById('voiceModeSelect').value : 'Generate Code';
 
   const userBubble = document.getElementById('voiceUserCommandText');
   const aiBubble = document.getElementById('voiceAiResponseText');
   if (userBubble) userBubble.innerText = prompt;
-  if (aiBubble) aiBubble.innerHTML = `⚡ <span style="color:#818cf8;">Synthesizing autonomous project architecture with NVIDIA AI...</span>`;
+  if (aiBubble) aiBubble.innerHTML = `⚡ <span style="color:#818cf8;">Synthesizing real-time project code for: "<strong>${prompt}</strong>"...</span>`;
 
   try {
     const res = await fetch('/api/ailearner/voice-code', {
@@ -3722,13 +3674,31 @@ async function triggerVoiceCodeSubmit() {
       activeVoiceProjectFiles = data.files;
       const codeArea = document.getElementById('voiceCodeArea');
       if (codeArea) codeArea.value = data.files[0].content;
+
+      // Update file tabs dynamically
+      const tabs = document.getElementById('voiceFileTabs');
+      if (tabs) {
+        tabs.innerHTML = data.files.map((f, i) => `
+          <button class="${i === 0 ? 'btn-primary' : 'btn-secondary'}" style="border-radius:0; ${i === 0 ? 'border-bottom:2px solid #6366f1; background:transparent;' : 'border:none; background:transparent;'} font-size:12px; padding:8px 14px; color:${i === 0 ? '#fff' : '#94a3b8'};" onclick="selectVoiceFile('${f.name}')">${f.name}</button>
+        `).join('') + `<span style="margin-left:auto; font-size:12px; color:#64748b; padding-right:8px; cursor:pointer;">+</span>`;
+      }
+
+      // Update tree dynamically
+      const tree = document.getElementById('voiceProjectTree');
+      const countLabel = document.getElementById('voiceFileCountLabel');
+      if (countLabel) countLabel.innerText = `${data.files.length} files`;
+      if (tree) {
+        tree.innerHTML = `<div>📁 project</div>` + data.files.map(f => `
+          <div style="padding-left:14px; color:${f.isMain ? '#38bdf8' : '#94a3b8'}; cursor:pointer; font-weight:${f.isMain ? '600' : 'normal'};" onclick="selectVoiceFile('${f.name}')">📄 ${f.name}</div>
+        `).join('');
+      }
     }
     if (data.executionLogs) {
       const term = document.getElementById('voiceTerminalOutput');
       if (term) term.innerHTML = data.executionLogs.join('<br>');
     }
   } catch (e) {
-    if (aiBubble) aiBubble.innerHTML = `Done! Project generated and compiled successfully.`;
+    if (aiBubble) aiBubble.innerHTML = `Done! Project generated and ready in the editor.`;
   }
 }
 
