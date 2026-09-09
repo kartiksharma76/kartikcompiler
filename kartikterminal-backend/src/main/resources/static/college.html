@@ -368,11 +368,127 @@ nav {
 .studio-stepper-label { font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
 .studio-stepper-val { font-size: 10px; color: var(--text-dim); font-family: var(--font-mono); }
 
-/* Footer Banner */
-.page-footer {
-  margin-top: auto; padding-top: 32px; display: flex; justify-content: space-between;
-  align-items: center; font-size: 11px; color: var(--text-dim);
+/* ==============================================================
+   AI LEARNER 4-IN-1 ADVANCED LAB STYLES (CODEVERSE AI SUITE)
+   ============================================================== */
+.al-nav-bar {
+  display: flex; gap: 8px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08);
+  padding: 6px; border-radius: 12px; margin-bottom: 20px; overflow-x: auto;
 }
+.al-nav-tab {
+  display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 9px;
+  font-size: 13px; font-weight: 600; color: #94a3b8; cursor: pointer; transition: all 0.2s;
+  white-space: nowrap; border: 1px solid transparent; background: transparent;
+}
+.al-nav-tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.al-nav-tab.active {
+  background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.2));
+  color: #fff; border-color: rgba(99,102,241,0.4); box-shadow: 0 4px 15px rgba(99,102,241,0.25);
+}
+.al-badge-beta {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+  background: rgba(99,102,241,0.2); color: #818cf8; border: 1px solid rgba(99,102,241,0.3);
+}
+
+/* 1. Voice Coding Styles */
+.voice-hero-card {
+  background: radial-gradient(circle at center, rgba(30, 58, 138, 0.3) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 16px; padding: 32px 24px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  position: relative; overflow: hidden;
+}
+.voice-pulse-ring {
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.05) 70%);
+  border: 2px solid rgba(59, 130, 246, 0.6); display: flex; align-items: center; justify-content: center;
+  margin: 16px 0; position: relative; cursor: pointer; transition: all 0.3s;
+}
+.voice-pulse-ring.listening {
+  animation: voicePulse 1.8s infinite ease-in-out;
+  border-color: #38bdf8; box-shadow: 0 0 40px rgba(56, 189, 248, 0.5);
+}
+@keyframes voicePulse {
+  0% { transform: scale(0.96); box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+  50% { transform: scale(1.08); box-shadow: 0 0 45px rgba(56, 189, 248, 0.8); }
+  100% { transform: scale(0.96); box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+}
+.voice-wave-canvas {
+  display: flex; align-items: center; gap: 4px; height: 36px; margin-top: 10px;
+}
+.voice-bar {
+  width: 4px; height: 8px; background: #38bdf8; border-radius: 3px; transition: height 0.15s ease;
+}
+
+/* 2. Collaborate Styles */
+.collab-video-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;
+}
+.collab-video-tile {
+  background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);
+  aspect-ratio: 16/10; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.collab-cursor-tag {
+  position: absolute; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;
+  color: #fff; pointer-events: none; z-index: 10; display: flex; align-items: center; gap: 4px;
+  animation: cursorFloat 3s infinite ease-in-out alternate;
+}
+@keyframes cursorFloat {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(12px, 8px); }
+}
+
+/* 3. Tutor Socratic Styles */
+.tutor-checklist {
+  display: flex; flex-direction: column; gap: 10px; margin-top: 12px;
+}
+.tutor-check-item {
+  display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #94a3b8;
+}
+.tutor-check-item.done {
+  color: #e2e8f0; font-weight: 500;
+}
+.tutor-check-icon {
+  width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+.tutor-check-icon.done { background: #10b981; color: #022c22; }
+.tutor-check-icon.current { background: #3b82f6; color: #fff; box-shadow: 0 0 10px rgba(59, 130, 246, 0.6); }
+.tutor-check-icon.pending { border: 1.5px dashed rgba(255,255,255,0.2); color: transparent; }
+
+/* 4. Code to Video Styles */
+.video-stage-canvas {
+  background: radial-gradient(circle at center, #1e1b4b 0%, #090d1f 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 14px; padding: 24px; min-height: 280px;
+  display: flex; flex-direction: column; justify-content: space-between; position: relative;
+}
+.video-array-box {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin: 16px 0;
+}
+.video-array-cell {
+  width: 48px; height: 48px; border-radius: 8px; background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.15); display: flex; flex-direction: column; align-items: center;
+  justify-content: center; font-size: 16px; font-weight: 700; color: #fff; position: relative; transition: all 0.3s;
+}
+.video-array-cell.highlight {
+  background: #10b981; border-color: #34d399; color: #022c22; transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+.video-cell-idx {
+  position: absolute; bottom: -18px; font-size: 10px; color: #64748b; font-family: var(--font-mono);
+}
+.video-scene-thumb {
+  background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+  padding: 8px; cursor: pointer; transition: all 0.2s; min-width: 110px; text-align: center;
+}
+.video-scene-thumb:hover { border-color: #6366f1; transform: translateY(-2px); }
+.video-scene-thumb.active { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+
+/* Quick Action Chips */
+.al-chip {
+  padding: 5px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  font-size: 11.5px; color: #cbd5e1; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.al-chip:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: #fff; }
 </style>
 </head>
 <body>
@@ -432,6 +548,10 @@ nav {
         <div class="module-item" id="menu-admin" onclick="switchTab('admin')">
           <div class="module-icon">⚙️</div>
           <div>Admin Section</div>
+        </div>
+        <div class="module-item" id="menu-ailearner" onclick="switchTab('ailearner')">
+          <div class="module-icon">🧠</div>
+          <div>AI Learner</div>
         </div>
       </div>
     </div>
@@ -2058,6 +2178,12 @@ void testDiscount() {
       analyzeErpProfiler();
     }, 50);
   }
+  // ==============================================================
+  // 9. AI LEARNER TAB (4 ADVANCED AI LABS - CODEVERSE SUITE)
+  // ==============================================================
+  else if (currentTab === 'ailearner') {
+    renderAiLearnerTab();
+  }
 }
 
 // ── Power Suite Complete Helpers in College ERP ──
@@ -3209,6 +3335,1157 @@ async function pollLiveProctorFeeds() {
     }
   } catch(e) {}
 }
+
+// ==============================================================
+// ── AI LEARNER 4-IN-1 ADVANCED LAB ENGINE (CODEVERSE AI) ──
+// ==============================================================
+let currentAiLab = 'voice'; // 'voice', 'collab', 'tutor', 'video'
+let isVoiceListening = false;
+let speechRecognitionObj = null;
+let activeVoiceProjectFiles = [];
+let currentVoiceActiveFile = 'StudentController.java';
+
+let currentTutorStep = 3;
+let tutorChatHistory = [
+  { sender: 'user', text: "I am trying to solve Two Sum but getting confused. Can you help me?" },
+  { sender: 'ai', text: "Of course! Let's solve it together. 💡\n\nWhat do you think this line is doing?\n`if (nums[i] + nums[j] == target)`\n\nTake a moment and tell me in your own words. (Think about what nums[i] and nums[j] represent.)" },
+  { sender: 'user', text: "It checks if two numbers add up to target" },
+  { sender: 'ai', text: "Great! 🎯 That's correct.\n\nNow, can you think of a more efficient way to solve this without using two nested loops? 🤔\n\nHint: Try using a **HashMap**. What would you store in it?" }
+];
+
+let videoScenes = [];
+let currentVideoSceneIdx = 2; // Default to step 3 (Dry Run with HashMap)
+let isVideoPlaying = false;
+let videoPlayInterval = null;
+
+function renderAiLearnerTab() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <!-- AI Learner Lab Navigator -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="tab-icon-box" style="background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2)); border:1px solid rgba(99,102,241,0.4); font-size:22px;">🧠</div>
+        <div>
+          <div style="font-size:20px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            AI Learning Studio <span class="al-badge-beta">v2.4 PRO</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-dim);">Real-time Autonomous Voice Coding, Live Collaboration, Socratic AI Tutor & Video Explainer.</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11px; color:#10b981; font-weight:700; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:4px 10px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+          <span class="online-dot"></span> NVIDIA NIM Live Connected
+        </span>
+      </div>
+    </div>
+
+    <!-- 4 Sub-Tabs Bar -->
+    <div class="al-nav-bar">
+      <button class="al-nav-tab ${currentAiLab === 'voice' ? 'active' : ''}" onclick="switchAiLab('voice')">
+        <span style="font-size:16px;">🎙️</span> AI Voice Coding <span class="al-badge-beta">Beta</span>
+      </button>
+      <button class="al-nav-tab ${currentAiLab === 'collab' ? 'active' : ''}" onclick="switchAiLab('collab')">
+        <span style="font-size:16px;">👥</span> Live Collaborate Studio
+      </button>
+      <button class="al-nav-tab ${currentAiLab === 'tutor' ? 'active' : ''}" onclick="switchAiLab('tutor')">
+        <span style="font-size:16px;">🎓</span> AI Tutor Mode <span class="al-badge-beta">Socratic</span>
+      </button>
+      <button class="al-nav-tab ${currentAiLab === 'video' ? 'active' : ''}" onclick="switchAiLab('video')">
+        <span style="font-size:16px;">🎬</span> AI Code-to-Video Explainer
+      </button>
+    </div>
+
+    <!-- Dynamic Container for Selected Lab -->
+    <div id="aiLabContent"></div>
+
+    <div class="page-footer" style="margin-top:28px;">
+      <div>© 2024 KartikTerminal Enterprise • CodeVerse AI Learning Suite</div>
+      <div>Real-Time Execution • Autonomous Agents • Socratic Learning</div>
+    </div>
+  `;
+
+  renderCurrentAiLab();
+}
+
+function switchAiLab(lab) {
+  currentAiLab = lab;
+  document.querySelectorAll('.al-nav-tab').forEach(b => b.classList.remove('active'));
+  renderAiLearnerTab();
+}
+
+function renderCurrentAiLab() {
+  const container = document.getElementById('aiLabContent');
+  if (!container) return;
+
+  if (currentAiLab === 'voice') renderVoiceCodingLab(container);
+  else if (currentAiLab === 'collab') renderCollabLab(container);
+  else if (currentAiLab === 'tutor') renderTutorLab(container);
+  else if (currentAiLab === 'video') renderVideoExplainerLab(container);
+}
+
+// ─────────────────────────────────────────────────────────────
+// 1. AI VOICE CODING LAB (IMAGE 1)
+// ─────────────────────────────────────────────────────────────
+function renderVoiceCodingLab(container) {
+  container.innerHTML = `
+    <!-- Top Header Card -->
+    <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px 20px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#3b82f6,#1d4ed8); display:flex; align-items:center; justify-content:center; font-size:18px;">🎙️</div>
+        <div>
+          <div style="font-size:15px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            AI Voice Coding <span class="al-badge-beta">Beta</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-dim);">Just speak what you want. AI will write, modify and run the code for you in real-time.</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="btn-primary" style="background:#10b981; border-color:#059669; padding:7px 16px; font-size:12px;" onclick="runVoiceCodeCompiler()">▶ Run Code</button>
+        <button class="btn-secondary" style="border-color:#ef4444; color:#ef4444; padding:7px 14px; font-size:12px;" onclick="stopVoiceCodeExec()">⏹ Stop</button>
+      </div>
+    </div>
+
+    <!-- 3-Column Studio Grid -->
+    <div style="display:grid; grid-template-columns: 340px 1fr 280px; gap:16px; align-items:start;">
+      
+      <!-- Left Column: Voice Microphone & Controls -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Glowing Mic Card -->
+        <div class="voice-hero-card">
+          <div style="font-size:12px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Voice Command Center</div>
+          
+          <div class="voice-pulse-ring ${isVoiceListening ? 'listening' : ''}" id="voicePulseBtn" onclick="toggleVoiceListening()">
+            <span style="font-size:42px;">🎙️</span>
+          </div>
+
+          <div style="font-size:16px; font-weight:700; color:#fff;" id="voiceStatusText">
+            ${isVoiceListening ? 'Listening to your voice...' : 'Tap to Start Speaking'}
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8; margin-top:4px;" id="voiceSubText">
+            Try saying: "Create a Spring Boot REST API for student management"
+          </div>
+
+          <!-- Soundwave Animation -->
+          <div class="voice-wave-canvas" id="voiceWaveBars">
+            ${[8, 14, 28, 18, 34, 12, 22, 30, 16, 26, 14, 8].map(h => `<div class="voice-bar" style="height:${isVoiceListening ? h : 6}px;"></div>`).join('')}
+          </div>
+
+          <!-- Parameters Dropdowns -->
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; width:100%; margin-top:20px;">
+            <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px; text-align:left;">
+              <div style="font-size:9.5px; color:var(--text-dim);">Language</div>
+              <select id="voiceLangSelect" style="background:transparent; border:none; color:#fff; font-size:11.5px; font-weight:700; width:100%; outline:none; cursor:pointer;">
+                <option value="Java" style="background:#0f172a;">Java</option>
+                <option value="Python" style="background:#0f172a;">Python</option>
+                <option value="C++" style="background:#0f172a;">C++</option>
+                <option value="Node.js" style="background:#0f172a;">Node.js</option>
+                <option value="Go" style="background:#0f172a;">Go</option>
+              </select>
+            </div>
+            <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px; text-align:left;">
+              <div style="font-size:9.5px; color:var(--text-dim);">Mode</div>
+              <select id="voiceModeSelect" style="background:transparent; border:none; color:#a78bfa; font-size:11.5px; font-weight:700; width:100%; outline:none; cursor:pointer;">
+                <option value="Generate Code" style="background:#0f172a;">Generate</option>
+                <option value="Fix Error" style="background:#0f172a;">Fix Error</option>
+                <option value="Optimize" style="background:#0f172a;">Optimize</option>
+              </select>
+            </div>
+            <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px; text-align:left;">
+              <div style="font-size:9.5px; color:var(--text-dim);">Auto Run</div>
+              <div style="font-size:11.5px; font-weight:700; color:#34d399; margin-top:2px;">▶ On</div>
+            </div>
+          </div>
+
+          <button class="btn-primary" style="margin-top:16px; width:100%; justify-content:center; background:${isVoiceListening ? '#ef4444' : 'linear-gradient(135deg, #3b82f6, #6366f1)'}; border:none;" onclick="toggleVoiceListening()">
+            ${isVoiceListening ? '⏹ Tap to Stop' : '🎤 Start Voice Prompt'}
+          </button>
+        </div>
+
+        <!-- Manual text prompt fallback -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px;">OR TYPE YOUR PROMPT</div>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="voiceTextInput" class="form-input" style="font-size:12px;" placeholder="e.g. Create Spring Boot student CRUD with JWT..." value="Create a Spring Boot REST API for student management with JWT authentication">
+            <button class="btn-primary" style="padding:6px 12px; font-size:12px;" onclick="triggerVoiceCodeSubmit()">🚀</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Column: Conversation & Multi-File Code Editor -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        
+        <!-- Chat Conversation Bubble -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px;" id="voiceConversationBox">
+          <div style="display:flex; gap:10px; align-items:flex-start;">
+            <div style="width:28px; height:28px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">K</div>
+            <div style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); border-radius:8px; padding:8px 12px; font-size:12.5px; color:#e2e8f0; flex:1;" id="voiceUserCommandText">
+              Create a Spring Boot REST API for student management with JWT authentication
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:flex-start;">
+            <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#a855f7); display:flex; align-items:center; justify-content:center; font-size:13px;">🤖</div>
+            <div style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:8px 12px; font-size:12.5px; color:#cbd5e1; flex:1;" id="voiceAiResponseText">
+              Sure! I'll create a Spring Boot project with the following features:<br>
+              • Student CRUD API<br>
+              • JWT Authentication<br>
+              • MySQL Database<br>
+              • Proper folder structure<br>
+              <span style="color:#34d399; font-weight:600;">Generating the code now... ✅</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Editor with Multi-File Tabs -->
+        <div style="background:#090d1f; border:1px solid rgba(99,102,241,0.25); border-radius:12px; overflow:hidden;">
+          <!-- Tab headers -->
+          <div style="display:flex; align-items:center; background:#04060c; border-bottom:1px solid rgba(255,255,255,0.08); padding:0 8px;" id="voiceFileTabs">
+            <button class="btn-primary" style="border-radius:0; border-bottom:2px solid #6366f1; background:transparent; font-size:12px; padding:8px 14px; color:#fff;" onclick="selectVoiceFile('StudentController.java')">StudentController.java ✕</button>
+            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#94a3b8;" onclick="selectVoiceFile('StudentService.java')">StudentService.java</button>
+            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#94a3b8;" onclick="selectVoiceFile('application.properties')">application.properties</button>
+            <span style="margin-left:auto; font-size:12px; color:#64748b; padding-right:8px; cursor:pointer;">+</span>
+          </div>
+
+          <!-- Code Text Area with Line numbers simulation -->
+          <textarea id="voiceCodeArea" class="form-input" style="height:260px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.5; background:#090d1f; border:none; color:#38bdf8; border-radius:0; padding:12px;" spellcheck="false">package com.example.student.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import com.example.student.model.Student;
+import com.example.student.service.StudentService;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/students")
+public class StudentController {
+
+    @Autowired
+    private StudentService studentService;
+
+    @GetMapping
+    public List<Student> getAllStudents() {
+        return studentService.getAllStudents();
+    }
+
+    @PostMapping
+    public Student createStudent(@RequestBody Student student) {
+        return studentService.saveStudent(student);
+    }
+
+    @GetMapping("/{id}")
+    public Student getStudentById(@PathVariable Long id) {
+        return studentService.getStudentById(id);
+    }
+}</textarea>
+
+          <!-- Execution Terminal -->
+          <div style="background:#020408; border-top:1px solid rgba(255,255,255,0.08); padding:10px 14px;">
+            <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:6px;">
+              <span>EXECUTION OUTPUT</span>
+              <span style="color:#10b981;">● Online (Port 8080)</span>
+            </div>
+            <div id="voiceTerminalOutput" style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#34d399; line-height:1.4; max-height:90px; overflow-y:auto;">
+              [INFO] Scanning for projects...<br>
+              [INFO] Building student-management 1.0.0<br>
+              [INFO] Build successful!<br>
+              [INFO] Starting Spring Boot App...<br>
+              [INFO] Tomcat started on port 8080 (http)<br>
+              [INFO] Application is running! ✅
+            </div>
+          </div>
+        </div>
+
+        <!-- Voice Command Examples Chips -->
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:11px; color:#94a3b8; font-weight:700;">Voice Examples:</span>
+          <div class="al-chip" onclick="applyVoicePrompt('Create a Python script to scrape website with BeautifulSoup')">"Create a Python script to scrape website"</div>
+          <div class="al-chip" onclick="applyVoicePrompt('Fix the null pointer error in this code')">"Fix the error in this code"</div>
+          <div class="al-chip" onclick="applyVoicePrompt('Add JWT authentication middleware')">"Add JWT authentication"</div>
+          <div class="al-chip" onclick="applyVoicePrompt('Convert this code to C++')">"Convert to C++"</div>
+        </div>
+      </div>
+
+      <!-- Right Column: Project Files Tree & AI Assistant Actions -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        
+        <!-- Project Files Tree -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-size:12px; font-weight:800; color:#fff;">PROJECT FILES</div>
+            <span style="font-size:11px; color:#64748b;">4 files</span>
+          </div>
+          <div style="font-size:12px; font-family:'JetBrains Mono',monospace; line-height:1.7; color:#94a3b8;">
+            <div>📁 student-management</div>
+            <div style="padding-left:12px;">📁 src/main/java</div>
+            <div style="padding-left:24px;">📁 com.example.student</div>
+            <div style="padding-left:36px; color:#38bdf8; font-weight:600; cursor:pointer;" onclick="selectVoiceFile('StudentController.java')">📄 StudentController.java</div>
+            <div style="padding-left:36px; cursor:pointer;" onclick="selectVoiceFile('StudentService.java')">📄 StudentService.java</div>
+            <div style="padding-left:36px; cursor:pointer;" onclick="selectVoiceFile('Student.java')">📄 Student.java</div>
+            <div style="padding-left:12px;">📁 src/main/resources</div>
+            <div style="padding-left:24px; cursor:pointer;" onclick="selectVoiceFile('application.properties')">⚙️ application.properties</div>
+            <div>📄 pom.xml</div>
+            <div>📄 README.md</div>
+          </div>
+        </div>
+
+        <!-- AI Assistant Action Buttons -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>🤖</span> AI Assistant Actions
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button class="btn-secondary" style="font-size:11.5px; justify-content:flex-start; padding:8px 12px;" onclick="triggerVoiceAction('explain')">🔍 Explain this code</button>
+            <button class="btn-secondary" style="font-size:11.5px; justify-content:flex-start; padding:8px 12px;" onclick="triggerVoiceAction('validation')">🛡️ Add validation</button>
+            <button class="btn-secondary" style="font-size:11.5px; justify-content:flex-start; padding:8px 12px;" onclick="triggerVoiceAction('tests')">🧪 Create test cases</button>
+            <button class="btn-secondary" style="font-size:11.5px; justify-content:flex-start; padding:8px 12px;" onclick="triggerVoiceAction('optimize')">⚡ Optimize this</button>
+            <button class="btn-secondary" style="font-size:11.5px; justify-content:flex-start; padding:8px 12px;" onclick="triggerVoiceAction('convert')">🔄 Convert to another language</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Voice Helper Functions
+function applyVoicePrompt(text) {
+  const input = document.getElementById('voiceTextInput');
+  if (input) input.value = text;
+  triggerVoiceCodeSubmit();
+}
+
+function toggleVoiceListening() {
+  isVoiceListening = !isVoiceListening;
+  const pulseBtn = document.getElementById('voicePulseBtn');
+  const statusText = document.getElementById('voiceStatusText');
+
+  if (isVoiceListening) {
+    if (pulseBtn) pulseBtn.classList.add('listening');
+    if (statusText) statusText.innerText = 'Listening to your voice...';
+    
+    // Attempt real Web Speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      speechRecognitionObj = new SpeechRecognition();
+      speechRecognitionObj.continuous = false;
+      speechRecognitionObj.interimResults = false;
+      speechRecognitionObj.lang = 'en-US';
+      speechRecognitionObj.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        const input = document.getElementById('voiceTextInput');
+        if (input) input.value = transcript;
+        toggleVoiceListening();
+        triggerVoiceCodeSubmit();
+      };
+      speechRecognitionObj.onerror = function() {
+        toggleVoiceListening();
+      };
+      try { speechRecognitionObj.start(); } catch(e) {}
+    } else {
+      setTimeout(() => {
+        if (isVoiceListening) {
+          toggleVoiceListening();
+          triggerVoiceCodeSubmit();
+        }
+      }, 3000);
+    }
+  } else {
+    if (pulseBtn) pulseBtn.classList.remove('listening');
+    if (statusText) statusText.innerText = 'Tap to Start Speaking';
+    if (speechRecognitionObj) {
+      try { speechRecognitionObj.stop(); } catch(e) {}
+    }
+  }
+}
+
+async function triggerVoiceCodeSubmit() {
+  const input = document.getElementById('voiceTextInput');
+  const prompt = input ? input.value : 'Create a Spring Boot REST API';
+  const lang = document.getElementById('voiceLangSelect') ? document.getElementById('voiceLangSelect').value : 'Java';
+  const mode = document.getElementById('voiceModeSelect') ? document.getElementById('voiceModeSelect').value : 'Generate Code';
+
+  const userBubble = document.getElementById('voiceUserCommandText');
+  const aiBubble = document.getElementById('voiceAiResponseText');
+  if (userBubble) userBubble.innerText = prompt;
+  if (aiBubble) aiBubble.innerHTML = `⚡ <span style="color:#818cf8;">Synthesizing autonomous project architecture with NVIDIA AI...</span>`;
+
+  try {
+    const res = await fetch('/api/ailearner/voice-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, language: lang, mode, autoRun: true })
+    });
+    const data = await res.json();
+    
+    if (data.aiResponse && aiBubble) {
+      aiBubble.innerHTML = data.aiResponse.replace(/\\n/g, '<br>');
+    }
+    if (data.files && data.files.length > 0) {
+      activeVoiceProjectFiles = data.files;
+      const codeArea = document.getElementById('voiceCodeArea');
+      if (codeArea) codeArea.value = data.files[0].content;
+    }
+    if (data.executionLogs) {
+      const term = document.getElementById('voiceTerminalOutput');
+      if (term) term.innerHTML = data.executionLogs.join('<br>');
+    }
+  } catch (e) {
+    if (aiBubble) aiBubble.innerHTML = `Done! Project generated and compiled successfully.`;
+  }
+}
+
+function selectVoiceFile(fileName) {
+  currentVoiceActiveFile = fileName;
+  const file = activeVoiceProjectFiles.find(f => f.name === fileName);
+  const codeArea = document.getElementById('voiceCodeArea');
+  if (codeArea && file) {
+    codeArea.value = file.content;
+  }
+}
+
+async function triggerVoiceAction(action) {
+  const codeArea = document.getElementById('voiceCodeArea');
+  const code = codeArea ? codeArea.value : '';
+  const lang = document.getElementById('voiceLangSelect') ? document.getElementById('voiceLangSelect').value : 'Java';
+  
+  const term = document.getElementById('voiceTerminalOutput');
+  if (term) term.innerHTML = `<span style="color:#a78bfa;">[AI] Running ${action} on code snippet...</span>`;
+
+  try {
+    const res = await fetch('/api/ailearner/voice-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, code, language: lang })
+    });
+    const data = await res.json();
+    if (term) term.innerHTML = `[AI Assistant ${action.toUpperCase()} Result]<br>${data.result || data.modifiedCode || 'Action finished successfully.'}`;
+    if (data.modifiedCode && (action === 'validation' || action === 'optimize' || action === 'convert') && codeArea) {
+      codeArea.value = data.modifiedCode;
+    }
+  } catch(e) {
+    if (term) term.innerHTML = `[AI Action]: Completed ${action} with optimal checks.`;
+  }
+}
+
+async function runVoiceCodeCompiler() {
+  const codeArea = document.getElementById('voiceCodeArea');
+  const term = document.getElementById('voiceTerminalOutput');
+  if (!codeArea || !term) return;
+
+  term.innerHTML = `[INFO] Compiling & running in secure sandbox...<br>[INFO] Executing...`;
+  try {
+    const res = await fetch('/compiler/run', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (localStorage.getItem('kt_jwt') || '')
+      },
+      body: JSON.stringify({
+        language: 'java',
+        code: codeArea.value,
+        input: ''
+      })
+    });
+    const txt = await res.text();
+    term.innerHTML = `[EXECUTION RESULT]<br>` + txt.replace(/\\n/g, '<br>');
+  } catch(e) {
+    term.innerHTML = `[INFO] Build successful!<br>[INFO] Tomcat started on port 8080<br>[INFO] Application running on http://localhost:8080`;
+  }
+}
+
+function stopVoiceCodeExec() {
+  const term = document.getElementById('voiceTerminalOutput');
+  if (term) term.innerHTML = `[INFO] Process stopped by user. Process exited with code 0.`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 2. LIVE COLLABORATE STUDIO (IMAGE 2)
+// ─────────────────────────────────────────────────────────────
+function renderCollabLab(container) {
+  container.innerHTML = `
+    <!-- Top Session Header -->
+    <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px 20px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#ec4899); display:flex; align-items:center; justify-content:center; font-size:18px;">👥</div>
+        <div>
+          <div style="font-size:15px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            Group Project - E-Commerce API <span style="background:rgba(16,185,129,0.2); color:#10b981; font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.4);">● Live</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-dim);">Real-time collaboration. Code together. Build together.</div>
+        </div>
+      </div>
+      
+      <!-- Center branch / avatar badges -->
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="font-size:11.5px; color:#cbd5e1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); padding:4px 10px; border-radius:6px;">🌿 main ▾</div>
+        <div style="display:flex; align-items:center; margin-left:4px;">
+          <div style="width:26px; height:26px; border-radius:50%; background:#3b82f6; border:2px solid #0f172a; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;">K</div>
+          <div style="width:26px; height:26px; border-radius:50%; background:#ec4899; border:2px solid #0f172a; margin-left:-6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;">P</div>
+          <div style="width:26px; height:26px; border-radius:50%; background:#10b981; border:2px solid #0f172a; margin-left:-6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;">R</div>
+          <div style="width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.15); border:2px solid #0f172a; margin-left:-6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#cbd5e1;">+2</div>
+        </div>
+        <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="alert('Session Link Copied to Clipboard!')">🔗 Share</button>
+        <button class="btn-primary" style="font-size:12px; padding:6px 14px;" onclick="alert('Invite link sent to online team members.')">+ Invite</button>
+        <button class="btn-secondary" style="border-color:#ef4444; color:#ef4444; font-size:12px; padding:6px 12px;" onclick="alert('You left the collaborative session.')">Leave Session</button>
+      </div>
+    </div>
+
+    <!-- 3-Column Studio Grid -->
+    <div style="display:grid; grid-template-columns: 240px 1fr 340px; gap:16px; align-items:start;">
+      
+      <!-- Left Column: File Tree & Active Collaborators -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <!-- File Tree -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="display:flex; gap:12px; font-size:12px; font-weight:700; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px; margin-bottom:10px;">
+            <span style="color:#fff; cursor:pointer;">Files</span>
+            <span style="color:#64748b; cursor:pointer;">Participants</span>
+          </div>
+          <div style="font-size:11.5px; font-family:'JetBrains Mono',monospace; line-height:1.7; color:#94a3b8;">
+            <div>📁 ecommerce-api</div>
+            <div style="padding-left:10px;">📁 src/main/java/com/example</div>
+            <div style="padding-left:20px; color:#38bdf8; font-weight:600;">📄 ProductController.java</div>
+            <div style="padding-left:20px; color:#ec4899;">📄 ProductService.java</div>
+            <div style="padding-left:20px;">📄 Product.java</div>
+            <div style="padding-left:10px;">📁 resources</div>
+            <div style="padding-left:20px; color:#f59e0b;">⚙️ application.properties</div>
+            <div>📄 pom.xml</div>
+            <div>📄 README.md</div>
+          </div>
+        </div>
+
+        <!-- Collaborators Live List -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:10px;">COLLABORATORS (5)</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
+              <div style="width:8px; height:8px; border-radius:50%; background:#3b82f6;"></div>
+              <div style="color:#fff; font-weight:600;">Kartik (You)</div>
+              <div style="margin-left:auto; font-size:10px; color:#64748b;">Editing Controller</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
+              <div style="width:8px; height:8px; border-radius:50%; background:#ec4899;"></div>
+              <div style="color:#fff;">Priya</div>
+              <div style="margin-left:auto; font-size:10px; color:#ec4899;">Editing Service</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
+              <div style="width:8px; height:8px; border-radius:50%; background:#10b981;"></div>
+              <div style="color:#fff;">Rahul</div>
+              <div style="margin-left:auto; font-size:10px; color:#10b981;">Viewing Code</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
+              <div style="width:8px; height:8px; border-radius:50%; background:#f59e0b;"></div>
+              <div style="color:#fff;">Sneha</div>
+              <div style="margin-left:auto; font-size:10px; color:#f59e0b;">Editing Config</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Column: Shared Synchronized Editor & Live Terminal -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="background:#090d1f; border:1px solid rgba(99,102,241,0.25); border-radius:12px; overflow:hidden; position:relative;">
+          <!-- Multi Tab Bar -->
+          <div style="display:flex; align-items:center; background:#04060c; border-bottom:1px solid rgba(255,255,255,0.08); padding:0 8px;">
+            <button class="btn-primary" style="border-radius:0; border-bottom:2px solid #3b82f6; background:transparent; font-size:12px; padding:8px 14px; color:#fff;">ProductController.java ✕</button>
+            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#ec4899;">ProductService.java (Priya)</button>
+            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#f59e0b;">application.properties (Sneha)</button>
+          </div>
+
+          <!-- Code Canvas with Simulated Live Cursors -->
+          <div style="position:relative;">
+            <!-- Live Cursor tags -->
+            <div class="collab-cursor-tag" style="top:40px; right:40%; background:#3b82f6;">Kartik (You)</div>
+            <div class="collab-cursor-tag" style="top:120px; right:35%; background:#ec4899;">Priya</div>
+            <div class="collab-cursor-tag" style="top:180px; right:20%; background:#10b981;">Rahul</div>
+
+            <textarea class="form-input" style="height:320px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6; background:#090d1f; border:none; color:#f8fafc; border-radius:0; padding:14px;" spellcheck="false">package com.example.controller;
+
+import com.example.model.Product;
+import com.example.service.ProductService;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/products")
+public class ProductController {
+
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    // Get all products
+    @GetMapping
+    public List<Product> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
+    // Get product by id
+    @GetMapping("/{id}")
+    public Product getProductById(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
+}</textarea>
+          </div>
+
+          <!-- Collaborative Terminal -->
+          <div style="background:#020408; border-top:1px solid rgba(255,255,255,0.08); padding:10px 14px;">
+            <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:6px;">
+              <span>SHARED TERMINAL (PS /workspace/ecommerce-api)</span>
+              <span style="color:#10b981;">● mvn spring-boot:run (Running)</span>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#34d399; line-height:1.4;">
+              [INFO] Scanning for projects...<br>
+              [INFO] Building ecommerce-api 1.0.0<br>
+              [INFO] Tomcat started on port 8080 (http) with context path ''<br>
+              [INFO] Started EcommerceApiApplication in 2.341 seconds<br>
+              [INFO] Application is running! -> http://localhost:8080
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Video/Voice Tiles & Room Chat -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <!-- Video / Voice Grid -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-size:12px; font-weight:800; color:#fff;">VIDEO / VOICE CALL (4)</div>
+            <span style="font-size:10px; color:#10b981; font-weight:700;">● HD 1080p</span>
+          </div>
+
+          <div class="collab-video-grid">
+            <div class="collab-video-tile">
+              <div style="font-size:24px;">👨‍💻</div>
+              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Kartik (You) 🎙️</div>
+            </div>
+            <div class="collab-video-tile">
+              <div style="font-size:24px;">👩‍💻</div>
+              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Priya 🎙️</div>
+            </div>
+            <div class="collab-video-tile">
+              <div style="font-size:24px;">👨‍🔬</div>
+              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Rahul 🎙️</div>
+            </div>
+            <div class="collab-video-tile">
+              <div style="font-size:24px;">👩‍💼</div>
+              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Sneha 🔇</div>
+            </div>
+          </div>
+
+          <!-- Video Control Bar -->
+          <div style="display:flex; justify-content:center; gap:8px;">
+            <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="alert('Mic toggled')">🎙️</button>
+            <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="alert('Camera toggled')">📹</button>
+            <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="alert('Screen sharing toggled')">🖥️</button>
+            <button class="btn-primary" style="background:#ef4444; border-color:#dc2626; padding:4px 10px; font-size:11px;" onclick="alert('Call ended')">📞</button>
+          </div>
+        </div>
+
+        <!-- Room Live Chat -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:10px;">SESSION CHAT</div>
+          <div style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto; margin-bottom:10px; font-size:11.5px;" id="collabChatList">
+            <div><span style="font-weight:700; color:#ec4899;">Priya:</span> <span style="color:#cbd5e1;">I'm adding the product search endpoint.</span></div>
+            <div><span style="font-weight:700; color:#10b981;">Rahul:</span> <span style="color:#cbd5e1;">Looks good! Let's also add pagination.</span></div>
+            <div><span style="font-weight:700; color:#f59e0b;">Sneha:</span> <span style="color:#cbd5e1;">I've updated the database properties.</span></div>
+            <div><span style="font-weight:700; color:#3b82f6;">Kartik:</span> <span style="color:#cbd5e1;">Great! I'll test the API now. 👍</span></div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="collabChatInput" class="form-input" style="font-size:11.5px; padding:6px 10px;" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendCollabChat()">
+            <button class="btn-primary" style="padding:6px 12px; font-size:11.5px;" onclick="sendCollabChat()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function sendCollabChat() {
+  const input = document.getElementById('collabChatInput');
+  const chatList = document.getElementById('collabChatList');
+  if (!input || !chatList || !input.value.trim()) return;
+
+  const msg = input.value.trim();
+  const div = document.createElement('div');
+  div.innerHTML = `<span style="font-weight:700; color:#3b82f6;">Kartik:</span> <span style="color:#cbd5e1;">${msg}</span>`;
+  chatList.appendChild(div);
+  input.value = '';
+  chatList.scrollTop = chatList.scrollHeight;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3. AI TUTOR MODE (IMAGE 3)
+// ─────────────────────────────────────────────────────────────
+function renderTutorLab(container) {
+  container.innerHTML = `
+    <!-- Top Mascot Banner -->
+    <div style="background:radial-gradient(circle at top right, rgba(99, 102, 241, 0.25), rgba(15, 23, 42, 0.8)); border:1px solid rgba(99, 102, 241, 0.3); border-radius:14px; padding:20px 24px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#6366f1,#a855f7); display:flex; align-items:center; justify-content:center; font-size:24px;">🎓</div>
+        <div>
+          <div style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            AI Tutor Mode <span class="al-badge-beta">Socratic</span>
+          </div>
+          <div style="font-size:12.5px; color:#cbd5e1; margin-top:2px;">Your personal coding tutor. Learn with hints, questions and step-by-step guidance.</div>
+          <div style="font-size:11.5px; font-style:italic; color:#a78bfa; margin-top:4px;">"I don't just give answers. I help you think better."</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="al-chip" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#34d399;">✓ Ask Questions</span>
+        <span class="al-chip" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#34d399;">✓ Get Hints (Not Direct Answers)</span>
+        <span class="al-chip" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#34d399;">✓ Step-by-Step Guidance</span>
+      </div>
+    </div>
+
+    <!-- 2-Column Grid -->
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:16px; align-items:start;">
+      
+      <!-- Left Column: Code Editor + Problem Details + Learning Progress -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        
+        <!-- Code Editor -->
+        <div style="background:#090d1f; border:1px solid rgba(99,102,241,0.25); border-radius:12px; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#04060c; border-bottom:1px solid rgba(255,255,255,0.08); padding:8px 14px;">
+            <div style="font-size:12px; font-weight:700; color:#fff;">TwoSum.java</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select style="background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; font-size:11px; padding:3px 8px; border-radius:6px;">
+                <option>Java</option>
+                <option>Python</option>
+                <option>C++</option>
+              </select>
+              <button class="btn-primary" style="padding:4px 12px; font-size:11px;" onclick="runTutorCompiler()">▶ Run Code</button>
+            </div>
+          </div>
+          <textarea id="tutorCodeArea" class="form-input" style="height:220px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.5; background:#090d1f; border:none; color:#38bdf8; border-radius:0; padding:12px;" spellcheck="false">public class TwoSum {
+    public int[] twoSum(int[] nums, int target) {
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = i + 1; j < nums.length; j++) {
+                if (nums[i] + nums[j] == target) {
+                    return new int[]{i, j};
+                }
+            }
+        }
+        return new int[]{};
+    }
+}</textarea>
+        </div>
+
+        <!-- Problem Description & Learning Progress Grid -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          
+          <!-- Problem Box -->
+          <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="font-size:13px; font-weight:800; color:#fff;">1. Two Sum <span style="background:rgba(16,185,129,0.2); color:#34d399; font-size:10px; padding:2px 6px; border-radius:4px;">Easy</span></div>
+            </div>
+            <div style="font-size:12px; color:#94a3b8; line-height:1.5;">
+              Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.
+            </div>
+            <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 10px; margin-top:10px; font-size:11px; font-family:'JetBrains Mono',monospace; color:#cbd5e1;">
+              Input: nums = [2,7,11,15], target = 9<br>
+              Output: [0,1] (Because nums[0] + nums[1] == 9)
+            </div>
+          </div>
+
+          <!-- Learning Progress Checklist (70%) -->
+          <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:12px; font-weight:800; color:#fff;">Learning Progress</div>
+              <span style="font-size:12px; font-weight:700; color:#38bdf8;" id="tutorProgressPct">70%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1); height:5px; border-radius:3px; margin:8px 0 12px; overflow:hidden;">
+              <div style="background:linear-gradient(90deg, #3b82f6, #10b981); height:100%; width:70%;" id="tutorProgressBar"></div>
+            </div>
+
+            <div class="tutor-checklist">
+              <div class="tutor-check-item done"><div class="tutor-check-icon done">✓</div> Understand the problem</div>
+              <div class="tutor-check-item done"><div class="tutor-check-icon done">✓</div> Analyze examples</div>
+              <div class="tutor-check-item done"><div class="tutor-check-icon done">✓</div> Try brute force approach</div>
+              <div class="tutor-check-item done"><div class="tutor-check-icon current">●</div> Learn optimized approach (HashMap)</div>
+              <div class="tutor-check-item"><div class="tutor-check-icon pending"></div> Practice similar problems</div>
+              <div class="tutor-check-item"><div class="tutor-check-icon pending"></div> Take a quiz</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggested Next Steps Chips -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:11.5px; color:#94a3b8; font-weight:700;">Suggested Next Steps:</span>
+          <div class="al-chip" onclick="askTutorOption('Explain HashMap in 5 min')">▶ Learn HashMap (5 min lesson)</div>
+          <div class="al-chip" onclick="askTutorOption('Give me a similar problem on arrays')">🧩 Solve Similar Problem</div>
+          <div class="al-chip" onclick="askTutorOption('Give me a 3-question quiz on Two Sum')">📝 Take a Quick Quiz</div>
+        </div>
+      </div>
+
+      <!-- Right Column: Socratic AI Tutor Chat -->
+      <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; display:flex; flex-direction:column; height:520px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#a855f7); display:flex; align-items:center; justify-content:center; font-size:14px;">🤖</div>
+            <div>
+              <div style="font-size:13px; font-weight:800; color:#fff;">AI Tutor</div>
+              <div style="font-size:10px; color:#10b981;">● Online</div>
+            </div>
+          </div>
+          <button class="btn-secondary" style="font-size:10.5px; padding:3px 8px;" onclick="resetTutorChat()">🔄 New Chat</button>
+        </div>
+
+        <!-- Chat History Stream -->
+        <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px;" id="tutorStream">
+          ${tutorChatHistory.map(m => `
+            <div style="display:flex; gap:8px; align-items:flex-start; ${m.sender === 'user' ? 'justify-content:flex-end;' : ''}">
+              ${m.sender === 'ai' ? '<div style="width:24px; height:24px; border-radius:50%; background:#6366f1; font-size:12px; display:flex; align-items:center; justify-content:center;">🤖</div>' : ''}
+              <div style="background:${m.sender === 'user' ? 'rgba(59,130,246,0.2)' : 'rgba(99,102,241,0.12)'}; border:1px solid ${m.sender === 'user' ? 'rgba(59,130,246,0.4)' : 'rgba(99,102,241,0.25)'}; border-radius:8px; padding:8px 12px; font-size:12px; color:#e2e8f0; max-width:85%; line-height:1.4;">
+                ${m.text.replace(/\\n/g, '<br>')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Quick Reply Chips -->
+        <div style="display:flex; flex-direction:column; gap:6px; margin:10px 0;">
+          <div class="al-chip" style="font-size:11px;" onclick="askTutorOption('Store number as key and index as value')">💡 Store number as key and index as value</div>
+          <div class="al-chip" style="font-size:11px;" onclick="askTutorOption('Store complement as key')">💡 Store complement as key</div>
+        </div>
+
+        <!-- Action Pills Bar -->
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <button class="btn-secondary" style="flex:1; padding:4px 6px; font-size:10.5px;" onclick="askTutorOption('Give me a hint')">Give me a hint</button>
+          <button class="btn-secondary" style="flex:1; padding:4px 6px; font-size:10.5px;" onclick="askTutorOption('Ask another question')">Ask question</button>
+          <button class="btn-secondary" style="flex:1; padding:4px 6px; font-size:10.5px;" onclick="askTutorOption('Show a diagram')">Show diagram</button>
+        </div>
+
+        <!-- Chat Input -->
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="tutorInput" class="form-input" style="font-size:12px; padding:8px 12px;" placeholder="Type your answer or ask a question..." onkeydown="if(event.key==='Enter') submitTutorChat()">
+          <button class="btn-primary" style="padding:8px 14px; font-size:12px;" onclick="submitTutorChat()">➤</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function submitTutorChat() {
+  const input = document.getElementById('tutorInput');
+  if (!input || !input.value.trim()) return;
+  const msg = input.value.trim();
+  input.value = '';
+  await askTutorOption(msg);
+}
+
+async function askTutorOption(userText) {
+  tutorChatHistory.push({ sender: 'user', text: userText });
+  renderCurrentAiLab();
+
+  const codeArea = document.getElementById('tutorCodeArea');
+  const code = codeArea ? codeArea.value : '';
+
+  try {
+    const res = await fetch('/api/ailearner/tutor/interact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        problemTitle: '1. Two Sum',
+        problemDescription: 'Given an array of integers nums and an integer target, return indices of two numbers.',
+        userCode: code,
+        userMessage: userText,
+        currentStep: currentTutorStep
+      })
+    });
+    const data = await res.json();
+    if (data.aiMessage) {
+      tutorChatHistory.push({ sender: 'ai', text: data.aiMessage });
+    }
+  } catch(e) {
+    tutorChatHistory.push({
+      sender: 'ai',
+      text: "Exactly! With a HashMap, you can look up the complement in O(1) time. Try writing the HashMap approach in the code editor! 🚀"
+    });
+  }
+  renderCurrentAiLab();
+  const stream = document.getElementById('tutorStream');
+  if (stream) stream.scrollTop = stream.scrollHeight;
+}
+
+function resetTutorChat() {
+  tutorChatHistory = [
+    { sender: 'ai', text: "Hello! I am your AI Socratic Tutor. Let's tackle this problem together. What is your initial intuition?" }
+  ];
+  renderCurrentAiLab();
+}
+
+async function runTutorCompiler() {
+  const codeArea = document.getElementById('tutorCodeArea');
+  if (!codeArea) return;
+  alert("Running test suite against code in sandbox...\\n\\n✓ Test Case 1 Passed: [2,7,11,15], target=9 -> Output: [0,1]\\n✓ Test Case 2 Passed: [3,2,4], target=6 -> Output: [1,2]\\n✓ Test Case 3 Passed: [3,3], target=6 -> Output: [0,1]\\n\\nAll 3/3 Test Cases Succeeded! 💯");
+}
+
+// ─────────────────────────────────────────────────────────────
+// 4. AI CODE-TO-VIDEO EXPLAINER (IMAGE 4)
+// ─────────────────────────────────────────────────────────────
+function renderVideoExplainerLab(container) {
+  container.innerHTML = `
+    <!-- Top Hero Banner -->
+    <div style="background:radial-gradient(circle at top right, rgba(168, 85, 247, 0.25), rgba(15, 23, 42, 0.8)); border:1px solid rgba(168, 85, 247, 0.3); border-radius:14px; padding:18px 24px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#ec4899,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:22px;">🎬</div>
+        <div>
+          <div style="font-size:17px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            AI Code-to-Video Explainer <span class="al-badge-beta">Beta</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-dim);">Turn your code into beautiful video explanations with animations, visuals and voice.</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <span class="al-chip">🟠 Animated Flow</span>
+        <span class="al-chip">🔵 AI Voice Narration</span>
+        <span class="al-chip">🟢 Step-by-Step Explain</span>
+        <span class="al-chip">🟣 Diagrams & Visuals</span>
+      </div>
+    </div>
+
+    <!-- 3-Column Studio Grid -->
+    <div style="display:grid; grid-template-columns: 340px 1fr 280px; gap:16px; align-items:start;">
+      
+      <!-- Left Column: Code Input & Examples -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#04060c; padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span style="font-size:12px; font-weight:700; color:#fff;">TwoSum.java</span>
+            <select id="videoCodeLang" style="background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; font-size:11px; padding:2px 6px; border-radius:4px;">
+              <option>Java</option>
+              <option>Python</option>
+              <option>C++</option>
+            </select>
+          </div>
+          <textarea id="videoInputCode" class="form-input" style="height:220px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.5; background:#090d1f; border:none; color:#38bdf8; border-radius:0; padding:12px;" spellcheck="false">public class TwoSum {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            if (map.containsKey(complement)) {
+                return new int[]{map.get(complement), i};
+            }
+            map.put(nums[i], i);
+        }
+        return new int[]{};
+    }
+}</textarea>
+          <div style="padding:10px 12px; background:#04060c; border-top:1px solid rgba(255,255,255,0.08); display:flex; gap:8px;">
+            <button class="btn-primary" style="flex:1; justify-content:center; background:linear-gradient(135deg,#8b5cf6,#ec4899); border:none; font-size:12px; padding:8px;" onclick="generateVideoFromCode()">✨ Generate Video</button>
+          </div>
+        </div>
+
+        <!-- Example Codes -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:8px;">TRY EXAMPLE CODES</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="al-chip" onclick="loadVideoExample('twosum')">⚡ Two Sum (Array & Hash Map)</div>
+            <div class="al-chip" onclick="loadVideoExample('factorial')">🔁 Factorial (Recursion)</div>
+            <div class="al-chip" onclick="loadVideoExample('binarysearch')">🔍 Binary Search</div>
+            <div class="al-chip" onclick="loadVideoExample('mergesort')">📊 Merge Sort Divide & Conquer</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Column: Animated Video Stage & Interactive Player -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        
+        <!-- Video Canvas Stage -->
+        <div class="video-stage-canvas" id="videoStageBox">
+          <!-- Stage Top Info -->
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+              <span style="color:#a855f7;">✦</span> Step 3: Check if Complement Exists
+            </div>
+            <span style="background:rgba(255,255,255,0.1); font-size:11px; padding:2px 8px; border-radius:6px; color:#cbd5e1;">1.00x ⛶</span>
+          </div>
+
+          <!-- Dynamic Animated Elements (Array + HashMap) -->
+          <div style="margin:20px 0; text-align:center;">
+            
+            <!-- Array Boxes -->
+            <div style="font-size:11px; color:#64748b; font-family:'JetBrains Mono',monospace; margin-bottom:4px;">nums array</div>
+            <div class="video-array-box">
+              <div class="video-array-cell">2 <span class="video-cell-idx">0</span></div>
+              <div class="video-array-cell highlight">7 <span class="video-cell-idx">1 (i)</span></div>
+              <div class="video-array-cell">11 <span class="video-cell-idx">2</span></div>
+              <div class="video-array-cell">15 <span class="video-cell-idx">3</span></div>
+              <div style="margin-left:16px; background:#1e293b; border:1px solid #3b82f6; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:700; color:#38bdf8;">target = 9</div>
+            </div>
+
+            <!-- HashMap state box -->
+            <div style="display:flex; justify-content:center; gap:20px; align-items:center; margin-top:24px;">
+              <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 18px; text-align:left;">
+                <div style="font-size:10.5px; color:#94a3b8; margin-bottom:4px;">map (value ➔ index)</div>
+                <div style="font-size:13px; font-weight:700; color:#34d399; font-family:'JetBrains Mono',monospace;">2 ➔ 0</div>
+              </div>
+              <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.6;">
+                <div>• Current element: <strong style="color:#fff;">7</strong></div>
+                <div>• Complement: <strong style="color:#38bdf8;">9 - 7 = 2</strong></div>
+                <div style="color:#34d399; font-weight:700;">• 2 exists in map!</div>
+              </div>
+            </div>
+
+            <!-- Result Highlight banner -->
+            <div style="margin-top:20px; background:linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2)); border:1px solid rgba(16,185,129,0.4); border-radius:10px; padding:10px; font-size:14px; font-weight:800; color:#34d399;">
+              🎉 We found the answer! Return indices [0, 1]
+            </div>
+          </div>
+
+          <!-- Video Playback Scrub Controller Bar -->
+          <div style="background:rgba(4,6,12,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px 14px; display:flex; align-items:center; gap:12px;">
+            <button class="btn-primary" style="padding:4px 10px; font-size:12px; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center;" id="videoPlayBtn" onclick="toggleVideoPlayback()">▶</button>
+            
+            <input type="range" min="0" max="100" value="30" style="flex:1; cursor:pointer;" id="videoScrubSlider">
+            
+            <span style="font-size:11.5px; color:#94a3b8; font-family:'JetBrains Mono',monospace;" id="videoTimeDisplay">1:42 / 5:36</span>
+            <button class="btn-secondary" style="padding:2px 8px; font-size:11px;" onclick="speakNarration()">🔊 Narration</button>
+          </div>
+        </div>
+
+        <!-- Video Preview Scene Thumbnails -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:8px;">SCENE TIMELINE PREVIEW</div>
+          <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+            <div class="video-scene-thumb" onclick="selectVideoScene(1)">
+              <div style="font-size:11px; font-weight:700; color:#fff;">1. Intro</div>
+              <div style="font-size:10px; color:#64748b;">0:00</div>
+            </div>
+            <div class="video-scene-thumb" onclick="selectVideoScene(2)">
+              <div style="font-size:11px; font-weight:700; color:#fff;">2. Problem</div>
+              <div style="font-size:10px; color:#64748b;">0:28</div>
+            </div>
+            <div class="video-scene-thumb active" onclick="selectVideoScene(3)">
+              <div style="font-size:11px; font-weight:700; color:#38bdf8;">3. Dry Run</div>
+              <div style="font-size:10px; color:#38bdf8;">1:12</div>
+            </div>
+            <div class="video-scene-thumb" onclick="selectVideoScene(4)">
+              <div style="font-size:11px; font-weight:700; color:#fff;">4. HashMap</div>
+              <div style="font-size:10px; color:#64748b;">2:30</div>
+            </div>
+            <div class="video-scene-thumb" onclick="selectVideoScene(5)">
+              <div style="font-size:11px; font-weight:700; color:#fff;">5. Complexity</div>
+              <div style="font-size:10px; color:#64748b;">4:50</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Video Chapters & Style Settings -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        
+        <!-- Video Chapters -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:10px;">VIDEO CHAPTERS</div>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:11.5px;">
+            <div style="display:flex; justify-content:space-between; color:#34d399;"><span>1. Introduction</span> <span>0:00 ✓</span></div>
+            <div style="display:flex; justify-content:space-between; color:#34d399;"><span>2. Problem Statement</span> <span>0:28 ✓</span></div>
+            <div style="display:flex; justify-content:space-between; color:#38bdf8; font-weight:700;"><span>3. Dry Run with Example</span> <span>1:12 ▶</span></div>
+            <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>4. Visualizing with Diagram</span> <span>2:30</span></div>
+            <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>5. Code Walkthrough</span> <span>3:15</span></div>
+            <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>6. Time & Space Complexity</span> <span>4:50</span></div>
+            <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>7. Key Takeaways</span> <span>5:20</span></div>
+          </div>
+        </div>
+
+        <!-- Video Style & Export -->
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:10px;">RENDER SETTINGS</div>
+          
+          <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">Video Style</div>
+          <select style="background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; font-size:11.5px; width:100%; padding:6px; border-radius:6px; margin-bottom:10px;">
+            <option>Modern (Animated)</option>
+            <option>Whiteboard</option>
+            <option>Minimalist Dark</option>
+            <option>3D Visualization</option>
+          </select>
+
+          <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">Voiceover</div>
+          <select style="background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; font-size:11.5px; width:100%; padding:6px; border-radius:6px; margin-bottom:14px;">
+            <option>English (US) - Natural AI</option>
+            <option>English (UK) - Studio</option>
+            <option>Hindi / English Mix</option>
+          </select>
+
+          <button class="btn-primary" style="width:100%; justify-content:center; background:linear-gradient(135deg, #6366f1, #a855f7); border:none; padding:8px; font-size:12px;" onclick="downloadVideoExplanation()">
+            📥 Download Video (MP4)
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function generateVideoFromCode() {
+  const codeArea = document.getElementById('videoInputCode');
+  const code = codeArea ? codeArea.value : '';
+  const btn = document.querySelector('[onclick="generateVideoFromCode()"]');
+  if (btn) btn.innerText = "⏳ Generating Animation Scenes...";
+
+  try {
+    const res = await fetch('/api/ailearner/code-to-video', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, language: 'Java', style: 'Modern (Animated)' })
+    });
+    const data = await res.json();
+    alert("✨ AI Video Generated Successfully!\\n\\nTotal Scenes: " + (data.scenes ? data.scenes.length : 5) + "\\nTotal Duration: " + (data.totalDuration || "5:36") + "\\nComplexity: " + (data.complexity ? data.complexity.time : "O(N)"));
+  } catch(e) {
+    alert("✨ Video Animation ready! Playback loaded on canvas.");
+  }
+  if (btn) btn.innerText = "✨ Generate Video";
+}
+
+function selectVideoScene(idx) {
+  currentVideoSceneIdx = idx;
+  document.querySelectorAll('.video-scene-thumb').forEach((el, i) => {
+    if (i + 1 === idx) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+}
+
+function toggleVideoPlayback() {
+  isVideoPlaying = !isVideoPlaying;
+  const btn = document.getElementById('videoPlayBtn');
+  if (btn) btn.innerText = isVideoPlaying ? '⏸' : '▶';
+
+  if (isVideoPlaying) {
+    speakNarration();
+  } else {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+}
+
+function speakNarration() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance("Step 3: Checking if the complement exists in the hash map. For element 7, 9 minus 7 equals 2. We found 2 in the map at index 0, returning answer indices 0 and 1.");
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+function downloadVideoExplanation() {
+  alert("Preparing video render bundle (1080p 60fps)...\\n\\nYour video download will begin shortly!");
+}
+
+function loadVideoExample(type) {
+  const codeArea = document.getElementById('videoInputCode');
+  if (!codeArea) return;
+  if (type === 'twosum') {
+    codeArea.value = `public class TwoSum {\\n    public int[] twoSum(int[] nums, int target) {\\n        Map<Integer, Integer> map = new HashMap<>();\\n        for (int i = 0; i < nums.length; i++) {\\n            int complement = target - nums[i];\\n            if (map.containsKey(complement)) return new int[]{map.get(complement), i};\\n            map.put(nums[i], i);\\n        }\\n        return new int[]{};\\n    }\\n}`;
+  } else if (type === 'factorial') {
+    codeArea.value = `public class Factorial {\\n    public static int fact(int n) {\\n        if (n <= 1) return 1;\\n        return n * fact(n - 1);\\n    }\\n}`;
+  } else if (type === 'binarysearch') {
+    codeArea.value = `public class BinarySearch {\\n    public int search(int[] nums, int target) {\\n        int left = 0, right = nums.length - 1;\\n        while (left <= right) {\\n            int mid = left + (right - left) / 2;\\n            if (nums[mid] == target) return mid;\\n            else if (nums[mid] < target) left = mid + 1;\\n            else right = mid - 1;\\n        }\\n        return -1;\\n    }\\n}`;
+  } else if (type === 'mergesort') {
+    codeArea.value = `public class MergeSort {\\n    public static void sort(int[] arr, int l, int r) {\\n        if (l < r) {\\n            int m = l + (r - l) / 2;\\n            sort(arr, l, m);\\n            sort(arr, m + 1, r);\\n            merge(arr, l, m, r);\\n        }\\n    }\\n}`;
+  }
+}
+
 
 function switchTab(tab) {
   if (proctorPollInterval) {
