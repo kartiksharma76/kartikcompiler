@@ -339,37 +339,15 @@ public class AILearnerService {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 4. REAL-TIME COLLABORATE SESSION (IMAGE 2)
+    // 4. REAL-TIME COLLABORATE SESSION
     // ─────────────────────────────────────────────────────────────
     public Map<String, Object> getCollaborateRoomData(String roomCode) {
         Map<String, Object> res = new HashMap<>();
-        res.put("roomName", "Group Project - E-Commerce API");
-        res.put("status", "Live");
-        res.put("branch", "main");
-        res.put("activeCount", 5);
-        
-        List<Map<String, Object>> collaborators = List.of(
-            Map.of("id", 1, "name", "Kartik", "isMe", true, "role", "Lead", "color", "#3b82f6", "status", "Editing ProductController.java", "mic", true, "video", true),
-            Map.of("id", 2, "name", "Priya", "isMe", false, "role", "Dev", "color", "#ec4899", "status", "Editing ProductService.java", "mic", true, "video", true),
-            Map.of("id", 3, "name", "Rahul", "isMe", false, "role", "Dev", "color", "#10b981", "status", "Viewing ProductController.java", "mic", true, "video", true),
-            Map.of("id", 4, "name", "Sneha", "isMe", false, "role", "Dev", "color", "#f59e0b", "status", "Editing application.properties", "mic", false, "video", true),
-            Map.of("id", 5, "name", "Aman", "isMe", false, "role", "Dev", "color", "#8b5cf6", "status", "Viewing README.md", "mic", true, "video", false)
-        );
-        res.put("collaborators", collaborators);
-
-        res.put("files", List.of(
-            Map.of("name", "ProductController.java", "path", "src/main/java/com/example/controller/ProductController.java", "isMain", true, "content", "package com.example.controller;\n\nimport com.example.model.Product;\nimport com.example.service.ProductService;\nimport org.springframework.web.bind.annotation.*;\nimport java.util.List;\n\n@RestController\n@RequestMapping(\"/api/products\")\npublic class ProductController {\n\n    private final ProductService productService;\n\n    public ProductController(ProductService productService) {\n        this.productService = productService;\n    }\n\n    // Get all products\n    @GetMapping\n    public List<Product> getAllProducts() {\n        return productService.getAllProducts();\n    }\n\n    // Get product by id\n    @GetMapping(\"/{id}\")\n    public Product getProductById(@PathVariable Long id) {\n        return productService.getProductById(id);\n    }\n}"),
-            Map.of("name", "ProductService.java", "path", "src/main/java/com/example/service/ProductService.java", "isMain", false, "content", "package com.example.service;\n\nimport com.example.model.Product;\nimport org.springframework.stereotype.Service;\nimport java.util.*;\n\n@Service\npublic class ProductService {\n    public List<Product> getAllProducts() { return List.of(); }\n    public Product getProductById(Long id) { return null; }\n}"),
-            Map.of("name", "application.properties", "path", "src/main/resources/application.properties", "isMain", false, "content", "server.port=8080\nspring.application.name=ecommerce-api\n")
-        ));
-
-        res.put("chatMessages", List.of(
-            Map.of("sender", "Priya", "time", "10:24 AM", "text", "I'm adding the product search endpoint."),
-            Map.of("sender", "Rahul", "time", "10:25 AM", "text", "Looks good! Let's also add pagination."),
-            Map.of("sender", "Sneha", "time", "10:26 AM", "text", "I've updated the database properties."),
-            Map.of("sender", "Kartik", "time", "10:27 AM", "text", "Great! I'll test the API now. 👍")
-        ));
-
+        String actualRoom = (roomCode != null && !roomCode.trim().isEmpty()) ? roomCode.trim() : "ROOM-KT-" + (1000 + new Random().nextInt(9000));
+        res.put("roomCode", actualRoom);
+        res.put("roomName", "Live Collaboration Room (" + actualRoom + ")");
+        res.put("status", "Active");
+        res.put("createdTime", System.currentTimeMillis());
         return res;
     }
 

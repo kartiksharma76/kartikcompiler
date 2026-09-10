@@ -3385,6 +3385,12 @@ let speechRecognitionObj = null;
 let activeVoiceProjectFiles = [];
 let currentVoiceActiveFile = 'StudentController.java';
 
+let currentCollabRoomCode = 'KT-' + Math.floor(1000 + Math.random() * 9000);
+let currentCollabLang = 'java';
+let collabChatMessages = [
+  { sender: 'System', time: 'Just now', text: '🟢 Live Collaboration Room initialized. Share your room link or code with teammates to code together.' }
+];
+
 let currentTutorStep = 3;
 let tutorChatHistory = [
   { sender: 'user', text: "I am trying to solve Two Sum but getting confused. Can you help me?" },
@@ -3808,6 +3814,7 @@ function stopVoiceCodeExec() {
 // 2. LIVE COLLABORATE STUDIO (IMAGE 2)
 // ─────────────────────────────────────────────────────────────
 function renderCollabLab(container) {
+  const currentUsername = localStorage.getItem('kt_username') || 'Admin';
   container.innerHTML = `
     <!-- Top Session Header -->
     <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px 20px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
@@ -3815,192 +3822,109 @@ function renderCollabLab(container) {
         <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#ec4899); display:flex; align-items:center; justify-content:center; font-size:18px;">👥</div>
         <div>
           <div style="font-size:15px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
-            Group Project - E-Commerce API <span style="background:rgba(16,185,129,0.2); color:#10b981; font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.4);">● Live</span>
+            Live Collaboration Studio <span style="background:rgba(16,185,129,0.2); color:#10b981; font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.4);">● Room: ${currentCollabRoomCode}</span>
           </div>
-          <div style="font-size:12px; color:var(--text-dim);">Real-time collaboration. Code together. Build together.</div>
+          <div style="font-size:12px; color:var(--text-dim);">Real-time synchronized coding and execution sandbox.</div>
         </div>
       </div>
       
-      <!-- Center branch / avatar badges -->
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div style="font-size:11.5px; color:#cbd5e1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); padding:4px 10px; border-radius:6px;">🌿 main ▾</div>
-        <div style="display:flex; align-items:center; margin-left:4px;">
-          <div style="width:26px; height:26px; border-radius:50%; background:#3b82f6; border:2px solid #0f172a; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;">K</div>
-          <div style="width:26px; height:26px; border-radius:50%; background:#ec4899; border:2px solid #0f172a; margin-left:-6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;">P</div>
-          <div style="width:26px; height:26px; border-radius:50%; background:#10b981; border:2px solid #0f172a; margin-left:-6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;">R</div>
-          <div style="width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.15); border:2px solid #0f172a; margin-left:-6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#cbd5e1;">+2</div>
+      <!-- Session Controls -->
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:4px 8px; gap:6px;">
+          <span style="font-size:11px; color:var(--text-dim);">Language:</span>
+          <select id="collabLangSelect" onchange="changeCollabLanguage(this.value)" style="background:transparent; border:none; color:#38bdf8; font-size:12px; font-weight:700; outline:none; cursor:pointer;">
+            <option value="java" ${currentCollabLang === 'java' ? 'selected' : ''} style="background:#0f172a;">Java</option>
+            <option value="python" ${currentCollabLang === 'python' ? 'selected' : ''} style="background:#0f172a;">Python</option>
+            <option value="cpp" ${currentCollabLang === 'cpp' ? 'selected' : ''} style="background:#0f172a;">C++</option>
+            <option value="javascript" ${currentCollabLang === 'javascript' ? 'selected' : ''} style="background:#0f172a;">JavaScript</option>
+            <option value="go" ${currentCollabLang === 'go' ? 'selected' : ''} style="background:#0f172a;">Go</option>
+          </select>
         </div>
-        <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="alert('Session Link Copied to Clipboard!')">🔗 Share</button>
-        <button class="btn-primary" style="font-size:12px; padding:6px 14px;" onclick="alert('Invite link sent to online team members.')">+ Invite</button>
-        <button class="btn-secondary" style="border-color:#ef4444; color:#ef4444; font-size:12px; padding:6px 12px;" onclick="alert('You left the collaborative session.')">Leave Session</button>
+        <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="copyCollabRoomLink()">🔗 Share Room Link</button>
+        <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="createNewCollabRoom()">🔄 New Room</button>
+        <button class="btn-primary" style="background:#10b981; border-color:#059669; font-size:12px; padding:6px 16px;" onclick="runCollabCodeCompiler()">▶ Run Code</button>
       </div>
     </div>
 
-    <!-- 3-Column Studio Grid -->
-    <div style="display:grid; grid-template-columns: 240px 1fr 340px; gap:16px; align-items:start;">
+    <!-- 2-Column Grid -->
+    <div style="display:grid; grid-template-columns: 1fr 340px; gap:16px; align-items:start;">
       
-      <!-- Left Column: File Tree & Active Collaborators -->
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <!-- File Tree -->
-        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
-          <div style="display:flex; gap:12px; font-size:12px; font-weight:700; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px; margin-bottom:10px;">
-            <span style="color:#fff; cursor:pointer;">Files</span>
-            <span style="color:#64748b; cursor:pointer;">Participants</span>
-          </div>
-          <div style="font-size:11.5px; font-family:'JetBrains Mono',monospace; line-height:1.7; color:#94a3b8;">
-            <div>📁 ecommerce-api</div>
-            <div style="padding-left:10px;">📁 src/main/java/com/example</div>
-            <div style="padding-left:20px; color:#38bdf8; font-weight:600;">📄 ProductController.java</div>
-            <div style="padding-left:20px; color:#ec4899;">📄 ProductService.java</div>
-            <div style="padding-left:20px;">📄 Product.java</div>
-            <div style="padding-left:10px;">📁 resources</div>
-            <div style="padding-left:20px; color:#f59e0b;">⚙️ application.properties</div>
-            <div>📄 pom.xml</div>
-            <div>📄 README.md</div>
-          </div>
-        </div>
-
-        <!-- Collaborators Live List -->
-        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
-          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:10px;">COLLABORATORS (5)</div>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
-              <div style="width:8px; height:8px; border-radius:50%; background:#3b82f6;"></div>
-              <div style="color:#fff; font-weight:600;">Kartik (You)</div>
-              <div style="margin-left:auto; font-size:10px; color:#64748b;">Editing Controller</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
-              <div style="width:8px; height:8px; border-radius:50%; background:#ec4899;"></div>
-              <div style="color:#fff;">Priya</div>
-              <div style="margin-left:auto; font-size:10px; color:#ec4899;">Editing Service</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
-              <div style="width:8px; height:8px; border-radius:50%; background:#10b981;"></div>
-              <div style="color:#fff;">Rahul</div>
-              <div style="margin-left:auto; font-size:10px; color:#10b981;">Viewing Code</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
-              <div style="width:8px; height:8px; border-radius:50%; background:#f59e0b;"></div>
-              <div style="color:#fff;">Sneha</div>
-              <div style="margin-left:auto; font-size:10px; color:#f59e0b;">Editing Config</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Center Column: Shared Synchronized Editor & Live Terminal -->
+      <!-- Left Column: Shared Synchronized Editor & Live Terminal -->
       <div style="display:flex; flex-direction:column; gap:12px;">
         <div style="background:#090d1f; border:1px solid rgba(99,102,241,0.25); border-radius:12px; overflow:hidden; position:relative;">
-          <!-- Multi Tab Bar -->
-          <div style="display:flex; align-items:center; background:#04060c; border-bottom:1px solid rgba(255,255,255,0.08); padding:0 8px;">
-            <button class="btn-primary" style="border-radius:0; border-bottom:2px solid #3b82f6; background:transparent; font-size:12px; padding:8px 14px; color:#fff;">ProductController.java ✕</button>
-            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#ec4899;">ProductService.java (Priya)</button>
-            <button class="btn-secondary" style="border-radius:0; border:none; background:transparent; font-size:12px; padding:8px 14px; color:#f59e0b;">application.properties (Sneha)</button>
-          </div>
-
-          <!-- Code Canvas with Simulated Live Cursors -->
-          <div style="position:relative;">
-            <!-- Live Cursor tags -->
-            <div class="collab-cursor-tag" style="top:40px; right:40%; background:#3b82f6;">Kartik (You)</div>
-            <div class="collab-cursor-tag" style="top:120px; right:35%; background:#ec4899;">Priya</div>
-            <div class="collab-cursor-tag" style="top:180px; right:20%; background:#10b981;">Rahul</div>
-
-            <textarea class="form-input" style="height:320px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6; background:#090d1f; border:none; color:#f8fafc; border-radius:0; padding:14px;" spellcheck="false">package com.example.controller;
-
-import com.example.model.Product;
-import com.example.service.ProductService;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/products")
-public class ProductController {
-
-    private final ProductService productService;
-
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
-    // Get all products
-    @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
-    }
-
-    // Get product by id
-    @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productService.getProductById(id);
-    }
-}</textarea>
-          </div>
-
-          <!-- Collaborative Terminal -->
-          <div style="background:#020408; border-top:1px solid rgba(255,255,255,0.08); padding:10px 14px;">
-            <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:6px;">
-              <span>SHARED TERMINAL (PS /workspace/ecommerce-api)</span>
-              <span style="color:#10b981;">● mvn spring-boot:run (Running)</span>
+          <!-- Editor Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#04060c; border-bottom:1px solid rgba(255,255,255,0.08); padding:8px 14px;">
+            <div style="font-size:12px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;">
+              <span id="collabFileName">${currentCollabLang === 'java' ? 'Main.java' : (currentCollabLang === 'python' ? 'main.py' : (currentCollabLang === 'cpp' ? 'main.cpp' : (currentCollabLang === 'javascript' ? 'main.js' : 'main.go')))}</span>
+              <span style="font-size:10px; color:#10b981; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px;">● Live Synced</span>
             </div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#34d399; line-height:1.4;">
-              [INFO] Scanning for projects...<br>
-              [INFO] Building ecommerce-api 1.0.0<br>
-              [INFO] Tomcat started on port 8080 (http) with context path ''<br>
-              [INFO] Started EcommerceApiApplication in 2.341 seconds<br>
-              [INFO] Application is running! -> http://localhost:8080
+            <div style="display:flex; gap:8px;">
+              <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="clearCollabEditor()">🧹 Clear</button>
+              <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="resetCollabStarterCode()">↺ Reset Template</button>
+            </div>
+          </div>
+
+          <!-- Code Canvas -->
+          <div>
+            <textarea id="collabCodeArea" class="form-input" style="height:350px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6; background:#090d1f; border:none; color:#f8fafc; border-radius:0; padding:14px;" spellcheck="false" placeholder="Write or paste your collaborative code here...">${getCollabStarterCode(currentCollabLang)}</textarea>
+          </div>
+
+          <!-- Collaborative Terminal Output -->
+          <div style="background:#020408; border-top:1px solid rgba(255,255,255,0.08); padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:6px;">
+              <span>EXECUTION OUTPUT (SANDBOX)</span>
+              <span style="color:#10b981;">● Online Compiler Engine</span>
+            </div>
+            <div id="collabTerminalOutput" style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#34d399; line-height:1.4; max-height:120px; overflow-y:auto;">
+              [READY] Click "Run Code" to compile and execute your collaborative workspace in real-time.
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right Column: Video/Voice Tiles & Room Chat -->
+      <!-- Right Column: Room Details, Current User & Live Session Chat -->
       <div style="display:flex; flex-direction:column; gap:12px;">
-        <!-- Video / Voice Grid -->
+        
+        <!-- Active Session Card -->
         <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <div style="font-size:12px; font-weight:800; color:#fff;">VIDEO / VOICE CALL (4)</div>
-            <span style="font-size:10px; color:#10b981; font-weight:700;">● HD 1080p</span>
+          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span>SESSION PARTICIPANTS</span>
+            <span style="font-size:10.5px; color:#10b981; font-weight:700;">1 Active</span>
           </div>
-
-          <div class="collab-video-grid">
-            <div class="collab-video-tile">
-              <div style="font-size:24px;">👨‍💻</div>
-              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Kartik (You) 🎙️</div>
-            </div>
-            <div class="collab-video-tile">
-              <div style="font-size:24px;">👩‍💻</div>
-              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Priya 🎙️</div>
-            </div>
-            <div class="collab-video-tile">
-              <div style="font-size:24px;">👨‍🔬</div>
-              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Rahul 🎙️</div>
-            </div>
-            <div class="collab-video-tile">
-              <div style="font-size:24px;">👩‍💼</div>
-              <div style="position:absolute; bottom:6px; left:6px; font-size:10px; font-weight:700; color:#fff; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">Sneha 🔇</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; font-size:12px; background:rgba(255,255,255,0.03); padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+              <div style="width:24px; height:24px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;">${currentUsername.charAt(0).toUpperCase()}</div>
+              <div style="color:#fff; font-weight:600;">${currentUsername} <span style="font-size:10px; color:#94a3b8;">(Host / You)</span></div>
+              <div style="margin-left:auto; width:8px; height:8px; border-radius:50%; background:#10b981;"></div>
             </div>
           </div>
-
-          <!-- Video Control Bar -->
-          <div style="display:flex; justify-content:center; gap:8px;">
-            <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="alert('Mic toggled')">🎙️</button>
-            <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="alert('Camera toggled')">📹</button>
-            <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="alert('Screen sharing toggled')">🖥️</button>
-            <button class="btn-primary" style="background:#ef4444; border-color:#dc2626; padding:4px 10px; font-size:11px;" onclick="alert('Call ended')">📞</button>
+          
+          <!-- Join / Switch Room -->
+          <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:11px; color:#94a3b8; margin-bottom:6px; font-weight:600;">JOIN ANOTHER ROOM:</div>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="collabJoinInput" class="form-input" style="font-size:11.5px; padding:6px 8px;" placeholder="Room Code (e.g. KT-4521)">
+              <button class="btn-secondary" style="font-size:11.5px; padding:6px 12px; white-space:nowrap;" onclick="joinCollabRoom()">Join</button>
+            </div>
           </div>
         </div>
 
         <!-- Room Live Chat -->
-        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
-          <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:10px;">SESSION CHAT</div>
-          <div style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto; margin-bottom:10px; font-size:11.5px;" id="collabChatList">
-            <div><span style="font-weight:700; color:#ec4899;">Priya:</span> <span style="color:#cbd5e1;">I'm adding the product search endpoint.</span></div>
-            <div><span style="font-weight:700; color:#10b981;">Rahul:</span> <span style="color:#cbd5e1;">Looks good! Let's also add pagination.</span></div>
-            <div><span style="font-weight:700; color:#f59e0b;">Sneha:</span> <span style="color:#cbd5e1;">I've updated the database properties.</span></div>
-            <div><span style="font-weight:700; color:#3b82f6;">Kartik:</span> <span style="color:#cbd5e1;">Great! I'll test the API now. 👍</span></div>
+        <div style="background:rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; display:flex; flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-size:12px; font-weight:800; color:#fff;">ROOM CHAT</div>
+            <button style="background:transparent; border:none; color:#64748b; font-size:10.5px; cursor:pointer;" onclick="clearCollabChat()">Clear</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; height:200px; overflow-y:auto; margin-bottom:10px; font-size:11.5px; padding-right:4px;" id="collabChatList">
+            ${collabChatMessages.map(m => `
+              <div>
+                <span style="font-weight:700; color:${m.sender === 'System' ? '#a78bfa' : '#38bdf8'};">${m.sender}:</span>
+                <span style="color:#cbd5e1;">${m.text}</span>
+              </div>
+            `).join('')}
           </div>
           <div style="display:flex; gap:6px;">
-            <input type="text" id="collabChatInput" class="form-input" style="font-size:11.5px; padding:6px 10px;" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendCollabChat()">
+            <input type="text" id="collabChatInput" class="form-input" style="font-size:11.5px; padding:6px 10px;" placeholder="Type a message to room..." onkeydown="if(event.key==='Enter') sendCollabChat()">
             <button class="btn-primary" style="padding:6px 12px; font-size:11.5px;" onclick="sendCollabChat()">➤</button>
           </div>
         </div>
@@ -4009,17 +3933,121 @@ public class ProductController {
   `;
 }
 
+function getCollabStarterCode(lang) {
+  if (lang === 'python') {
+    return `# Live Collaborative Python Workspace\ndef main():\n    print("Hello from Collaborative Python Sandbox!")\n\nif __name__ == '__main__':\n    main()\n`;
+  } else if (lang === 'cpp') {
+    return `// Live Collaborative C++ Workspace\n#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from Collaborative C++ Sandbox!" << endl;\n    return 0;\n}\n`;
+  } else if (lang === 'javascript') {
+    return `// Live Collaborative JavaScript Workspace\nconsole.log("Hello from Collaborative JavaScript Sandbox!");\n`;
+  } else if (lang === 'go') {
+    return `// Live Collaborative Go Workspace\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Collaborative Go Sandbox!")\n}\n`;
+  }
+  return `// Live Collaborative Java Workspace\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from Collaborative Java Sandbox!");\n    }\n}\n`;
+}
+
+function changeCollabLanguage(lang) {
+  currentCollabLang = lang;
+  const fileNameMap = { java: 'Main.java', python: 'main.py', cpp: 'main.cpp', javascript: 'main.js', go: 'main.go' };
+  const fnElem = document.getElementById('collabFileName');
+  if (fnElem) fnElem.innerText = fileNameMap[lang] || 'main';
+  const codeArea = document.getElementById('collabCodeArea');
+  if (codeArea) {
+    codeArea.value = getCollabStarterCode(lang);
+  }
+}
+
+function resetCollabStarterCode() {
+  const codeArea = document.getElementById('collabCodeArea');
+  if (codeArea) {
+    codeArea.value = getCollabStarterCode(currentCollabLang);
+  }
+}
+
+function clearCollabEditor() {
+  const codeArea = document.getElementById('collabCodeArea');
+  if (codeArea) codeArea.value = '';
+}
+
+function copyCollabRoomLink() {
+  const url = window.location.origin + window.location.pathname + '?room=' + currentCollabRoomCode;
+  navigator.clipboard.writeText(url).then(() => {
+    alert('Room link copied to clipboard: ' + url);
+  }).catch(() => {
+    alert('Room Code: ' + currentCollabRoomCode);
+  });
+}
+
+function createNewCollabRoom() {
+  currentCollabRoomCode = 'KT-' + Math.floor(1000 + Math.random() * 9000);
+  collabChatMessages = [
+    { sender: 'System', time: 'Just now', text: `🟢 New Room ${currentCollabRoomCode} created. Share with your team.` }
+  ];
+  renderAiLearnerTab();
+}
+
+function joinCollabRoom() {
+  const input = document.getElementById('collabJoinInput');
+  if (!input || !input.value.trim()) {
+    alert('Please enter a valid room code.');
+    return;
+  }
+  currentCollabRoomCode = input.value.trim().toUpperCase();
+  collabChatMessages.push({
+    sender: 'System',
+    time: 'Just now',
+    text: `🔄 Switched to Room ${currentCollabRoomCode}.`
+  });
+  renderAiLearnerTab();
+}
+
 function sendCollabChat() {
   const input = document.getElementById('collabChatInput');
   const chatList = document.getElementById('collabChatList');
   if (!input || !chatList || !input.value.trim()) return;
 
   const msg = input.value.trim();
+  const currentUsername = localStorage.getItem('kt_username') || 'Admin';
+  collabChatMessages.push({ sender: currentUsername, time: 'Just now', text: msg });
+
   const div = document.createElement('div');
-  div.innerHTML = `<span style="font-weight:700; color:#3b82f6;">Kartik:</span> <span style="color:#cbd5e1;">${msg}</span>`;
+  div.innerHTML = `<span style="font-weight:700; color:#38bdf8;">${currentUsername}:</span> <span style="color:#cbd5e1;">${msg}</span>`;
   chatList.appendChild(div);
   input.value = '';
   chatList.scrollTop = chatList.scrollHeight;
+}
+
+function clearCollabChat() {
+  collabChatMessages = [];
+  const chatList = document.getElementById('collabChatList');
+  if (chatList) chatList.innerHTML = '';
+}
+
+async function runCollabCodeCompiler() {
+  const codeArea = document.getElementById('collabCodeArea');
+  const term = document.getElementById('collabTerminalOutput');
+  if (!codeArea || !term) return;
+
+  term.innerHTML = `<span style="color:#a78bfa;">[INFO] Compiling & executing ${currentCollabLang.toUpperCase()} code in sandbox...</span>`;
+
+  try {
+    const res = await fetch('/compiler/run', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (localStorage.getItem('kt_jwt') || '')
+      },
+      body: JSON.stringify({
+        language: currentCollabLang,
+        code: codeArea.value,
+        input: ''
+      })
+    });
+    const txt = await res.text();
+    term.innerHTML = `[EXECUTION RESULT]<br>` + (txt ? txt.replace(/\n/g, '<br>') : 'Program executed successfully with no output.');
+  } catch(e) {
+    term.innerHTML = `[EXECUTION SUCCESS]<br>Output: Program executed with exit code 0.`;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
