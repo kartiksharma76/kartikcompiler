@@ -118,10 +118,11 @@ public class DashboardService {
             String regDate = inst.getCreatedAt() != null ? inst.getCreatedAt().toLocalDate().toString() : "Recent";
 
             list.add(CollegeLeaderboardEntry.builder()
+                    .id(inst.getId())
                     .institutionId(inst.getId())
                     .name(inst.getName())
                     .licenseKey(inst.getLicenseKey())
-                    .status(inst.getStatus().name())
+                    .status(inst.getStatus() != null ? inst.getStatus().name() : "APPROVED")
                     .totalStudents(totalStudents)
                     .totalPoints(totalPoints)
                     .totalExecutions(totalExecs)
@@ -202,23 +203,26 @@ public class DashboardService {
             return rmap;
         }).collect(Collectors.toList());
 
-        return Map.of(
-            "institution", Map.of(
-                "id", inst.getId(),
-                "name", inst.getName(),
-                "licenseKey", inst.getLicenseKey(),
-                "status", inst.getStatus() != null ? inst.getStatus().name() : "APPROVED",
-                "createdAt", inst.getCreatedAt() != null ? inst.getCreatedAt().toString() : ""
-            ),
-            "stats", Map.of(
-                "totalStudents", totalStudents,
-                "totalPoints", totalPoints,
-                "totalExecutions", totalExecs,
-                "avgSuccessRate", avgSuccess
-            ),
-            "students", studentList,
-            "recentExecutions", runsList
-        );
+        Map<String, Object> instMap = new LinkedHashMap<>();
+        instMap.put("id", inst.getId());
+        instMap.put("name", inst.getName() != null ? inst.getName() : "");
+        instMap.put("licenseKey", inst.getLicenseKey() != null ? inst.getLicenseKey() : "");
+        instMap.put("status", inst.getStatus() != null ? inst.getStatus().name() : "APPROVED");
+        instMap.put("createdAt", inst.getCreatedAt() != null ? inst.getCreatedAt().toString() : "");
+
+        Map<String, Object> statsMap = new LinkedHashMap<>();
+        statsMap.put("totalStudents", totalStudents);
+        statsMap.put("totalPoints", totalPoints);
+        statsMap.put("totalExecutions", totalExecs);
+        statsMap.put("avgSuccessRate", avgSuccess);
+
+        Map<String, Object> resultMap = new LinkedHashMap<>();
+        resultMap.put("institution", instMap);
+        resultMap.put("stats", statsMap);
+        resultMap.put("students", studentList);
+        resultMap.put("recentExecutions", runsList);
+
+        return resultMap;
     }
 
     // ========== LEADERBOARD ==========

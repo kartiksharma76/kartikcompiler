@@ -5388,12 +5388,21 @@ let currentModalTab = 'students';
 
 async function openCollegeDetailsModal(instId) {
   const modal = document.getElementById('collegeDetailsModal');
+  if (!modal) return;
   modal.style.display = 'flex';
   document.getElementById('cdmContent').innerHTML = '<div style="text-align:center; padding:50px; color:var(--text-muted); font-size:14px;">Loading college analytics, student leaderboard, and execution records...</div>';
 
+  if (!instId || instId === 'undefined' || isNaN(instId)) {
+    document.getElementById('cdmContent').innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">Invalid College ID. Please refresh the page and try again.</div>';
+    return;
+  }
+
   try {
     const res = await fetch(`/api/leaderboard/colleges/${instId}`);
-    if (!res.ok) throw new Error('Could not load college details');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || `Server returned status ${res.status}`);
+    }
     const data = await res.json();
     activeCollegeData = data;
     renderCollegeDetailsModal();

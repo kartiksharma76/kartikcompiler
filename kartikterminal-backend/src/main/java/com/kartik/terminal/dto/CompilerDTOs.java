@@ -147,6 +147,7 @@ public class CompilerDTOs {
     @Builder
     public static class CollegeLeaderboardEntry {
         private int rank;
+        private Long id;
         private Long institutionId;
         private String name;
         private String licenseKey;

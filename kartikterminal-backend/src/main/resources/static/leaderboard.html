@@ -913,9 +913,10 @@ function renderPodiumColleges(top3) {
   ];
 
   podiumEl.innerHTML = top3.map((c, i) => {
+    const cId = c.id || c.institutionId;
     const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3) || 'COL';
     return `
-      <div class="podium-card ${rankClasses[i]}" onclick="openCollegeDetailsModal(${c.id})" style="cursor:pointer;" title="Click to view ${c.name} student leaderboard & code history">
+      <div class="podium-card ${rankClasses[i]}" onclick="openCollegeDetailsModal(${cId})" style="cursor:pointer;" title="Click to view ${c.name} student leaderboard & code history">
         <div class="podium-badge">${medals[i]}</div>
         <div class="podium-avatar" style="background: ${bgGradients[i]}; font-size:14px; font-weight:800; border-radius:12px;">
           ${initials}
@@ -1007,11 +1008,12 @@ function renderCollegesTable(colleges) {
       </thead>
       <tbody>
         ${colleges.map((c, i) => {
+          const cId = c.id || c.institutionId;
           const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3) || 'COL';
           const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
           const rankIcon  = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
           return `
-            <tr style="cursor:pointer;" onclick="openCollegeDetailsModal(${c.id})" title="Click to view ${c.name} student leaderboard & code runs">
+            <tr style="cursor:pointer;" onclick="openCollegeDetailsModal(${cId})" title="Click to view ${c.name} student leaderboard & code runs">
               <td>
                 <span class="${rankClass} ${rankIcon ? 'rank-badge-podium' : ''}">
                   ${rankIcon || '#' + (c.rank || i + 1)}
@@ -1037,7 +1039,7 @@ function renderCollegesTable(colleges) {
                 <div style="font-size:10.5px; color:#a5b4fc; font-family:var(--font-mono);">${c.topCoderPoints ? c.topCoderPoints + ' pts' : ''}</div>
               </td>
               <td>
-                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3b82f6,#6366f1); border:none; border-radius:6px; cursor:pointer; color:#fff; font-weight:700;" onclick="event.stopPropagation(); openCollegeDetailsModal(${c.id});">
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3b82f6,#6366f1); border:none; border-radius:6px; cursor:pointer; color:#fff; font-weight:700;" onclick="event.stopPropagation(); openCollegeDetailsModal(${cId});">
                   📊 View Board ↗
                 </button>
               </td>
@@ -1074,12 +1076,21 @@ let currentModalTab = 'students'; // 'students' or 'runs'
 
 async function openCollegeDetailsModal(instId) {
   const modal = document.getElementById('collegeDetailsModal');
+  if (!modal) return;
   modal.style.display = 'flex';
   document.getElementById('cdmContent').innerHTML = '<div class="loading">Loading college analytics and student code history...</div>';
   
+  if (!instId || instId === 'undefined' || isNaN(instId)) {
+    document.getElementById('cdmContent').innerHTML = '<div class="loading" style="color:#ef4444;">Invalid College ID. Please refresh the page and try again.</div>';
+    return;
+  }
+
   try {
     const res = await fetch(`/api/leaderboard/colleges/${instId}`);
-    if (!res.ok) throw new Error('Could not load college details');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || `Server returned status ${res.status}`);
+    }
     const data = await res.json();
     activeCollegeData = data;
     renderCollegeDetailsModal();
