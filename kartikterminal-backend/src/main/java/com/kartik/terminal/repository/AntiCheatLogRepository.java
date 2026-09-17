@@ -10,4 +10,7 @@ import java.util.List;
 public interface AntiCheatLogRepository extends JpaRepository<AntiCheatLog, Long> {
     List<AntiCheatLog> findByExamId(Long examId);
     List<AntiCheatLog> findByStudentIdAndExamId(Long studentId, Long examId);
+    List<AntiCheatLog> findByStudentIdOrderByTimestampDesc(Long studentId);
+    long countByStudentId(Long studentId);
+    long countByStudentIdAndEventType(Long studentId, AntiCheatLog.EventType eventType);
 }

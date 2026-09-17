@@ -1178,6 +1178,10 @@ function renderModalStudentsTab(students, instId) {
     return `<div style="text-align:center; padding:40px; color:var(--text-muted); font-size:13.5px;">No students enrolled in this college yet.</div>`;
   }
   return `
+    <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+      <span>💡 Click any student to inspect all their code submissions and Anti-Cheat integrity audit.</span>
+      <span style="color:#a5b4fc; font-weight:700;">Total Students: ${students.length}</span>
+    </div>
     <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
       <thead>
         <tr>
@@ -1187,13 +1191,14 @@ function renderModalStudentsTab(students, instId) {
           <th>Runs</th>
           <th>Success</th>
           <th>Language</th>
+          <th>Integrity / Anti-Cheat</th>
           <th>Status</th>
-          <th>Admin Action</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         ${students.map((s, i) => `
-          <tr>
+          <tr style="cursor:pointer;" onclick="openStudentExecutionAuditModal(${s.id}, '${s.username}')" title="Click to inspect @${s.username} all code executions & copy-paste audit">
             <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span></td>
             <td>
               <div style="display:flex; align-items:center; gap:10px;">
@@ -1201,7 +1206,10 @@ function renderModalStudentsTab(students, instId) {
                   ${s.username ? s.username.slice(0,2).toUpperCase() : 'ST'}
                 </div>
                 <div>
-                  <div style="font-weight:700; color:#fff;">${s.fullName || s.username} <span style="font-size:11px; color:#94a3b8; font-family:var(--font-mono);">(@${s.username})</span></div>
+                  <div style="font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
+                    ${s.fullName || s.username}
+                    <span style="font-size:10.5px; color:#93c5fd; font-family:var(--font-mono);">(@${s.username})</span>
+                  </div>
                   <div style="font-size:11px; color:var(--text-dim);">${s.email || '—'}</div>
                 </div>
               </div>
@@ -1211,23 +1219,36 @@ function renderModalStudentsTab(students, instId) {
             <td class="success-cell">${(s.successRate || 0).toFixed(1)}%</td>
             <td><span class="lang-badge">${(s.favoriteLanguage || 'Java').toUpperCase()}</span></td>
             <td>
+              ${s.hasCheated || (s.copyPasteEvents > 0) || (s.cheatViolations > 0)
+                ? `<span style="background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:800; display:inline-flex; align-items:center; gap:4px;" title="${s.copyPasteEvents || s.cheatViolations} Copy-Paste / Anti-Cheat events">
+                    ⚠️ Copy-Paste (${s.copyPasteEvents || s.cheatViolations})
+                   </span>`
+                : `<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                    🛡️ Verified Clean
+                   </span>`
+              }
+            </td>
+            <td>
               ${s.isActive === false
                 ? '<span style="background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:700;">🚫 Suspended</span>'
                 : '<span style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:700;">✔ Active</span>'}
             </td>
-            <td>
-              <div style="display:flex; gap:6px;">
+            <td onclick="event.stopPropagation();">
+              <div style="display:flex; gap:6px; align-items:center;">
+                <button onclick="openStudentExecutionAuditModal(${s.id}, '${s.username}')" style="background:rgba(99,102,241,0.25); border:1px solid #6366f1; color:#a5b4fc; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="View all student code submissions">
+                  📜 Codes ↗
+                </button>
                 ${s.isActive === false ? `
                   <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'unlock', ${instId})" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#34d399; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="Restore and unlock student">
-                    🔓 Unlock
+                    🔓
                   </button>
                 ` : `
                   <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'suspend', ${instId})" style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fbbf24; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="Suspend student login">
-                    🚫 Suspend
+                    🚫
                   </button>
                 `}
                 <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'delete', ${instId})" style="background:rgba(239,68,68,0.2); border:1px solid #ef4444; color:#f87171; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="Permanently delete student account">
-                  🗑️ Delete
+                  🗑️
                 </button>
               </div>
             </td>
@@ -1251,6 +1272,7 @@ function renderModalRunsTab(runs) {
           <th>Status</th>
           <th>Runtime</th>
           <th>Points</th>
+          <th>Anti-Cheat Status</th>
           <th>Executed At</th>
           <th>Inspect Code</th>
         </tr>
@@ -1259,7 +1281,9 @@ function renderModalRunsTab(runs) {
         ${runs.map((r, i) => `
           <tr>
             <td>
-              <div style="font-weight:700; color:#fff;">${r.fullName || r.username}</div>
+              <div style="font-weight:700; color:#fff; cursor:pointer;" onclick="if(${r.userId}){openStudentExecutionAuditModal(${r.userId}, '${r.username}');}">
+                ${r.fullName || r.username} ↗
+              </div>
               <div style="font-size:10.5px; color:#94a3b8; font-family:var(--font-mono);">@${r.username}</div>
             </td>
             <td><span class="lang-badge" style="color:#60a5fa; border-color:rgba(59,130,246,0.3);">${(r.language||'CODE').toUpperCase()}</span></td>
@@ -1270,9 +1294,18 @@ function renderModalRunsTab(runs) {
             </td>
             <td style="font-family:var(--font-mono); color:#94a3b8; font-size:11.5px;">${r.executionTimeMs != null ? r.executionTimeMs + ' ms' : '—'}</td>
             <td class="points-cell">+${r.points || 0}</td>
+            <td>
+              ${r.hasCheated || (r.copyPasteEvents > 0)
+                ? `<span style="background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">
+                    🚨 Copy-Paste Flagged
+                   </span>`
+                : `<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:700;">
+                    ✔ Clean Code
+                   </span>`}
+            </td>
             <td style="font-size:11px; color:var(--text-dim);">${r.executedAt ? new Date(r.executedAt).toLocaleString() : '—'}</td>
             <td>
-              <button onclick='viewStudentCodeSnippet(${JSON.stringify(r.username)}, ${JSON.stringify(r.language)}, ${JSON.stringify(r.code || "")})' style="background:rgba(99,102,241,0.2); border:1px solid #6366f1; color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <button onclick='viewStudentCodeSnippet(${JSON.stringify(r.username)}, ${JSON.stringify(r.language)}, ${JSON.stringify(r.code || "")}, ${r.hasCheated ? 'true' : 'false'}, ${r.copyPasteEvents || 0})' style="background:rgba(99,102,241,0.2); border:1px solid #6366f1; color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
                 🔍 View Code
               </button>
             </td>
@@ -1283,10 +1316,173 @@ function renderModalRunsTab(runs) {
   `;
 }
 
-function viewStudentCodeSnippet(username, lang, code) {
+// ==============================================================
+// STUDENT CODE AUDIT & ANTI-CHEAT INSPECTION MODAL
+// ==============================================================
+async function openStudentExecutionAuditModal(userId, username) {
+  if (!userId) return;
+  const modal = document.getElementById('studentAuditModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.getElementById('samContent').innerHTML = '<div class="loading">Loading student execution portfolio and anti-cheat audit...</div>';
+
+  try {
+    const res = await fetch(`/api/leaderboard/students/${userId}/executions`);
+    if (!res.ok) throw new Error('Could not load student executions');
+    const data = await res.json();
+    renderStudentAuditModal(data);
+  } catch(e) {
+    document.getElementById('samContent').innerHTML = `<div class="loading" style="color:#ef4444;">Failed to load student code portfolio: ${e.message}</div>`;
+  }
+}
+
+function closeStudentAuditModal() {
+  document.getElementById('studentAuditModal').style.display = 'none';
+}
+
+function renderStudentAuditModal(data) {
+  const s = data.student || {};
+  const audit = data.antiCheatAudit || {};
+  const executions = data.executions || [];
+
+  document.getElementById('samContent').innerHTML = `
+    <!-- Header -->
+    <div style="padding:20px 24px; background:linear-gradient(135deg, rgba(30,58,138,0.45), rgba(15,23,42,0.9)); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:#fff;">
+          ${(s.fullName || s.username || 'ST').slice(0,2).toUpperCase()}
+        </div>
+        <div>
+          <div style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            ${s.fullName || s.username}
+            <span style="font-size:11px; color:#93c5fd; font-family:var(--font-mono);">(@${s.username})</span>
+            <span class="tier-pill tier-${s.tier || 'BRONZE'}" style="font-size:9.5px;">${s.tier || 'BRONZE'}</span>
+          </div>
+          <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">
+            ${s.email || '—'} • Institution: <strong style="color:#fff;">${s.institutionName || 'Active'}</strong>
+          </div>
+        </div>
+      </div>
+      <button onclick="closeStudentAuditModal()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;">✕</button>
+    </div>
+
+    <div style="padding:20px 24px; max-height:520px; overflow-y:auto;">
+      <!-- Anti-Cheat & Copy-Paste Detection Audit Box -->
+      ${audit.hasCheated ? `
+        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.22), rgba(127,29,29,0.2)); border:1.5px solid rgba(239,68,68,0.5); border-radius:14px; padding:16px 20px; margin-bottom:20px; box-shadow:0 0 25px rgba(239,68,68,0.2);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:24px;">🚨</span>
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#fca5a5; letter-spacing:0.3px;">COPY-PASTE / CHEATING SUSPICION DETECTED</div>
+                <div style="font-size:11.5px; color:#fecaca; margin-top:2px;">Anti-cheat monitoring system recorded suspicious clipboard pastes or window navigation during code runs.</div>
+              </div>
+            </div>
+            <span style="background:#ef4444; color:#fff; font-size:10px; font-weight:800; padding:3px 10px; border-radius:20px; letter-spacing:0.8px;">FLAGGED CODE</span>
+          </div>
+          <div style="display:flex; gap:20px; margin-top:12px; padding-top:10px; border-top:1px solid rgba(239,68,68,0.3); font-size:12px; font-weight:700; font-family:var(--font-mono); flex-wrap:wrap;">
+            <span style="color:#fca5a5;">📋 Copy-Paste Events: ${audit.copyPasteCount || 0}</span>
+            <span style="color:#fde047;">👁️ Tab-Switch Logs: ${audit.tabSwitchCount || 0}</span>
+            <span style="color:#ef4444;">⚠️ Total Integrity Violations: ${audit.totalViolations || 0}</span>
+          </div>
+        </div>
+      ` : `
+        <div style="background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(4,120,87,0.12)); border:1.5px solid rgba(16,185,129,0.45); border-radius:14px; padding:14px 20px; margin-bottom:20px; box-shadow:0 0 20px rgba(16,185,129,0.15);">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:22px;">🛡️</span>
+              <div>
+                <div style="font-size:13.5px; font-weight:800; color:#34d399;">100% VERIFIED AUTHENTIC CODE EXECUTION</div>
+                <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Zero anti-cheat flags, zero copy-paste violations. All code written authentically.</div>
+              </div>
+            </div>
+            <span style="background:rgba(16,185,129,0.25); color:#6ee7b7; border:1px solid #10b981; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px;">VERIFIED CLEAN</span>
+          </div>
+        </div>
+      `}
+
+      <!-- Student Code Runs List -->
+      <div style="font-size:13px; font-weight:800; color:#fff; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <span>💻 All Code Submissions & Executions (${executions.length})</span>
+        <span style="font-size:11px; color:#94a3b8; font-family:var(--font-mono);">💎 Total Points: ${s.totalPoints || 0} pts</span>
+      </div>
+
+      ${executions.length === 0 ? `
+        <div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">No code execution history recorded for this student yet.</div>
+      ` : `
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Language</th>
+              <th>Execution Status</th>
+              <th>Runtime</th>
+              <th>Points</th>
+              <th>Executed At</th>
+              <th>Source Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${executions.map((r, i) => `
+              <tr>
+                <td style="font-family:var(--font-mono); color:#94a3b8;">#${i + 1}</td>
+                <td><span class="lang-badge" style="color:#60a5fa;">${(r.language||'CODE').toUpperCase()}</span></td>
+                <td>
+                  ${r.success
+                    ? '<span style="color:#34d399; font-weight:700;">✔ ' + (r.status || 'SUCCESS') + '</span>'
+                    : '<span style="color:#f87171; font-weight:700;">✖ ' + (r.status || 'ERROR') + '</span>'}
+                </td>
+                <td style="font-family:var(--font-mono); color:#94a3b8;">${r.executionTimeMs != null ? r.executionTimeMs + ' ms' : '—'}</td>
+                <td class="points-cell">+${r.points || 0}</td>
+                <td style="font-size:11px; color:var(--text-dim);">${r.executedAt ? new Date(r.executedAt).toLocaleString() : '—'}</td>
+                <td>
+                  <button onclick='viewStudentCodeSnippet(${JSON.stringify(s.username)}, ${JSON.stringify(r.language)}, ${JSON.stringify(r.code || "")}, ${audit.hasCheated ? 'true' : 'false'}, ${audit.copyPasteCount || 0})' style="background:rgba(99,102,241,0.25); border:1px solid #6366f1; color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">
+                    🔍 View Code
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `}
+    </div>
+  `;
+}
+
+function viewStudentCodeSnippet(username, lang, code, hasCheated, copyPasteCount) {
   document.getElementById('codeViewerModal').style.display = 'flex';
-  document.getElementById('cvTitle').textContent = `Code executed by @${username} (${lang})`;
+  document.getElementById('cvTitle').textContent = `Code executed by @${username} (${(lang||'Code').toUpperCase()})`;
   document.getElementById('cvContent').textContent = code || '// No source code payload was recorded for this run.';
+
+  const cheatBanner = document.getElementById('cvCheatBanner');
+  if (cheatBanner) {
+    if (hasCheated || copyPasteCount > 0) {
+      cheatBanner.style.display = 'block';
+      cheatBanner.innerHTML = `
+        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.25), rgba(185,28,28,0.2)); border:1.5px solid #ef4444; border-radius:10px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px;">🚨</span>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#fca5a5;">COPY-PASTE / CHEATING FLAGGED ON THIS STUDENT</div>
+              <div style="font-size:10.5px; color:#fecaca;">System recorded ${copyPasteCount || 1} copy-paste / clipboard violation events for @${username}.</div>
+            </div>
+          </div>
+          <span style="background:#ef4444; color:#fff; font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:12px;">SUSPICIOUS CODE</span>
+        </div>
+      `;
+    } else {
+      cheatBanner.style.display = 'block';
+      cheatBanner.innerHTML = `
+        <div style="background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1)); border:1.5px solid rgba(16,185,129,0.35); border-radius:10px; padding:8px 14px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="color:#34d399; font-size:16px;">🛡️</span>
+            <div style="font-size:11.5px; font-weight:700; color:#34d399;">Authentic Execution • No Copy-Paste / Anti-Cheat Flags Detected</div>
+          </div>
+          <span style="background:rgba(16,185,129,0.25); color:#6ee7b7; font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:12px;">VERIFIED CLEAN</span>
+        </div>
+      `;
+    }
+  }
 }
 
 function closeCodeViewerModal() {
@@ -1362,7 +1558,6 @@ async function submitSecureStudentAction(event) {
     alert('✔ ' + (data.message || 'Action completed successfully!'));
     closePasswordVerifyModal();
 
-    // Refresh modal data
     if (pendingVerifyAction && pendingVerifyAction.instId) {
       openCollegeDetailsModal(pendingVerifyAction.instId);
     }
@@ -1384,14 +1579,21 @@ loadLeaderboard();
 
 <!-- 1. College Performance & Details Modal -->
 <div id="collegeDetailsModal" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(3,7,18,0.85); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#0b0f19; border:1px solid rgba(99,102,241,0.35); border-radius:20px; width:100%; max-width:920px; box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(99,102,241,0.2); overflow:hidden;" id="cdmContent">
+  <div style="background:#0b0f19; border:1px solid rgba(99,102,241,0.35); border-radius:20px; width:100%; max-width:960px; box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(99,102,241,0.2); overflow:hidden;" id="cdmContent">
     <!-- Rendered Dynamically -->
   </div>
 </div>
 
-<!-- 2. Code Snippet Inspection Modal -->
-<div id="codeViewerModal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#060812; border:1px solid rgba(59,130,246,0.4); border-radius:18px; width:100%; max-width:760px; box-shadow:0 20px 50px rgba(0,0,0,0.9); overflow:hidden;">
+<!-- 2. Student Code Portfolio & Anti-Cheat Audit Modal -->
+<div id="studentAuditModal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(3,7,18,0.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0b0f19; border:1.5px solid rgba(99,102,241,0.4); border-radius:20px; width:100%; max-width:860px; box-shadow:0 20px 60px rgba(0,0,0,0.9), 0 0 30px rgba(99,102,241,0.25); overflow:hidden;" id="samContent">
+    <!-- Rendered Dynamically -->
+  </div>
+</div>
+
+<!-- 3. Code Snippet Inspection Modal (with Anti-Cheat Banner) -->
+<div id="codeViewerModal" style="display:none; position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#060812; border:1px solid rgba(59,130,246,0.4); border-radius:18px; width:100%; max-width:780px; box-shadow:0 20px 50px rgba(0,0,0,0.9); overflow:hidden;">
     <div style="padding:16px 22px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
       <div style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
         <span>🔍</span> <span id="cvTitle">Code Execution Inspector</span>
@@ -1399,7 +1601,8 @@ loadLeaderboard();
       <button onclick="closeCodeViewerModal()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
     </div>
     <div style="padding:18px 22px;">
-      <pre id="cvContent" style="background:#02040a; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; color:#38bdf8; max-height:420px; overflow-y:auto; white-space:pre-wrap;"></pre>
+      <div id="cvCheatBanner" style="display:none;"></div>
+      <pre id="cvContent" style="background:#02040a; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; color:#38bdf8; max-height:400px; overflow-y:auto; white-space:pre-wrap;"></pre>
     </div>
     <div style="padding:12px 22px 18px; display:flex; justify-content:flex-end;">
       <button onclick="closeCodeViewerModal()" class="btn-primary" style="padding:7px 18px; font-size:12px;">Close</button>
@@ -1407,8 +1610,8 @@ loadLeaderboard();
   </div>
 </div>
 
-<!-- 3. Secure Admin Password Verification Modal -->
-<div id="securePasswordModal" style="display:none; position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
+<!-- 4. Secure Admin Password Verification Modal -->
+<div id="securePasswordModal" style="display:none; position:fixed; inset:0; z-index:1002; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
   <div style="background:#0b0f19; border:1.5px solid rgba(239,68,68,0.4); border-radius:18px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(239,68,68,0.25); overflow:hidden;">
     <div style="padding:20px 24px; background:linear-gradient(135deg, rgba(239,68,68,0.15), rgba(15,23,42,0.8)); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;">
       <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; font-size:20px;">

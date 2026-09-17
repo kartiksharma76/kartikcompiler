@@ -29,6 +29,7 @@ public class DashboardService {
     private final ExecutionRecordRepository executionRecordRepository;
     private final AuthService authService;
     private final com.kartik.terminal.repository.InstitutionRepository institutionRepository;
+    private final com.kartik.terminal.repository.AntiCheatLogRepository antiCheatLogRepository;
 
     // ========== DASHBOARD ==========
     @Transactional(readOnly = true)
@@ -166,6 +167,10 @@ public class DashboardService {
         List<Map<String, Object>> studentList = new ArrayList<>();
         for (int i = 0; i < students.size(); i++) {
             User u = students.get(i);
+            long copyPasteEvents = antiCheatLogRepository.countByStudentIdAndEventType(u.getId(), com.kartik.terminal.entity.AntiCheatLog.EventType.COPY_PASTE);
+            long totalViolations = (u.getCheatViolations() != null ? u.getCheatViolations() : 0) + antiCheatLogRepository.countByStudentId(u.getId());
+            boolean hasCheated = totalViolations > 0 || copyPasteEvents > 0 || (u.getIsDisqualified() != null && u.getIsDisqualified());
+
             Map<String, Object> smap = new LinkedHashMap<>();
             smap.put("rank", i + 1);
             smap.put("id", u.getId());
@@ -179,20 +184,27 @@ public class DashboardService {
             smap.put("successRate", Math.round(u.getSuccessRate() * 10.0) / 10.0);
             smap.put("favoriteLanguage", u.getFavoriteLanguage());
             smap.put("tier", getTier(u.getTotalPoints() != null ? u.getTotalPoints() : 0));
-            smap.put("cheatViolations", u.getCheatViolations() != null ? u.getCheatViolations() : 0);
+            smap.put("cheatViolations", totalViolations);
+            smap.put("copyPasteEvents", copyPasteEvents);
+            smap.put("hasCheated", hasCheated);
             smap.put("isActive", u.getIsActive() != null ? u.getIsActive() : true);
             smap.put("isDisqualified", u.getIsDisqualified() != null ? u.getIsDisqualified() : false);
             studentList.add(smap);
         }
 
-        Pageable recentPage = PageRequest.of(0, 30);
+        Pageable recentPage = PageRequest.of(0, 50);
         List<ExecutionRecord> recentRuns = executionRecordRepository.findRecentExecutionsByInstitution(inst, recentPage);
         List<Map<String, Object>> runsList = recentRuns.stream().map(r -> {
+            User rUser = r.getUser();
+            long rCopyPaste = rUser != null ? antiCheatLogRepository.countByStudentIdAndEventType(rUser.getId(), com.kartik.terminal.entity.AntiCheatLog.EventType.COPY_PASTE) : 0;
+            long rViolations = rUser != null ? (rUser.getCheatViolations() != null ? rUser.getCheatViolations() : 0) + antiCheatLogRepository.countByStudentId(rUser.getId()) : 0;
+            boolean rHasCheated = rViolations > 0 || rCopyPaste > 0;
+
             Map<String, Object> rmap = new LinkedHashMap<>();
             rmap.put("id", r.getId());
-            rmap.put("userId", r.getUser() != null ? r.getUser().getId() : null);
-            rmap.put("username", r.getUser() != null ? r.getUser().getUsername() : "anonymous");
-            rmap.put("fullName", r.getUser() != null && r.getUser().getFullName() != null ? r.getUser().getFullName() : (r.getUser() != null ? r.getUser().getUsername() : ""));
+            rmap.put("userId", rUser != null ? rUser.getId() : null);
+            rmap.put("username", rUser != null ? rUser.getUsername() : "anonymous");
+            rmap.put("fullName", rUser != null && rUser.getFullName() != null ? rUser.getFullName() : (rUser != null ? rUser.getUsername() : ""));
             rmap.put("language", r.getLanguage());
             rmap.put("code", r.getCode() != null ? r.getCode() : "");
             rmap.put("success", r.getSuccess());
@@ -200,6 +212,9 @@ public class DashboardService {
             rmap.put("executionTimeMs", r.getExecutionTimeMs());
             rmap.put("points", r.getPoints());
             rmap.put("executedAt", r.getExecutedAt() != null ? r.getExecutedAt().toString() : "");
+            rmap.put("cheatViolations", rViolations);
+            rmap.put("copyPasteEvents", rCopyPaste);
+            rmap.put("hasCheated", rHasCheated);
             return rmap;
         }).collect(Collectors.toList());
 
@@ -223,6 +238,65 @@ public class DashboardService {
         resultMap.put("recentExecutions", runsList);
 
         return resultMap;
+    }
+
+    // ========== GET SINGLE STUDENT EXECUTIONS & ANTI-CHEAT AUDIT ==========
+    @Transactional(readOnly = true)
+    public Map<String, Object> getStudentExecutionsAndAntiCheat(Long userId) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + userId));
+
+        List<ExecutionRecord> records = executionRecordRepository.findByUserIdOrderByExecutedAtDesc(userId);
+        List<com.kartik.terminal.entity.AntiCheatLog> antiCheatLogs = antiCheatLogRepository.findByStudentIdOrderByTimestampDesc(userId);
+
+        long copyPasteCount = antiCheatLogs.stream().filter(l -> l.getEventType() == com.kartik.terminal.entity.AntiCheatLog.EventType.COPY_PASTE).count();
+        long tabSwitchCount = antiCheatLogs.stream().filter(l -> l.getEventType() == com.kartik.terminal.entity.AntiCheatLog.EventType.TAB_SWITCH).count();
+        long totalViolations = (u.getCheatViolations() != null ? u.getCheatViolations() : 0) + antiCheatLogs.size();
+        boolean hasCheated = totalViolations > 0 || copyPasteCount > 0 || (u.getIsDisqualified() != null && u.getIsDisqualified());
+
+        List<Map<String, Object>> runs = records.stream().map(r -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", r.getId());
+            map.put("language", r.getLanguage());
+            map.put("code", r.getCode() != null ? r.getCode() : "");
+            map.put("success", r.getSuccess());
+            map.put("status", r.getStatus() != null ? r.getStatus().name() : "SUCCESS");
+            map.put("executionTimeMs", r.getExecutionTimeMs());
+            map.put("points", r.getPoints());
+            map.put("title", r.getTitle());
+            map.put("executedAt", r.getExecutedAt() != null ? r.getExecutedAt().toString() : "");
+            map.put("hasCheated", hasCheated);
+            map.put("copyPasteCount", copyPasteCount);
+            return map;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> studentInfo = new LinkedHashMap<>();
+        studentInfo.put("id", u.getId());
+        studentInfo.put("username", u.getUsername());
+        studentInfo.put("fullName", u.getFullName() != null ? u.getFullName() : u.getUsername());
+        studentInfo.put("email", u.getEmail());
+        studentInfo.put("totalPoints", u.getTotalPoints() != null ? u.getTotalPoints() : 0);
+        studentInfo.put("totalExecutions", u.getTotalExecutions() != null ? u.getTotalExecutions() : 0);
+        studentInfo.put("successRate", Math.round(u.getSuccessRate() * 10.0) / 10.0);
+        studentInfo.put("favoriteLanguage", u.getFavoriteLanguage());
+        studentInfo.put("tier", getTier(u.getTotalPoints() != null ? u.getTotalPoints() : 0));
+        studentInfo.put("isActive", u.getIsActive() != null ? u.getIsActive() : true);
+        studentInfo.put("isDisqualified", u.getIsDisqualified() != null ? u.getIsDisqualified() : false);
+        studentInfo.put("institutionName", u.getInstitution() != null ? u.getInstitution().getName() : "Independent");
+
+        Map<String, Object> audit = new LinkedHashMap<>();
+        audit.put("hasCheated", hasCheated);
+        audit.put("totalViolations", totalViolations);
+        audit.put("copyPasteCount", copyPasteCount);
+        audit.put("tabSwitchCount", tabSwitchCount);
+        audit.put("isClean", !hasCheated);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("student", studentInfo);
+        result.put("antiCheatAudit", audit);
+        result.put("executions", runs);
+
+        return result;
     }
 
     // ========== LEADERBOARD ==========

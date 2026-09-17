@@ -55,4 +55,15 @@ public class LeaderboardController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
+
+    // Public student executions & anti-cheat audit
+    @GetMapping("/students/{userId}/executions")
+    public ResponseEntity<?> getStudentExecutions(@PathVariable Long userId) {
+        try {
+            var data = dashboardService.getStudentExecutionsAndAntiCheat(userId);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
 }
