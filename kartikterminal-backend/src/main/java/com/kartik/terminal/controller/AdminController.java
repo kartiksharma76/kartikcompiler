@@ -379,24 +379,91 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // ── Delete a College ──
-    @DeleteMapping("/colleges/{id}")
+    // ── Secure Student Action (Suspend, Unlock, Delete) with College Admin / Admin Password Verification ──
+    @PostMapping("/colleges/students/{studentId}/secure-action")
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<?> deleteCollege(@PathVariable Long id) {
-        return institutionRepository.findById(id).map(inst -> {
-            List<User> users = inst.getUsers();
-            if (users != null) {
-                for (User u : users) {
-                    u.setInstitution(null);
-                }
-                userRepository.saveAll(users);
-            }
-            institutionRepository.delete(inst);
+    public ResponseEntity<?> secureStudentAction(
+            @PathVariable Long studentId,
+            @RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String password = payload.get("password");
+        String action = payload.get("action"); // "suspend", "unlock", "delete"
+
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "Admin email and password are required to verify this action."
+            ));
+        }
+
+        User adminUser = userRepository.findByEmail(email.toLowerCase().trim())
+                .orElseGet(() -> userRepository.findByUsername(email.toLowerCase().trim()).orElse(null));
+
+        if (adminUser == null || !passwordEncoder.matches(password, adminUser.getPassword())) {
+            return ResponseEntity.status(401).body(Map.of(
+                "success", false,
+                "message", "Authentication failed: Invalid email or password. You must provide the exact password you registered with."
+            ));
+        }
+
+        User student = userRepository.findById(studentId).orElse(null);
+        if (student == null) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Student not found with ID: " + studentId));
+        }
+
+        boolean isPlatformAdmin = adminUser.getRole() == User.Role.ADMIN || adminUser.getRole() == User.Role.SUPER_ADMIN;
+        boolean isSameCollegeAdmin = (adminUser.getRole() == User.Role.COLLEGE_ADMIN || adminUser.getRole() == User.Role.FACULTY) &&
+                adminUser.getInstitution() != null && student.getInstitution() != null &&
+                adminUser.getInstitution().getId().equals(student.getInstitution().getId());
+
+        if (!isPlatformAdmin && !isSameCollegeAdmin) {
+            return ResponseEntity.status(403).body(Map.of(
+                "success", false,
+                "message", "Permission Denied: You can only manage students enrolled in your own college."
+            ));
+        }
+
+        if ("delete".equalsIgnoreCase(action)) {
+            userRepository.deleteTeamMembersByUserId(studentId);
+            userRepository.deleteTeamsByUserId(studentId);
+            userRepository.deleteExamProblemsByUserId(studentId);
+            userRepository.deleteExamsByUserId(studentId);
+            userRepository.deleteAntiCheatLogsByUserId(studentId);
+            userRepository.deleteAiInterviewsByUserId(studentId);
+            userRepository.deletePlagiarismReportsByUserId(studentId);
+            userRepository.deleteProblemSubmissionsByUserId(studentId);
+            userRepository.deleteQuizSubmissionsByUserId(studentId);
+            userRepository.deleteAiAnalysisReportsByUserId(studentId);
+            userRepository.deleteExecutionRecordsByUserId(studentId);
+            userRepository.deleteChatMessagesByUserId(studentId);
+            userRepository.deleteEducationByUserId(studentId);
+            userRepository.deleteExperienceByUserId(studentId);
+            userRepository.deleteProjectsByUserId(studentId);
+            userRepository.deleteResumeByUserId(studentId);
+            userRepository.delete(student);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "College '" + inst.getName() + "' deleted successfully."
+                "message", "Student @" + student.getUsername() + " has been permanently deleted after password verification."
             ));
-        }).orElse(ResponseEntity.notFound().build());
+        } else if ("suspend".equalsIgnoreCase(action)) {
+            student.setIsActive(false);
+            userRepository.save(student);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Student @" + student.getUsername() + " has been suspended after password verification."
+            ));
+        } else if ("unlock".equalsIgnoreCase(action)) {
+            student.setIsActive(true);
+            student.setIsDisqualified(false);
+            student.setCheatViolations(0);
+            userRepository.save(student);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Student @" + student.getUsername() + " has been unlocked and restored."
+            ));
+        }
+
+        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Invalid action: " + action));
     }
 
     private Map<String, Object> safeUser(User u) {

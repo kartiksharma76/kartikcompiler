@@ -5088,6 +5088,609 @@ function switchTab(tab) {
   }
 }
 
+// ==============================================================
+// 10. COLLEGE APPROVALS & ERP DIRECTORY TAB IMPLEMENTATION
+// ==============================================================
+async function renderCollegesAdminTab() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="tab-header">
+      <div class="tab-header-left">
+        <div class="tab-icon-box" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#34d399;">🏫</div>
+        <div>
+          <div class="tab-title">Colleges Directory & Approvals Center</div>
+          <div class="tab-subtitle">Review pending registrations, inspect student leaderboards, monitor student code submissions, and manage access.</div>
+        </div>
+      </div>
+      <div class="tab-header-right" style="display:flex; gap:10px;">
+        <button class="btn-secondary" onclick="renderCollegesAdminTab()">🔄 Refresh</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #3b82f6, #6366f1); border:none;" onclick="window.open('/leaderboard.html', '_blank')">🏆 Public Leaderboard ↗</button>
+      </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="bento-grid" style="margin-bottom:20px;">
+      <div class="bento-card col-3" style="background:linear-gradient(135deg, #0d1224, #121832); border-color:rgba(99,102,241,0.25);">
+        <div class="metric-header">
+          <span class="metric-title">TOTAL COLLEGES</span>
+          <div class="metric-badge-icon" style="background:rgba(99,102,241,0.18); color:#818cf8;">🏫</div>
+        </div>
+        <div class="metric-val-big" id="erpTotalCollegesCount">—</div>
+        <div class="metric-foot"><span class="trend-sub">Registered Institutions</span></div>
+      </div>
+
+      <div class="bento-card col-3" style="background:linear-gradient(135deg, #180f08, #24140a); border-color:rgba(245,158,11,0.25);">
+        <div class="metric-header">
+          <span class="metric-title">PENDING APPROVALS</span>
+          <div class="metric-badge-icon" style="background:rgba(245,158,11,0.18); color:#fbbf24;">🔔</div>
+        </div>
+        <div class="metric-val-big" id="erpPendingCollegesCount" style="color:#fbbf24;">—</div>
+        <div class="metric-foot"><span class="trend-sub" id="erpPendingSubText">Awaiting Verification</span></div>
+      </div>
+
+      <div class="bento-card col-3" style="background:linear-gradient(135deg, #091720, #0f2430); border-color:rgba(6,182,212,0.25);">
+        <div class="metric-header">
+          <span class="metric-title">ENROLLED CODERS</span>
+          <div class="metric-badge-icon" style="background:rgba(6,182,212,0.18); color:#38bdf8;">👥</div>
+        </div>
+        <div class="metric-val-big" id="erpTotalStudentsCount" style="color:#38bdf8;">—</div>
+        <div class="metric-foot"><span class="trend-sub">Institutional Users</span></div>
+      </div>
+
+      <div class="bento-card col-3" style="background:linear-gradient(135deg, #081a13, #0f2b1d); border-color:rgba(16,185,129,0.25);">
+        <div class="metric-header">
+          <span class="metric-title">COMBINED POINTS</span>
+          <div class="metric-badge-icon" style="background:rgba(16,185,129,0.18); color:#34d399;">💎</div>
+        </div>
+        <div class="metric-val-big" id="erpTotalPointsCount" style="color:#34d399;">—</div>
+        <div class="metric-foot"><span class="trend-sub">Earned by Students</span></div>
+      </div>
+    </div>
+
+    <!-- Section 1: Pending Registrations -->
+    <div class="bento-card col-12" style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="font-size:14px; font-weight:800; color:#fbbf24; display:flex; align-items:center; gap:8px;">
+          <span>🔔</span> Pending College Registrations (Action Required)
+        </div>
+        <span style="font-size:11px; color:var(--text-dim);" id="pendingTableMeta">0 colleges pending</span>
+      </div>
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>COLLEGE / INSTITUTION</th>
+              <th>LICENSE KEY</th>
+              <th>ADMIN REGISTRANT</th>
+              <th>SUBMISSION DATE</th>
+              <th>APPROVAL ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="erpPendingCollegesBody">
+            <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-dim);">Loading pending registrations...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 2: Approved Colleges Directory & Performance Inspector -->
+    <div class="bento-card col-12">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            <span>🏫</span> Active Colleges Directory & Student Performance Explorer
+          </div>
+          <div style="font-size:11.5px; color:var(--text-dim); margin-top:2px;">
+            Click any college to open its comprehensive student leaderboard, performance metrics, and complete code execution history.
+          </div>
+        </div>
+        <input type="text" id="erpCollegeSearchInput" class="form-input" placeholder="🔍 Search colleges..." style="width:200px; padding:6px 12px; font-size:12px;" oninput="filterErpColleges(this.value)">
+      </div>
+
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>INSTITUTION NAME</th>
+              <th>LICENSE</th>
+              <th>ENROLLED STUDENTS</th>
+              <th>TOTAL POINTS</th>
+              <th>EXECUTIONS</th>
+              <th>ADMIN ACCOUNT</th>
+              <th>STATUS</th>
+              <th>INSPECT</th>
+            </tr>
+          </thead>
+          <tbody id="erpApprovedCollegesBody">
+            <tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-dim);">Loading colleges directory...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  await loadErpCollegesData();
+}
+
+let cachedErpColleges = [];
+let cachedErpPending = [];
+
+async function loadErpCollegesData() {
+  try {
+    // Fetch pending
+    const pendingRes = await fetch('/api/admin/colleges/pending');
+    if (pendingRes.ok) {
+      const pData = await pendingRes.json();
+      cachedErpPending = pData.colleges || [];
+      renderPendingTable(cachedErpPending);
+      const pendingCount = cachedErpPending.length;
+      document.getElementById('erpPendingCollegesCount').textContent = pendingCount;
+      const badge = document.getElementById('pendingBadgeCount');
+      if (badge) {
+        badge.textContent = pendingCount;
+        badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+      }
+    }
+  } catch(e) {
+    document.getElementById('erpPendingCollegesBody').innerHTML = `<tr><td colspan="5" style="color:#ef4444; padding:16px;">Failed to load pending colleges: ${e.message}</td></tr>`;
+  }
+
+  try {
+    // Fetch all colleges
+    const allRes = await fetch('/api/admin/colleges');
+    if (allRes.ok) {
+      cachedErpColleges = await allRes.json();
+      renderApprovedCollegesTable(cachedErpColleges);
+
+      let totalStudents = 0;
+      let totalPoints = 0;
+      cachedErpColleges.forEach(c => {
+        totalStudents += (c.totalStudents || 0);
+        totalPoints += (c.totalPoints || 0);
+      });
+
+      document.getElementById('erpTotalCollegesCount').textContent = cachedErpColleges.length;
+      document.getElementById('erpTotalStudentsCount').textContent = totalStudents;
+      document.getElementById('erpTotalPointsCount').textContent = totalPoints;
+    }
+  } catch(e) {
+    document.getElementById('erpApprovedCollegesBody').innerHTML = `<tr><td colspan="8" style="color:#ef4444; padding:16px;">Failed to load colleges directory: ${e.message}</td></tr>`;
+  }
+}
+
+function renderPendingTable(list) {
+  const meta = document.getElementById('pendingTableMeta');
+  if (meta) meta.textContent = `${list.length} college${list.length === 1 ? '' : 's'} awaiting approval`;
+  const tbody = document.getElementById('erpPendingCollegesBody');
+  if (!tbody) return;
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-dim);">✔ No pending college registrations awaiting approval. All caught up!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(c => `
+    <tr>
+      <td>
+        <div style="font-weight:700; color:#fff; font-size:13px;">${c.name}</div>
+        <div style="font-size:11px; color:#94a3b8;">ID: #${c.id}</div>
+      </td>
+      <td style="font-family:var(--font-mono); color:#38bdf8; font-size:12px;">${c.licenseKey || 'N/A'}</td>
+      <td>
+        <div style="color:#fff; font-weight:600;">${c.adminName || 'Admin'}</div>
+        <div style="font-size:11px; color:var(--text-dim);">${c.adminEmail || '—'}</div>
+      </td>
+      <td style="font-size:11.5px; color:var(--text-dim);">${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
+      <td>
+        <div style="display:flex; gap:8px;">
+          <button onclick="approveCollegeRegistration(${c.id}, '${c.name}')" class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669); border:none; padding:5px 12px; font-size:11.5px;">
+            ✔ Approve
+          </button>
+          <button onclick="rejectCollegeRegistration(${c.id}, '${c.name}')" class="btn-secondary" style="border-color:rgba(239,68,68,0.3); color:#fca5a5; padding:5px 12px; font-size:11.5px;">
+            ✖ Reject
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderApprovedCollegesTable(list) {
+  const tbody = document.getElementById('erpApprovedCollegesBody');
+  if (!tbody) return;
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-dim);">No registered colleges found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((c, i) => `
+    <tr style="cursor:pointer;" onclick="openCollegeDetailsModal(${c.id})" title="Click to inspect ${c.name} student leaderboard & code history">
+      <td>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff;">
+            ${(c.name||'COL').slice(0,2).toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:700; color:#fff; font-size:13px;">${c.name}</div>
+            <div style="font-size:10.5px; color:var(--text-dim);">Registered: ${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Active'}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-family:var(--font-mono); color:#94a3b8; font-size:11.5px;">${c.licenseKey ? c.licenseKey.slice(0,10) + '...' : 'ACTIVE'}</td>
+      <td style="font-weight:700; color:#fff;">👥 ${c.totalStudents || 0} coders</td>
+      <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono);">💎 ${c.totalPoints || 0}</td>
+      <td style="font-family:var(--font-mono); color:#94a3b8;">⚡ ${c.totalRuns || 0}</td>
+      <td>
+        <div style="font-size:12px; color:#cbd5e1; font-family:var(--font-mono);">@${c.adminUser || 'admin'}</div>
+      </td>
+      <td>
+        ${c.status === 'APPROVED' 
+          ? '<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">✔ Active</span>'
+          : '<span style="background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">⏳ Pending</span>'}
+      </td>
+      <td>
+        <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); border:none; border-radius:6px;" onclick="event.stopPropagation(); openCollegeDetailsModal(${c.id});">
+          📊 Inspect ↗
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterErpColleges(q) {
+  const term = q.toLowerCase().trim();
+  const filtered = cachedErpColleges.filter(c => 
+    (c.name && c.name.toLowerCase().includes(term)) ||
+    (c.licenseKey && c.licenseKey.toLowerCase().includes(term)) ||
+    (c.adminUser && c.adminUser.toLowerCase().includes(term))
+  );
+  renderApprovedCollegesTable(filtered);
+}
+
+async function approveCollegeRegistration(instId, name) {
+  if (!confirm(`Are you sure you want to approve "${name}"? Enrolled students and faculty will immediately gain login access.`)) return;
+
+  try {
+    const res = await fetch(`/api/admin/colleges/${instId}/approve`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert('✔ ' + (data.message || 'College approved successfully!'));
+      renderCollegesAdminTab();
+    } else {
+      alert('Error approving college: ' + (data.message || 'Unknown error'));
+    }
+  } catch(e) {
+    alert('Server error: ' + e.message);
+  }
+}
+
+async function rejectCollegeRegistration(instId, name) {
+  if (!confirm(`Are you sure you want to reject/suspend "${name}"?`)) return;
+
+  try {
+    const res = await fetch(`/api/admin/colleges/${instId}/reject`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert('College rejected/suspended.');
+      renderCollegesAdminTab();
+    } else {
+      alert('Error: ' + (data.message || 'Unknown error'));
+    }
+  } catch(e) {
+    alert('Server error: ' + e.message);
+  }
+}
+
+// ── College Leaderboard & Performance Detail Modal in ERP ──
+let activeCollegeData = null;
+let currentModalTab = 'students';
+
+async function openCollegeDetailsModal(instId) {
+  const modal = document.getElementById('collegeDetailsModal');
+  modal.style.display = 'flex';
+  document.getElementById('cdmContent').innerHTML = '<div style="text-align:center; padding:50px; color:var(--text-muted); font-size:14px;">Loading college analytics, student leaderboard, and execution records...</div>';
+
+  try {
+    const res = await fetch(`/api/leaderboard/colleges/${instId}`);
+    if (!res.ok) throw new Error('Could not load college details');
+    const data = await res.json();
+    activeCollegeData = data;
+    renderCollegeDetailsModal();
+  } catch(err) {
+    document.getElementById('cdmContent').innerHTML = `<div style="text-align:center; padding:40px; color:#ef4444;">Failed to load college details: ${err.message}</div>`;
+  }
+}
+
+function closeCollegeDetailsModal() {
+  document.getElementById('collegeDetailsModal').style.display = 'none';
+  activeCollegeData = null;
+}
+
+function switchModalTab(tab) {
+  currentModalTab = tab;
+  renderCollegeDetailsModal();
+}
+
+function renderCollegeDetailsModal() {
+  if (!activeCollegeData) return;
+  const d = activeCollegeData;
+  const inst = d.institution || {};
+  const stats = d.stats || {};
+  const students = d.students || [];
+  const runs = d.recentExecutions || [];
+
+  document.getElementById('cdmContent').innerHTML = `
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg, rgba(30,58,138,0.4), rgba(88,28,135,0.4)); border-bottom:1px solid var(--border); padding:22px 28px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 0 20px rgba(99,102,241,0.5);">
+          🏫
+        </div>
+        <div>
+          <div style="font-size:20px; font-weight:800; color:#fff;">${inst.name}</div>
+          <div style="display:flex; gap:10px; align-items:center; font-size:11.5px; color:#cbd5e1; margin-top:2px;">
+            <span style="font-family:var(--font-mono); color:#93c5fd;">License: ${inst.licenseKey || 'N/A'}</span>
+            <span>•</span>
+            <span style="color:#34d399; font-weight:700;">Status: ${inst.status || 'APPROVED'}</span>
+          </div>
+        </div>
+      </div>
+      <button onclick="closeCollegeDetailsModal()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;">✕</button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; padding:16px 28px; background:rgba(0,0,0,0.25); border-bottom:1px solid var(--border);">
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Enrolled Students</div>
+        <div style="font-size:18px; font-weight:800; color:#38bdf8; font-family:var(--font-mono); margin-top:2px;">👥 ${stats.totalStudents || students.length || 0}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Combined Points</div>
+        <div style="font-size:18px; font-weight:800; color:#fbbf24; font-family:var(--font-mono); margin-top:2px;">💎 ${stats.totalPoints || 0}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Code Executions</div>
+        <div style="font-size:18px; font-weight:800; color:#a78bfa; font-family:var(--font-mono); margin-top:2px;">⚡ ${stats.totalExecutions || 0}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Avg Success Rate</div>
+        <div style="font-size:18px; font-weight:800; color:#34d399; font-family:var(--font-mono); margin-top:2px;">${(stats.avgSuccessRate || 0).toFixed(1)}%</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="padding:12px 28px 0; display:flex; gap:10px; border-bottom:1px solid var(--border);">
+      <button onclick="switchModalTab('students')" style="padding:9px 16px; border-radius:8px 8px 0 0; border:none; cursor:pointer; font-weight:700; font-size:12.5px; font-family:inherit; transition:all 0.2s; background:${currentModalTab==='students'?'rgba(99,102,241,0.2)':'transparent'}; color:${currentModalTab==='students'?'#fff':'var(--text-muted)'}; border-bottom:2px solid ${currentModalTab==='students'?'#818cf8':'transparent'};">
+        👥 Student Leaderboard (${students.length})
+      </button>
+      <button onclick="switchModalTab('runs')" style="padding:9px 16px; border-radius:8px 8px 0 0; border:none; cursor:pointer; font-weight:700; font-size:12.5px; font-family:inherit; transition:all 0.2s; background:${currentModalTab==='runs'?'rgba(99,102,241,0.2)':'transparent'}; color:${currentModalTab==='runs'?'#fff':'var(--text-muted)'}; border-bottom:2px solid ${currentModalTab==='runs'?'#818cf8':'transparent'};">
+        💻 Code Executions & Language History (${runs.length})
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:18px 28px 24px; max-height:460px; overflow-y:auto;">
+      ${currentModalTab === 'students' ? renderModalStudentsTab(students, inst.id) : renderModalRunsTab(runs)}
+    </div>
+  `;
+}
+
+function renderModalStudentsTab(students, instId) {
+  if (!students || students.length === 0) {
+    return `<div style="text-align:center; padding:36px; color:var(--text-dim); font-size:13px;">No students enrolled in this college yet.</div>`;
+  }
+  return `
+    <table class="custom-table" style="font-size:12px;">
+      <thead>
+        <tr>
+          <th>RANK</th>
+          <th>STUDENT</th>
+          <th>POINTS</th>
+          <th>RUNS</th>
+          <th>SUCCESS</th>
+          <th>FAV LANG</th>
+          <th>STATUS</th>
+          <th>ADMIN ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${students.map((s, i) => `
+          <tr>
+            <td><span style="font-weight:800; font-family:var(--font-mono); color:${i===0?'#ffd700':i===1?'#e2e8f0':i===2?'#e59866':'#94a3b8'};">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span></td>
+            <td>
+              <div style="font-weight:700; color:#fff;">${s.fullName || s.username} <span style="font-size:11px; color:#94a3b8; font-family:var(--font-mono);">(@${s.username})</span></div>
+              <div style="font-size:11px; color:var(--text-dim);">${s.email || '—'}</div>
+            </td>
+            <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono);">💎 ${s.totalPoints || 0}</td>
+            <td style="font-family:var(--font-mono); color:#94a3b8;">${s.totalExecutions || 0}</td>
+            <td style="color:#10b981; font-weight:700; font-family:var(--font-mono);">${(s.successRate || 0).toFixed(1)}%</td>
+            <td><span style="padding:2px 7px; background:rgba(255,255,255,0.06); border-radius:4px; font-family:var(--font-mono); font-size:11px; color:#a5b4fc;">${(s.favoriteLanguage || 'Java').toUpperCase()}</span></td>
+            <td>
+              ${s.isActive === false
+                ? '<span style="background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">🚫 Suspended</span>'
+                : '<span style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">✔ Active</span>'}
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                ${s.isActive === false ? `
+                  <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'unlock', ${instId})" class="btn-secondary" style="border-color:#10b981; color:#34d399; padding:3px 8px; font-size:11px;">
+                    🔓 Unlock
+                  </button>
+                ` : `
+                  <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'suspend', ${instId})" class="btn-secondary" style="border-color:#f59e0b; color:#fbbf24; padding:3px 8px; font-size:11px;">
+                    🚫 Suspend
+                  </button>
+                `}
+                <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'delete', ${instId})" class="btn-secondary" style="border-color:#ef4444; color:#f87171; padding:3px 8px; font-size:11px;">
+                  🗑️ Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderModalRunsTab(runs) {
+  if (!runs || runs.length === 0) {
+    return `<div style="text-align:center; padding:36px; color:var(--text-dim); font-size:13px;">No code executions recorded for this college yet.</div>`;
+  }
+  return `
+    <table class="custom-table" style="font-size:12px;">
+      <thead>
+        <tr>
+          <th>STUDENT</th>
+          <th>LANGUAGE</th>
+          <th>STATUS</th>
+          <th>RUNTIME</th>
+          <th>POINTS</th>
+          <th>TIMESTAMP</th>
+          <th>INSPECT</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${runs.map((r, i) => `
+          <tr>
+            <td>
+              <div style="font-weight:700; color:#fff;">${r.fullName || r.username}</div>
+              <div style="font-size:10px; color:#94a3b8; font-family:var(--font-mono);">@${r.username}</div>
+            </td>
+            <td><span style="padding:2px 7px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); border-radius:4px; font-family:var(--font-mono); font-size:11px; color:#60a5fa;">${(r.language||'CODE').toUpperCase()}</span></td>
+            <td>
+              ${r.success
+                ? '<span style="color:#34d399; font-weight:700;">✔ ' + (r.status || 'SUCCESS') + '</span>'
+                : '<span style="color:#f87171; font-weight:700;">✖ ' + (r.status || 'ERROR') + '</span>'}
+            </td>
+            <td style="font-family:var(--font-mono); color:#94a3b8;">${r.executionTimeMs != null ? r.executionTimeMs + ' ms' : '—'}</td>
+            <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono);">+${r.points || 0}</td>
+            <td style="font-size:11px; color:var(--text-dim);">${r.executedAt ? new Date(r.executedAt).toLocaleString() : '—'}</td>
+            <td>
+              <button onclick='viewStudentCodeSnippet(${JSON.stringify(r.username)}, ${JSON.stringify(r.language)}, ${JSON.stringify(r.code || "")})' class="btn-primary" style="padding:3px 9px; font-size:11px; background:rgba(99,102,241,0.25); border:1px solid #6366f1;">
+                🔍 View Code
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function viewStudentCodeSnippet(username, lang, code) {
+  document.getElementById('codeViewerModal').style.display = 'flex';
+  document.getElementById('cvTitle').textContent = `Code executed by @${username} (${lang})`;
+  document.getElementById('cvContent').textContent = code || '// No source code payload was recorded for this run.';
+}
+
+function closeCodeViewerModal() {
+  document.getElementById('codeViewerModal').style.display = 'none';
+}
+
+// ── Secure Admin Password Verification in College ERP ──
+let pendingVerifyAction = null;
+
+function openPasswordVerifyModal(studentId, username, action, instId) {
+  pendingVerifyAction = { studentId, username, action, instId };
+  document.getElementById('secActionTitle').textContent = 
+    action === 'delete' ? `🗑️ Delete Student @${username}` :
+    action === 'suspend' ? `🚫 Suspend Student @${username}` :
+    `🔓 Unlock Student @${username}`;
+  
+  document.getElementById('secActionDesc').textContent = 
+    action === 'delete' ? `Warning: Deleting @${username} will permanently remove all their submissions and data. Enter your registration Admin Email and Password to confirm.` :
+    `Enter your registration Admin Email and Password to confirm this ${action} action on @${username}.`;
+
+  document.getElementById('secAdminEmail').value = '';
+  document.getElementById('secAdminPassword').value = '';
+  document.getElementById('secErrorBox').style.display = 'none';
+  document.getElementById('securePasswordModal').style.display = 'flex';
+}
+
+function closePasswordVerifyModal() {
+  document.getElementById('securePasswordModal').style.display = 'none';
+  pendingVerifyAction = null;
+}
+
+async function submitSecureStudentAction(event) {
+  event.preventDefault();
+  if (!pendingVerifyAction) return;
+
+  const email = document.getElementById('secAdminEmail').value.trim();
+  const password = document.getElementById('secAdminPassword').value;
+  const errorBox = document.getElementById('secErrorBox');
+  const btn = document.getElementById('secSubmitBtn');
+
+  if (!email || !password) {
+    errorBox.textContent = 'Please enter both your registered admin email and password.';
+    errorBox.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Verifying Credentials...';
+  errorBox.style.display = 'none';
+
+  try {
+    const res = await fetch(`/api/admin/colleges/students/${pendingVerifyAction.studentId}/secure-action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        action: pendingVerifyAction.action
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      errorBox.textContent = data.message || 'Authentication failed. Please check your admin credentials.';
+      errorBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🔒 Verify & Confirm Action';
+      return;
+    }
+
+    alert('✔ ' + (data.message || 'Action completed successfully!'));
+    closePasswordVerifyModal();
+
+    if (pendingVerifyAction && pendingVerifyAction.instId) {
+      openCollegeDetailsModal(pendingVerifyAction.instId);
+    }
+    loadErpCollegesData();
+  } catch(e) {
+    errorBox.textContent = 'Network or server error: ' + e.message;
+    errorBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔒 Verify & Confirm Action';
+  }
+}
+
+// Check pending approvals count on sidebar load
+async function checkPendingCollegesNotification() {
+  try {
+    const res = await fetch('/api/admin/colleges/pending');
+    if (res.ok) {
+      const d = await res.json();
+      const count = d.count || (d.colleges ? d.colleges.length : 0);
+      const badge = document.getElementById('pendingBadgeCount');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+      }
+      const alertBox = document.getElementById('adminCollegePendingAlert');
+      if (alertBox) {
+        alertBox.style.display = count > 0 ? 'flex' : 'none';
+        const txt = document.getElementById('adminCollegePendingAlertText');
+        if (txt) txt.textContent = `🔔 ${count} Pending College Registration${count === 1 ? '' : 's'} Awaiting Approval`;
+      }
+    }
+  } catch(e) {}
+}
+
 // Initial Page Render
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -5097,7 +5700,75 @@ window.onload = () => {
   } else {
     switchTab(currentTab);
   }
+  checkPendingCollegesNotification();
 };
 </script>
+
+<!-- ============================================================== -->
+<!-- MODALS HTML STRUCTURE IN COLLEGE ERP -->
+<!-- ============================================================== -->
+
+<!-- 1. College Performance & Details Modal -->
+<div id="collegeDetailsModal" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(3,7,18,0.85); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0b0f19; border:1px solid rgba(99,102,241,0.35); border-radius:20px; width:100%; max-width:920px; box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(99,102,241,0.2); overflow:hidden;" id="cdmContent">
+    <!-- Rendered Dynamically -->
+  </div>
+</div>
+
+<!-- 2. Code Snippet Inspection Modal -->
+<div id="codeViewerModal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#060812; border:1px solid rgba(59,130,246,0.4); border-radius:18px; width:100%; max-width:760px; box-shadow:0 20px 50px rgba(0,0,0,0.9); overflow:hidden;">
+    <div style="padding:16px 22px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+        <span>🔍</span> <span id="cvTitle">Code Execution Inspector</span>
+      </div>
+      <button onclick="closeCodeViewerModal()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:18px 22px;">
+      <pre id="cvContent" style="background:#02040a; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; color:#38bdf8; max-height:420px; overflow-y:auto; white-space:pre-wrap;"></pre>
+    </div>
+    <div style="padding:12px 22px 18px; display:flex; justify-content:flex-end;">
+      <button onclick="closeCodeViewerModal()" class="btn-primary" style="padding:7px 18px; font-size:12px;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Secure Admin Password Verification Modal -->
+<div id="securePasswordModal" style="display:none; position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0b0f19; border:1.5px solid rgba(239,68,68,0.4); border-radius:18px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(239,68,68,0.25); overflow:hidden;">
+    <div style="padding:20px 24px; background:linear-gradient(135deg, rgba(239,68,68,0.15), rgba(15,23,42,0.8)); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;">
+      <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; font-size:20px;">
+        🛡️
+      </div>
+      <div>
+        <div style="font-size:15px; font-weight:800; color:#fff;" id="secActionTitle">Admin Security Verification</div>
+        <div style="font-size:11px; color:#cbd5e1;">Credentials verification required before modifying student status.</div>
+      </div>
+    </div>
+
+    <form onsubmit="submitSecureStudentAction(event)" style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
+      <div style="font-size:12px; color:#94a3b8; line-height:1.4;" id="secActionDesc">
+        Please enter the Admin Email & Password used when your college registered to verify this action.
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">ADMIN EMAIL / USERNAME</label>
+        <input type="text" id="secAdminEmail" class="form-input" style="width:100%; box-sizing:border-box; padding:9px 12px; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:13px;" placeholder="e.g. admin@college.edu" required>
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">ADMIN REGISTRATION PASSWORD</label>
+        <input type="password" id="secAdminPassword" class="form-input" style="width:100%; box-sizing:border-box; padding:9px 12px; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:13px;" placeholder="Enter admin password..." required>
+      </div>
+
+      <div id="secErrorBox" style="display:none; padding:10px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:8px; color:#fca5a5; font-size:11.5px;"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
+        <button type="button" onclick="closePasswordVerifyModal()" class="btn-secondary" style="padding:8px 16px; font-size:12px; border-radius:8px; background:rgba(255,255,255,0.06); color:#fff; border:1px solid var(--border); cursor:pointer;">Cancel</button>
+        <button type="submit" id="secSubmitBtn" class="btn-primary" style="padding:8px 18px; font-size:12px; border-radius:8px; background:linear-gradient(135deg,#ef4444,#dc2626); border:none; color:#fff; font-weight:700; cursor:pointer;">🔒 Verify & Confirm Action</button>
+      </div>
+    </form>
+  </div>
+</div>
 </body>
 </html>

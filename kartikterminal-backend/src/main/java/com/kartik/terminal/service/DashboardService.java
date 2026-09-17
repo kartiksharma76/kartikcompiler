@@ -145,6 +145,82 @@ public class DashboardService {
         return list;
     }
 
+    // ========== GET DETAILED COLLEGE LEADERBOARD & PERFORMANCE ==========
+    @Transactional(readOnly = true)
+    public Map<String, Object> getCollegeDetails(Long institutionId) {
+        com.kartik.terminal.entity.Institution inst = institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new RuntimeException("College not found with id: " + institutionId));
+
+        List<User> students = userRepository.findTopUsersByPointsAndInstitution(inst);
+        long totalStudents = userRepository.countByInstitutionAndIsActiveTrue(inst);
+        int totalPoints = students.stream().mapToInt(u -> u.getTotalPoints() != null ? u.getTotalPoints() : 0).sum();
+        long totalExecs = students.stream().mapToLong(u -> u.getTotalExecutions() != null ? u.getTotalExecutions() : 0).sum();
+
+        double avgSuccess = 0.0;
+        if (!students.isEmpty()) {
+            double totalSuccess = students.stream().mapToDouble(User::getSuccessRate).sum();
+            avgSuccess = Math.round((totalSuccess / students.size()) * 10.0) / 10.0;
+        }
+
+        List<Map<String, Object>> studentList = new ArrayList<>();
+        for (int i = 0; i < students.size(); i++) {
+            User u = students.get(i);
+            Map<String, Object> smap = new LinkedHashMap<>();
+            smap.put("rank", i + 1);
+            smap.put("id", u.getId());
+            smap.put("username", u.getUsername());
+            smap.put("fullName", u.getFullName() != null && !u.getFullName().isBlank() ? u.getFullName() : u.getUsername());
+            smap.put("email", u.getEmail());
+            smap.put("avatarUrl", u.getAvatarUrl());
+            smap.put("totalPoints", u.getTotalPoints() != null ? u.getTotalPoints() : 0);
+            smap.put("totalExecutions", u.getTotalExecutions() != null ? u.getTotalExecutions() : 0);
+            smap.put("successfulExecutions", u.getSuccessfulExecutions() != null ? u.getSuccessfulExecutions() : 0);
+            smap.put("successRate", Math.round(u.getSuccessRate() * 10.0) / 10.0);
+            smap.put("favoriteLanguage", u.getFavoriteLanguage());
+            smap.put("tier", getTier(u.getTotalPoints() != null ? u.getTotalPoints() : 0));
+            smap.put("cheatViolations", u.getCheatViolations() != null ? u.getCheatViolations() : 0);
+            smap.put("isActive", u.getIsActive() != null ? u.getIsActive() : true);
+            smap.put("isDisqualified", u.getIsDisqualified() != null ? u.getIsDisqualified() : false);
+            studentList.add(smap);
+        }
+
+        Pageable recentPage = PageRequest.of(0, 30);
+        List<ExecutionRecord> recentRuns = executionRecordRepository.findRecentExecutionsByInstitution(inst, recentPage);
+        List<Map<String, Object>> runsList = recentRuns.stream().map(r -> {
+            Map<String, Object> rmap = new LinkedHashMap<>();
+            rmap.put("id", r.getId());
+            rmap.put("userId", r.getUser() != null ? r.getUser().getId() : null);
+            rmap.put("username", r.getUser() != null ? r.getUser().getUsername() : "anonymous");
+            rmap.put("fullName", r.getUser() != null && r.getUser().getFullName() != null ? r.getUser().getFullName() : (r.getUser() != null ? r.getUser().getUsername() : ""));
+            rmap.put("language", r.getLanguage());
+            rmap.put("code", r.getCode() != null ? r.getCode() : "");
+            rmap.put("success", r.getSuccess());
+            rmap.put("status", r.getStatus() != null ? r.getStatus().name() : "SUCCESS");
+            rmap.put("executionTimeMs", r.getExecutionTimeMs());
+            rmap.put("points", r.getPoints());
+            rmap.put("executedAt", r.getExecutedAt() != null ? r.getExecutedAt().toString() : "");
+            return rmap;
+        }).collect(Collectors.toList());
+
+        return Map.of(
+            "institution", Map.of(
+                "id", inst.getId(),
+                "name", inst.getName(),
+                "licenseKey", inst.getLicenseKey(),
+                "status", inst.getStatus() != null ? inst.getStatus().name() : "APPROVED",
+                "createdAt", inst.getCreatedAt() != null ? inst.getCreatedAt().toString() : ""
+            ),
+            "stats", Map.of(
+                "totalStudents", totalStudents,
+                "totalPoints", totalPoints,
+                "totalExecutions", totalExecs,
+                "avgSuccessRate", avgSuccess
+            ),
+            "students", studentList,
+            "recentExecutions", runsList
+        );
+    }
+
     // ========== LEADERBOARD ==========
     @Transactional(readOnly = true)
     public LeaderboardResponse getLeaderboard() {

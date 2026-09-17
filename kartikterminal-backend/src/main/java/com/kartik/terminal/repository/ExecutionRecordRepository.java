@@ -53,6 +53,10 @@ public interface ExecutionRecordRepository extends JpaRepository<ExecutionRecord
     @Query("SELECT e.language, COUNT(e) FROM ExecutionRecord e GROUP BY e.language ORDER BY COUNT(e) DESC")
     List<Object[]> getGlobalLanguageStats();
 
+    // Recent executions for all students in an institution
+    @Query("SELECT e FROM ExecutionRecord e WHERE e.user.institution = :institution ORDER BY e.executedAt DESC")
+    List<ExecutionRecord> findRecentExecutionsByInstitution(@Param("institution") Institution institution, Pageable pageable);
+
     // User streak - days with at least one execution
     @Query("SELECT DISTINCT DATE(e.executedAt) FROM ExecutionRecord e WHERE e.user.id = :userId ORDER BY DATE(e.executedAt) DESC")
     List<Object[]> getExecutionDates(@Param("userId") Long userId);

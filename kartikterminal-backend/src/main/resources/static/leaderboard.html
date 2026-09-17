@@ -915,14 +915,14 @@ function renderPodiumColleges(top3) {
   podiumEl.innerHTML = top3.map((c, i) => {
     const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3) || 'COL';
     return `
-      <div class="podium-card ${rankClasses[i]}">
+      <div class="podium-card ${rankClasses[i]}" onclick="openCollegeDetailsModal(${c.id})" style="cursor:pointer;" title="Click to view ${c.name} student leaderboard & code history">
         <div class="podium-badge">${medals[i]}</div>
         <div class="podium-avatar" style="background: ${bgGradients[i]}; font-size:14px; font-weight:800; border-radius:12px;">
           ${initials}
         </div>
         <div class="podium-name" style="font-size:14px;" title="${c.name}">${c.name}</div>
         <div class="podium-pts" style="color: ${colors[i]}; font-size:18px;">💎 ${c.totalPoints} pts</div>
-        <span class="college-badge-approved">👥 ${c.totalStudents} Coders</span>
+        <span class="college-badge-approved">👥 ${c.totalStudents} Coders • View Details ↗</span>
       </div>
     `;
   }).join('');
@@ -1002,7 +1002,7 @@ function renderCollegesTable(colleges) {
           <th>Total Executions</th>
           <th>Avg Quality</th>
           <th>Star Performer</th>
-          <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -1011,7 +1011,7 @@ function renderCollegesTable(colleges) {
           const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
           const rankIcon  = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
           return `
-            <tr>
+            <tr style="cursor:pointer;" onclick="openCollegeDetailsModal(${c.id})" title="Click to view ${c.name} student leaderboard & code runs">
               <td>
                 <span class="${rankClass} ${rankIcon ? 'rank-badge-podium' : ''}">
                   ${rankIcon || '#' + (c.rank || i + 1)}
@@ -1037,7 +1037,9 @@ function renderCollegesTable(colleges) {
                 <div style="font-size:10.5px; color:#a5b4fc; font-family:var(--font-mono);">${c.topCoderPoints ? c.topCoderPoints + ' pts' : ''}</div>
               </td>
               <td>
-                <span class="college-badge-approved">✔ Approved</span>
+                <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3b82f6,#6366f1); border:none; border-radius:6px; cursor:pointer; color:#fff; font-weight:700;" onclick="event.stopPropagation(); openCollegeDetailsModal(${c.id});">
+                  📊 View Board ↗
+                </button>
               </td>
             </tr>
           `;
@@ -1064,7 +1066,372 @@ function handleSearchFilter(q) {
   }
 }
 
+// ==============================================================
+// COLLEGE LEADERBOARD & PERFORMANCE DETAIL MODAL
+// ==============================================================
+let activeCollegeData = null;
+let currentModalTab = 'students'; // 'students' or 'runs'
+
+async function openCollegeDetailsModal(instId) {
+  const modal = document.getElementById('collegeDetailsModal');
+  modal.style.display = 'flex';
+  document.getElementById('cdmContent').innerHTML = '<div class="loading">Loading college analytics and student code history...</div>';
+  
+  try {
+    const res = await fetch(`/api/leaderboard/colleges/${instId}`);
+    if (!res.ok) throw new Error('Could not load college details');
+    const data = await res.json();
+    activeCollegeData = data;
+    renderCollegeDetailsModal();
+  } catch (err) {
+    document.getElementById('cdmContent').innerHTML = `<div class="loading" style="color:#ef4444;">Failed to load college details: ${err.message}</div>`;
+  }
+}
+
+function closeCollegeDetailsModal() {
+  document.getElementById('collegeDetailsModal').style.display = 'none';
+  activeCollegeData = null;
+}
+
+function switchModalTab(tab) {
+  currentModalTab = tab;
+  renderCollegeDetailsModal();
+}
+
+function renderCollegeDetailsModal() {
+  if (!activeCollegeData) return;
+  const d = activeCollegeData;
+  const inst = d.institution || {};
+  const stats = d.stats || {};
+  const students = d.students || [];
+  const runs = d.recentExecutions || [];
+
+  document.getElementById('cdmContent').innerHTML = `
+    <!-- Modal Header Banner -->
+    <div style="background:linear-gradient(135deg, rgba(30,58,138,0.4), rgba(88,28,135,0.4)); border-bottom:1px solid var(--border); padding:24px 28px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 0 20px rgba(99,102,241,0.5); flex-shrink:0;">
+          🏫
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:800; color:#ffffff; letter-spacing:-0.4px;">${inst.name}</div>
+          <div style="display:flex; gap:10px; align-items:center; font-size:12px; color:#cbd5e1; margin-top:3px; flex-wrap:wrap;">
+            <span style="font-family:var(--font-mono); color:#93c5fd;">License: ${inst.licenseKey || 'N/A'}</span>
+            <span>•</span>
+            <span class="college-badge-approved">Status: ${inst.status || 'APPROVED'}</span>
+          </div>
+        </div>
+      </div>
+      <button onclick="closeCollegeDetailsModal()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">✕</button>
+    </div>
+
+    <!-- College Stats Summary Tiles -->
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; padding:18px 28px; background:rgba(0,0,0,0.25); border-bottom:1px solid var(--border);">
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Enrolled Students</div>
+        <div style="font-size:20px; font-weight:800; color:#38bdf8; font-family:var(--font-mono); margin-top:2px;">👥 ${stats.totalStudents || students.length || 0}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Combined Points</div>
+        <div style="font-size:20px; font-weight:800; color:#fbbf24; font-family:var(--font-mono); margin-top:2px;">💎 ${stats.totalPoints || 0}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Code Executions</div>
+        <div style="font-size:20px; font-weight:800; color:#a78bfa; font-family:var(--font-mono); margin-top:2px;">⚡ ${stats.totalExecutions || 0}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Avg Success Rate</div>
+        <div style="font-size:20px; font-weight:800; color:#34d399; font-family:var(--font-mono); margin-top:2px;">${(stats.avgSuccessRate || 0).toFixed(1)}%</div>
+      </div>
+    </div>
+
+    <!-- Modal Sub-Navigation Tabs -->
+    <div style="padding:14px 28px 0; display:flex; gap:10px; border-bottom:1px solid var(--border);">
+      <button onclick="switchModalTab('students')" style="padding:10px 18px; border-radius:10px 10px 0 0; border:none; cursor:pointer; font-weight:700; font-size:13px; font-family:inherit; transition:all 0.2s; background:${currentModalTab==='students'?'rgba(99,102,241,0.2)':'transparent'}; color:${currentModalTab==='students'?'#fff':'var(--text-secondary)'}; border-bottom:2px solid ${currentModalTab==='students'?'#818cf8':'transparent'};">
+        👥 Student Leaderboard (${students.length})
+      </button>
+      <button onclick="switchModalTab('runs')" style="padding:10px 18px; border-radius:10px 10px 0 0; border:none; cursor:pointer; font-weight:700; font-size:13px; font-family:inherit; transition:all 0.2s; background:${currentModalTab==='runs'?'rgba(99,102,241,0.2)':'transparent'}; color:${currentModalTab==='runs'?'#fff':'var(--text-secondary)'}; border-bottom:2px solid ${currentModalTab==='runs'?'#818cf8':'transparent'};">
+        💻 Code Execution & Language History (${runs.length})
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div style="padding:20px 28px 28px; max-height:480px; overflow-y:auto;">
+      ${currentModalTab === 'students' ? renderModalStudentsTab(students, inst.id) : renderModalRunsTab(runs)}
+    </div>
+  `;
+}
+
+function renderModalStudentsTab(students, instId) {
+  if (!students || students.length === 0) {
+    return `<div style="text-align:center; padding:40px; color:var(--text-muted); font-size:13.5px;">No students enrolled in this college yet.</div>`;
+  }
+  return `
+    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Student</th>
+          <th>Points</th>
+          <th>Runs</th>
+          <th>Success</th>
+          <th>Language</th>
+          <th>Status</th>
+          <th>Admin Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${students.map((s, i) => `
+          <tr>
+            <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span></td>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="avatar" style="width:32px; height:32px; font-size:11px;">
+                  ${s.username ? s.username.slice(0,2).toUpperCase() : 'ST'}
+                </div>
+                <div>
+                  <div style="font-weight:700; color:#fff;">${s.fullName || s.username} <span style="font-size:11px; color:#94a3b8; font-family:var(--font-mono);">(@${s.username})</span></div>
+                  <div style="font-size:11px; color:var(--text-dim);">${s.email || '—'}</div>
+                </div>
+              </div>
+            </td>
+            <td class="points-cell">💎 ${s.totalPoints || 0}</td>
+            <td class="exec-cell">${s.totalExecutions || 0}</td>
+            <td class="success-cell">${(s.successRate || 0).toFixed(1)}%</td>
+            <td><span class="lang-badge">${(s.favoriteLanguage || 'Java').toUpperCase()}</span></td>
+            <td>
+              ${s.isActive === false
+                ? '<span style="background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:700;">🚫 Suspended</span>'
+                : '<span style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:700;">✔ Active</span>'}
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                ${s.isActive === false ? `
+                  <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'unlock', ${instId})" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#34d399; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="Restore and unlock student">
+                    🔓 Unlock
+                  </button>
+                ` : `
+                  <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'suspend', ${instId})" style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fbbf24; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="Suspend student login">
+                    🚫 Suspend
+                  </button>
+                `}
+                <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'delete', ${instId})" style="background:rgba(239,68,68,0.2); border:1px solid #ef4444; color:#f87171; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="Permanently delete student account">
+                  🗑️ Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderModalRunsTab(runs) {
+  if (!runs || runs.length === 0) {
+    return `<div style="text-align:center; padding:40px; color:var(--text-muted); font-size:13.5px;">No code execution records recorded for this college yet.</div>`;
+  }
+  return `
+    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Language</th>
+          <th>Status</th>
+          <th>Runtime</th>
+          <th>Points</th>
+          <th>Executed At</th>
+          <th>Inspect Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${runs.map((r, i) => `
+          <tr>
+            <td>
+              <div style="font-weight:700; color:#fff;">${r.fullName || r.username}</div>
+              <div style="font-size:10.5px; color:#94a3b8; font-family:var(--font-mono);">@${r.username}</div>
+            </td>
+            <td><span class="lang-badge" style="color:#60a5fa; border-color:rgba(59,130,246,0.3);">${(r.language||'CODE').toUpperCase()}</span></td>
+            <td>
+              ${r.success
+                ? '<span style="color:#34d399; font-weight:700; font-size:11.5px;">✔ ' + (r.status || 'SUCCESS') + '</span>'
+                : '<span style="color:#f87171; font-weight:700; font-size:11.5px;">✖ ' + (r.status || 'ERROR') + '</span>'}
+            </td>
+            <td style="font-family:var(--font-mono); color:#94a3b8; font-size:11.5px;">${r.executionTimeMs != null ? r.executionTimeMs + ' ms' : '—'}</td>
+            <td class="points-cell">+${r.points || 0}</td>
+            <td style="font-size:11px; color:var(--text-dim);">${r.executedAt ? new Date(r.executedAt).toLocaleString() : '—'}</td>
+            <td>
+              <button onclick='viewStudentCodeSnippet(${JSON.stringify(r.username)}, ${JSON.stringify(r.language)}, ${JSON.stringify(r.code || "")})' style="background:rgba(99,102,241,0.2); border:1px solid #6366f1; color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                🔍 View Code
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function viewStudentCodeSnippet(username, lang, code) {
+  document.getElementById('codeViewerModal').style.display = 'flex';
+  document.getElementById('cvTitle').textContent = `Code executed by @${username} (${lang})`;
+  document.getElementById('cvContent').textContent = code || '// No source code payload was recorded for this run.';
+}
+
+function closeCodeViewerModal() {
+  document.getElementById('codeViewerModal').style.display = 'none';
+}
+
+// ==============================================================
+// SECURE ADMIN PASSWORD VERIFICATION MODAL
+// ==============================================================
+let pendingVerifyAction = null; // { studentId, username, action, instId }
+
+function openPasswordVerifyModal(studentId, username, action, instId) {
+  pendingVerifyAction = { studentId, username, action, instId };
+  document.getElementById('secActionTitle').textContent = 
+    action === 'delete' ? `🗑️ Delete Student @${username}` :
+    action === 'suspend' ? `🚫 Suspend Student @${username}` :
+    `🔓 Unlock Student @${username}`;
+  
+  document.getElementById('secActionDesc').textContent = 
+    action === 'delete' ? `Warning: Deleting @${username} will permanently remove all their submissions and data. Enter your registration Admin Email and Password to confirm.` :
+    `Enter your registration Admin Email and Password to confirm this ${action} action on @${username}.`;
+
+  document.getElementById('secAdminEmail').value = '';
+  document.getElementById('secAdminPassword').value = '';
+  document.getElementById('secErrorBox').style.display = 'none';
+  document.getElementById('securePasswordModal').style.display = 'flex';
+}
+
+function closePasswordVerifyModal() {
+  document.getElementById('securePasswordModal').style.display = 'none';
+  pendingVerifyAction = null;
+}
+
+async function submitSecureStudentAction(event) {
+  event.preventDefault();
+  if (!pendingVerifyAction) return;
+
+  const email = document.getElementById('secAdminEmail').value.trim();
+  const password = document.getElementById('secAdminPassword').value;
+  const errorBox = document.getElementById('secErrorBox');
+  const btn = document.getElementById('secSubmitBtn');
+
+  if (!email || !password) {
+    errorBox.textContent = 'Please enter both your registered admin email and password.';
+    errorBox.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Verifying Credentials...';
+  errorBox.style.display = 'none';
+
+  try {
+    const res = await fetch(`/api/admin/colleges/students/${pendingVerifyAction.studentId}/secure-action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        action: pendingVerifyAction.action
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      errorBox.textContent = data.message || 'Authentication failed. Please check your admin credentials.';
+      errorBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🔒 Verify & Confirm Action';
+      return;
+    }
+
+    alert('✔ ' + (data.message || 'Action completed successfully!'));
+    closePasswordVerifyModal();
+
+    // Refresh modal data
+    if (pendingVerifyAction && pendingVerifyAction.instId) {
+      openCollegeDetailsModal(pendingVerifyAction.instId);
+    }
+  } catch (e) {
+    errorBox.textContent = 'Network or server error: ' + e.message;
+    errorBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔒 Verify & Confirm Action';
+  }
+}
+
 loadLeaderboard();
 </script>
+
+<!-- ============================================================== -->
+<!-- MODALS HTML STRUCTURE -->
+<!-- ============================================================== -->
+
+<!-- 1. College Performance & Details Modal -->
+<div id="collegeDetailsModal" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(3,7,18,0.85); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0b0f19; border:1px solid rgba(99,102,241,0.35); border-radius:20px; width:100%; max-width:920px; box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(99,102,241,0.2); overflow:hidden;" id="cdmContent">
+    <!-- Rendered Dynamically -->
+  </div>
+</div>
+
+<!-- 2. Code Snippet Inspection Modal -->
+<div id="codeViewerModal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#060812; border:1px solid rgba(59,130,246,0.4); border-radius:18px; width:100%; max-width:760px; box-shadow:0 20px 50px rgba(0,0,0,0.9); overflow:hidden;">
+    <div style="padding:16px 22px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+        <span>🔍</span> <span id="cvTitle">Code Execution Inspector</span>
+      </div>
+      <button onclick="closeCodeViewerModal()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:18px 22px;">
+      <pre id="cvContent" style="background:#02040a; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; color:#38bdf8; max-height:420px; overflow-y:auto; white-space:pre-wrap;"></pre>
+    </div>
+    <div style="padding:12px 22px 18px; display:flex; justify-content:flex-end;">
+      <button onclick="closeCodeViewerModal()" class="btn-primary" style="padding:7px 18px; font-size:12px;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Secure Admin Password Verification Modal -->
+<div id="securePasswordModal" style="display:none; position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0b0f19; border:1.5px solid rgba(239,68,68,0.4); border-radius:18px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(239,68,68,0.25); overflow:hidden;">
+    <div style="padding:20px 24px; background:linear-gradient(135deg, rgba(239,68,68,0.15), rgba(15,23,42,0.8)); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;">
+      <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; font-size:20px;">
+        🛡️
+      </div>
+      <div>
+        <div style="font-size:15px; font-weight:800; color:#fff;" id="secActionTitle">Admin Security Verification</div>
+        <div style="font-size:11px; color:#cbd5e1;">Credentials verification required before modifying student status.</div>
+      </div>
+    </div>
+
+    <form onsubmit="submitSecureStudentAction(event)" style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
+      <div style="font-size:12px; color:#94a3b8; line-height:1.4;" id="secActionDesc">
+        Please enter the Admin Email & Password used when your college registered to verify this action.
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">ADMIN EMAIL / USERNAME</label>
+        <input type="text" id="secAdminEmail" class="form-input" style="width:100%; box-sizing:border-box; padding:9px 12px; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:13px;" placeholder="e.g. admin@college.edu" required>
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">ADMIN REGISTRATION PASSWORD</label>
+        <input type="password" id="secAdminPassword" class="form-input" style="width:100%; box-sizing:border-box; padding:9px 12px; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; color:#fff; font-size:13px;" placeholder="Enter admin password..." required>
+      </div>
+
+      <div id="secErrorBox" style="display:none; padding:10px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:8px; color:#fca5a5; font-size:11.5px;"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
+        <button type="button" onclick="closePasswordVerifyModal()" class="btn-secondary" style="padding:8px 16px; font-size:12px; border-radius:8px; background:rgba(255,255,255,0.06); color:#fff; border:1px solid var(--border); cursor:pointer;">Cancel</button>
+        <button type="submit" id="secSubmitBtn" class="btn-primary" style="padding:8px 18px; font-size:12px; border-radius:8px; background:linear-gradient(135deg,#ef4444,#dc2626); border:none; color:#fff; font-weight:700; cursor:pointer;">🔒 Verify & Confirm Action</button>
+      </div>
+    </form>
+  </div>
+</div>
 </body>
 </html>

@@ -44,4 +44,15 @@ public class LeaderboardController {
             return ResponseEntity.ok(java.util.List.of());
         }
     }
+
+    // Public individual college leaderboard & execution details
+    @GetMapping("/colleges/{id}")
+    public ResponseEntity<?> getCollegeDetails(@PathVariable Long id) {
+        try {
+            var details = dashboardService.getCollegeDetails(id);
+            return ResponseEntity.ok(details);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
 }
