@@ -63,7 +63,7 @@ public class SecurityConfig {
                 // ── Public: OAuth2 login flow ──
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 // ── Public: leaderboard read ──
-                .requestMatchers(HttpMethod.GET, "/api/leaderboard").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/leaderboard", "/api/leaderboard/**").permitAll()
                 // ── Public: health check ──
                 .requestMatchers("/actuator/health").permitAll()
                 // ── Public: WebSockets HTTP Handshake ──

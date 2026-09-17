@@ -585,6 +585,13 @@ nav {
           <div class="module-icon">⚡</div>
           <div>Power Suite & Sandbox</div>
         </div>
+        <div class="module-item" id="menu-colleges" onclick="switchTab('colleges')">
+          <div class="module-icon">🏫</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+            <span>College Approvals</span>
+            <span id="pendingBadgeCount" style="display:none; background:#ef4444; color:#fff; font-size:10px; padding:1px 6px; border-radius:10px; font-weight:800; box-shadow:0 0 8px rgba(239,68,68,0.6);">0</span>
+          </div>
+        </div>
         <div class="module-item" id="menu-admin" onclick="switchTab('admin')">
           <div class="module-icon">⚙️</div>
           <div>Admin Section</div>
@@ -1389,6 +1396,23 @@ async function renderTab() {
             <div class="tab-subtitle">System configuration, user roles, and advanced permissions.</div>
           </div>
         </div>
+        <button class="btn-primary" style="background: linear-gradient(135deg, #059669, #10b981); border:none;" onclick="switchTab('colleges')">
+          🏫 Manage Colleges & Approvals →
+        </button>
+      </div>
+
+      <!-- Pending College Approvals Alert Banner (in Admin tab) -->
+      <div id="adminCollegePendingAlert" style="display:none; margin-bottom:16px; background:linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 88, 12, 0.15)); border:1.5px solid rgba(245, 158, 11, 0.4); border-radius:14px; padding:16px 20px; align-items:center; justify-content:space-between; box-shadow:0 0 20px rgba(245, 158, 11, 0.15);">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="width:40px; height:40px; border-radius:10px; background:rgba(245, 158, 11, 0.25); display:flex; align-items:center; justify-content:center; font-size:20px;">🔔</div>
+          <div>
+            <div style="font-size:14px; font-weight:800; color:#fbbf24;" id="adminCollegePendingAlertText">Pending College Registrations Awaiting Approval</div>
+            <div style="font-size:11.5px; color:#cbd5e1;">Review and approve newly registered colleges so their students and faculty can log in.</div>
+          </div>
+        </div>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #f59e0b, #d97706); border:none; padding:8px 16px;" onclick="switchTab('colleges')">
+          Review & Approve →
+        </button>
       </div>
 
       <!-- Row 1: Role Management & Delete Account -->
@@ -2223,6 +2247,12 @@ void testDiscount() {
   // ==============================================================
   else if (currentTab === 'ailearner') {
     renderAiLearnerTab();
+  }
+  // ==============================================================
+  // 10. COLLEGE APPROVALS & ERP DIRECTORY TAB
+  // ==============================================================
+  else if (currentTab === 'colleges') {
+    renderCollegesAdminTab();
   }
 }
 
@@ -3074,6 +3104,430 @@ window.adminRegisterUser = async function(e) {
     }
   } catch(err) { alert("API Error"); }
 };
+
+// ==============================================================
+// ── COLLEGE APPROVALS & ERP DIRECTORY (ADMIN ENGINE) ──
+// ==============================================================
+let adminCollegesList = [];
+let adminPendingCollegesList = [];
+
+function renderCollegesAdminTab() {
+  const main = document.getElementById('mainContent');
+  if (!main) return;
+
+  main.innerHTML = `
+    <div class="tab-header">
+      <div class="tab-header-left">
+        <div class="tab-icon-box" style="background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.3); color:#34d399;">🏫</div>
+        <div>
+          <div class="tab-title">College Registrations & Approvals</div>
+          <div class="tab-subtitle">Manage campus access, approve pending institution registrations, and oversee collegiate performance.</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-secondary" onclick="fetchAdminColleges()">🔄 Refresh</button>
+        <button class="btn-primary" onclick="showManualCollegeModal()">+ Register College</button>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="bento-grid" style="margin-bottom:20px;">
+      <div class="bento-card col-3">
+        <div class="metric-header">
+          <span class="metric-title">REGISTERED COLLEGES</span>
+          <div class="metric-badge-icon" style="background:rgba(99,102,241,0.2); color:#818cf8;">🏫</div>
+        </div>
+        <div class="metric-val-big" id="colStatTotal">0</div>
+        <div class="metric-foot"><span class="trend-sub">Total institutions in DB</span></div>
+      </div>
+
+      <div class="bento-card col-3" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(17,23,40,0.8));">
+        <div class="metric-header">
+          <span class="metric-title" style="color:#fbbf24;">PENDING APPROVALS</span>
+          <div class="metric-badge-icon" style="background:rgba(245,158,11,0.25); color:#f59e0b;">🔔</div>
+        </div>
+        <div class="metric-val-big" style="color:#fbbf24;" id="colStatPending">0</div>
+        <div class="metric-foot"><span style="color:#fbbf24; font-weight:700;">Requires admin review</span></div>
+      </div>
+
+      <div class="bento-card col-3">
+        <div class="metric-header">
+          <span class="metric-title">ACTIVE CAMPUSES</span>
+          <div class="metric-badge-icon" style="background:rgba(16,185,129,0.2); color:#34d399;">✔</div>
+        </div>
+        <div class="metric-val-big" style="color:#34d399;" id="colStatApproved">0</div>
+        <div class="metric-foot"><span class="trend-positive">Live & Authorized</span></div>
+      </div>
+
+      <div class="bento-card col-3">
+        <div class="metric-header">
+          <span class="metric-title">COLLEGE CODERS</span>
+          <div class="metric-badge-icon" style="background:rgba(6,182,212,0.2); color:#22d3ee;">👥</div>
+        </div>
+        <div class="metric-val-big" style="color:#38bdf8;" id="colStatStudents">0</div>
+        <div class="metric-foot"><span class="trend-sub">Total enrolled students</span></div>
+      </div>
+    </div>
+
+    <!-- Pending Approvals Priority Banner -->
+    <div id="pendingCollegesSection" style="display:none; margin-bottom:20px;">
+      <div class="bento-card" style="border-color: rgba(245, 158, 11, 0.5); background: linear-gradient(135deg, #1f1406, #111728);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">🔔</span>
+            <div>
+              <div style="font-size:14px; font-weight:800; color:#fbbf24;">Pending College Registration Requests</div>
+              <div style="font-size:11px; color:#cbd5e1;">Review the details below and approve or reject to grant platform access to their students.</div>
+            </div>
+          </div>
+          <span id="pendingCountPill" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:3px 10px; border-radius:12px; font-size:11px; font-weight:800;">0 Requests</span>
+        </div>
+
+        <div id="pendingCollegesCardsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:12px;">
+          <!-- Dynamically filled -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Registered Colleges Directory Table -->
+    <div class="bento-card col-12">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-size:14px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;">
+            <span>🏫</span> College & University Master Directory
+          </div>
+          <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">
+            Complete list of all institutions registered on KartikTerminal.
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="text" id="adminCollegeSearch" class="form-input" placeholder="🔍 Search college or license..." style="width:240px; padding:6px 12px; font-size:12px;" oninput="filterAdminColleges(this.value)">
+        </div>
+      </div>
+
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>COLLEGE NAME</th>
+            <th>STATUS</th>
+            <th>LICENSE KEY</th>
+            <th>ADMIN / CONTACT</th>
+            <th>STUDENTS</th>
+            <th>POINTS / RUNS</th>
+            <th>REGISTERED ON</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="adminCollegesTableBody">
+          <!-- Dynamically filled via fetchAdminColleges -->
+        </tbody>
+      </table>
+
+      <div class="empty-state-box" id="adminCollegesEmptyBox" style="display:none;">
+        <div class="empty-icon-glow">🏫</div>
+        <div style="font-size:14px; font-weight:700; color:#fff;">No colleges found.</div>
+        <div style="font-size:11.5px; color:var(--text-dim);">Register a new college to get started.</div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <div>© 2024 KartikTerminal Enterprise. All rights reserved.</div>
+      <div>Crafted with ❤️ for Education</div>
+    </div>
+  `;
+
+  fetchAdminColleges();
+}
+
+async function fetchAdminColleges() {
+  const tbody = document.getElementById('adminCollegesTableBody');
+  const emptyBox = document.getElementById('adminCollegesEmptyBox');
+  const pendingSection = document.getElementById('pendingCollegesSection');
+  const pendingCardsGrid = document.getElementById('pendingCollegesCardsGrid');
+  const pendingCountPill = document.getElementById('pendingCountPill');
+
+  try {
+    const [colRes, pendRes] = await Promise.all([
+      fetch('/api/admin/colleges', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } }),
+      fetch('/api/admin/colleges/pending', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } })
+    ]);
+
+    if (colRes.ok) {
+      adminCollegesList = await colRes.json();
+    }
+    if (pendRes.ok) {
+      const pData = await pendRes.json();
+      adminPendingCollegesList = pData.colleges || [];
+    }
+
+    // Update Quick Stats
+    const totalCount = adminCollegesList.length;
+    const pendingCount = adminPendingCollegesList.length;
+    const approvedCount = adminCollegesList.filter(c => c.status === 'APPROVED').length;
+    let totalStudents = 0;
+    adminCollegesList.forEach(c => totalStudents += (c.totalStudents || 0));
+
+    if (document.getElementById('colStatTotal')) document.getElementById('colStatTotal').innerText = totalCount;
+    if (document.getElementById('colStatPending')) document.getElementById('colStatPending').innerText = pendingCount;
+    if (document.getElementById('colStatApproved')) document.getElementById('colStatApproved').innerText = approvedCount;
+    if (document.getElementById('colStatStudents')) document.getElementById('colStatStudents').innerText = totalStudents;
+
+    // Update pending alert in Admin tab
+    const alertBanner = document.getElementById('adminCollegePendingAlert');
+    const alertText = document.getElementById('adminCollegePendingAlertText');
+    if (alertBanner) {
+      if (pendingCount > 0) {
+        alertBanner.style.display = 'flex';
+        if (alertText) alertText.innerText = `🔔 ${pendingCount} Pending College Registration${pendingCount > 1 ? 's' : ''} Awaiting Approval`;
+      } else {
+        alertBanner.style.display = 'none';
+      }
+    }
+
+    // Update Sidebar badge
+    const badge = document.getElementById('pendingBadgeCount');
+    if (badge) {
+      if (pendingCount > 0) {
+        badge.style.display = 'inline-block';
+        badge.innerText = pendingCount;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // Render Pending Cards if any
+    if (pendingSection && pendingCardsGrid) {
+      if (pendingCount > 0) {
+        pendingSection.style.display = 'block';
+        if (pendingCountPill) pendingCountPill.innerText = `${pendingCount} Request${pendingCount > 1 ? 's' : ''}`;
+        pendingCardsGrid.innerHTML = adminPendingCollegesList.map(p => `
+          <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div style="font-size:14px; font-weight:800; color:#fff;">${p.name}</div>
+                <span style="background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700;">PENDING</span>
+              </div>
+              <div style="font-size:11.5px; color:#cbd5e1; margin-top:6px;">
+                👤 Admin: <strong>${p.adminName || '—'}</strong> (${p.adminEmail || '—'})
+              </div>
+              <div style="font-size:10.5px; color:var(--text-dim); margin-top:4px;">
+                📅 Requested: ${p.createdAt ? p.createdAt.split('T')[0] : 'Recently'}
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <button class="btn-primary" style="flex:1; justify-content:center; background:linear-gradient(135deg, #10b981, #059669); border-color:#10b981; font-size:11.5px; padding:6px;" onclick="adminApproveCollege(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+                ✅ Approve
+              </button>
+              <button class="btn-secondary" style="flex:1; justify-content:center; color:#ef4444; border-color:rgba(239,68,68,0.4); font-size:11.5px; padding:6px;" onclick="adminRejectCollege(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+                ❌ Reject
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        pendingSection.style.display = 'none';
+      }
+    }
+
+    // Render Table
+    renderAdminCollegesTable(adminCollegesList);
+
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderAdminCollegesTable(list) {
+  const tbody = document.getElementById('adminCollegesTableBody');
+  const emptyBox = document.getElementById('adminCollegesEmptyBox');
+  if (!tbody) return;
+
+  if (!list || list.length === 0) {
+    if (emptyBox) emptyBox.style.display = 'flex';
+    tbody.innerHTML = '';
+    return;
+  }
+
+  if (emptyBox) emptyBox.style.display = 'none';
+  tbody.innerHTML = list.map(c => {
+    const isApproved = c.status === 'APPROVED';
+    const isPending = c.status === 'PENDING';
+    const statusBg = isApproved ? 'rgba(16,185,129,0.15)' : (isPending ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)');
+    const statusColor = isApproved ? '#34d399' : (isPending ? '#fbbf24' : '#f87171');
+    const statusText = isApproved ? '✔ Approved' : (isPending ? '⏳ Pending' : '⛔ Suspended');
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:700; color:#fff; font-size:13px;">${c.name}</div>
+          <div style="font-size:10.5px; color:var(--text-dim);">ID: #${c.id}</div>
+        </td>
+        <td>
+          <span style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusColor}44; padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">
+            ${statusText}
+          </span>
+        </td>
+        <td>
+          <code style="background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:4px; font-family:var(--font-mono); font-size:11px; color:#a5b4fc;">
+            ${c.licenseKey ? (c.licenseKey.length > 12 ? c.licenseKey.slice(0, 12) + '...' : c.licenseKey) : '—'}
+          </code>
+        </td>
+        <td>
+          <div style="font-weight:600; color:#f1f5f9; font-size:12px;">${c.adminUser || '—'}</div>
+        </td>
+        <td>
+          <span style="font-weight:700; color:#fff;">👥 ${c.totalStudents || 0}</span>
+        </td>
+        <td>
+          <div style="font-size:12px; font-weight:700; color:#60a5fa; font-family:var(--font-mono);">💎 ${c.totalPoints || 0} pts</div>
+          <div style="font-size:10.5px; color:var(--text-dim);">${c.totalRuns || 0} runs</div>
+        </td>
+        <td style="font-size:11px; color:var(--text-secondary);">
+          ${c.createdAt ? c.createdAt.split('T')[0] : '—'}
+        </td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            ${!isApproved ? `
+              <button class="btn-secondary" style="padding:3px 8px; font-size:10.5px; color:#10b981; border-color:#10b981;" onclick="adminApproveCollege(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Approve college registration">
+                ✅ Approve
+              </button>
+            ` : `
+              <button class="btn-secondary" style="padding:3px 8px; font-size:10.5px; color:#f59e0b; border-color:rgba(245,158,11,0.4);" onclick="adminRejectCollege(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Suspend college access">
+                ⏸ Suspend
+              </button>
+            `}
+            <button class="btn-secondary" style="padding:3px 8px; font-size:10.5px; color:#ef4444; border-color:rgba(239,68,68,0.4);" onclick="adminDeleteCollege(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Delete college record">
+              🗑️
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterAdminColleges(q) {
+  const term = q.toLowerCase().trim();
+  const filtered = adminCollegesList.filter(c => 
+    (c.name && c.name.toLowerCase().includes(term)) ||
+    (c.licenseKey && c.licenseKey.toLowerCase().includes(term)) ||
+    (c.adminUser && c.adminUser.toLowerCase().includes(term))
+  );
+  renderAdminCollegesTable(filtered);
+}
+
+window.adminApproveCollege = async function(id, name) {
+  if (!confirm(`Approve college "${name}"? This will activate all associated users so they can log in.`)) return;
+  try {
+    const res = await fetch(`/api/admin/colleges/${id}/approve`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert(data.message || `College "${name}" approved successfully!`);
+      fetchAdminColleges();
+      checkPendingCollegesBadge();
+    } else {
+      alert("Failed: " + (data.message || "Could not approve college."));
+    }
+  } catch(e) {
+    alert("Network or API error.");
+  }
+};
+
+window.adminRejectCollege = async function(id, name) {
+  if (!confirm(`Suspend or reject college "${name}"?`)) return;
+  try {
+    const res = await fetch(`/api/admin/colleges/${id}/reject`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert(data.message || `College "${name}" suspended.`);
+      fetchAdminColleges();
+      checkPendingCollegesBadge();
+    } else {
+      alert("Failed: " + (data.message || "Error"));
+    }
+  } catch(e) {
+    alert("Network or API error.");
+  }
+};
+
+window.adminDeleteCollege = async function(id, name) {
+  if (!confirm(`Are you sure you want to completely DELETE college "${name}"? This will detach all associated users.`)) return;
+  try {
+    const res = await fetch(`/api/admin/colleges/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert(data.message || `College "${name}" deleted.`);
+      fetchAdminColleges();
+      checkPendingCollegesBadge();
+    } else {
+      alert("Failed: " + (data.message || "Error"));
+    }
+  } catch(e) {
+    alert("Network or API error.");
+  }
+};
+
+function showManualCollegeModal() {
+  const name = prompt("Enter College / University Name to register directly:");
+  if (!name || !name.trim()) return;
+  fetch('/api/admin/users/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+    body: JSON.stringify({
+      username: name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_admin',
+      email: 'admin@' + name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.edu',
+      password: 'collegePass@123',
+      fullName: name + ' Admin',
+      role: 'COLLEGE_ADMIN'
+    })
+  }).then(async r => {
+    alert(`College "${name}" registered successfully!`);
+    fetchAdminColleges();
+  }).catch(e => alert("API error"));
+}
+
+async function checkPendingCollegesBadge() {
+  try {
+    const res = await fetch('/api/admin/colleges/pending', {
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const count = data.count || 0;
+      const badge = document.getElementById('pendingBadgeCount');
+      if (badge) {
+        if (count > 0) {
+          badge.style.display = 'inline-block';
+          badge.innerText = count;
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+      const alertBanner = document.getElementById('adminCollegePendingAlert');
+      const alertText = document.getElementById('adminCollegePendingAlertText');
+      if (alertBanner) {
+        if (count > 0) {
+          alertBanner.style.display = 'flex';
+          if (alertText) alertText.innerText = `🔔 ${count} Pending College Registration${count > 1 ? 's' : ''} Awaiting Approval`;
+        } else {
+          alertBanner.style.display = 'none';
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+setInterval(checkPendingCollegesBadge, 10000);
+setTimeout(checkPendingCollegesBadge, 1500);
 
 window.generatePDFReport = async function() {
   const btn = document.querySelector('.btn-primary');

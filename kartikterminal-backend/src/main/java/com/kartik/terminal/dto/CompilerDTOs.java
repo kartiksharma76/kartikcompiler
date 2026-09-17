@@ -145,10 +145,30 @@ public class CompilerDTOs {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    public static class CollegeLeaderboardEntry {
+        private int rank;
+        private Long institutionId;
+        private String name;
+        private String licenseKey;
+        private String status;
+        private long totalStudents;
+        private int totalPoints;
+        private long totalExecutions;
+        private double avgSuccessRate;
+        private String topCoderName;
+        private int topCoderPoints;
+        private String registeredAt;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class LeaderboardResponse {
         private List<LeaderboardEntry> topCoders;
         private List<LeaderboardEntry> topQuizTakers;
         private List<LeaderboardEntry> topAIUsers;
+        private List<CollegeLeaderboardEntry> collegeLeaderboard;
         
         private LeaderboardEntry currentUserRank;
         private long totalUsers;

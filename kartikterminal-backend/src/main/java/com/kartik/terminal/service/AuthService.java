@@ -43,29 +43,60 @@ public class AuthService {
                 .username(request.getUsername().toLowerCase().trim())
                 .email(request.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .fullName(request.getFullName() != null ? request.getFullName().trim() : request.getUsername())
+                .fullName(request.getFullName() != null && !request.getFullName().isBlank() ? request.getFullName().trim() : request.getUsername())
                 .role(User.Role.USER)
                 .isActive(true)
                 .totalExecutions(0).successfulExecutions(0)
                 .totalPoints(0).totalExecutionTimeMs(0L)
                 .favoriteLanguage("java");
 
+        Institution registeredInst = null;
+        boolean isNewPendingInstitution = false;
+
         if (request.getCompanyName() != null && !request.getCompanyName().isBlank()) {
             String compName = request.getCompanyName().trim();
-            Institution inst = institutionRepository.findByNameIgnoreCase(compName)
-                    .orElseGet(() -> {
-                        Institution newInst = Institution.builder()
-                                .name(compName)
-                                .licenseKey(java.util.UUID.randomUUID().toString())
-                                .status(Institution.Status.APPROVED)
-                                .build();
-                        return institutionRepository.save(newInst);
-                    });
-            userBuilder.institution(inst);
+            var existingInstOpt = institutionRepository.findByNameIgnoreCase(compName);
+            if (existingInstOpt.isPresent()) {
+                registeredInst = existingInstOpt.get();
+                if (registeredInst.getStatus() == Institution.Status.PENDING) {
+                    userBuilder.isActive(false);
+                }
+            } else {
+                registeredInst = Institution.builder()
+                        .name(compName)
+                        .licenseKey(java.util.UUID.randomUUID().toString().toUpperCase())
+                        .status(Institution.Status.PENDING)
+                        .build();
+                registeredInst = institutionRepository.save(registeredInst);
+                userBuilder.role(User.Role.COLLEGE_ADMIN);
+                userBuilder.isActive(false);
+                isNewPendingInstitution = true;
+            }
+            userBuilder.institution(registeredInst);
         }
 
         User user = userBuilder.build();
         User saved = userRepository.save(user);
+
+        if (isNewPendingInstitution && registeredInst != null) {
+            registeredInst.setSuperAdminId(saved.getId());
+            institutionRepository.save(registeredInst);
+        }
+
+        if (registeredInst != null && registeredInst.getStatus() == Institution.Status.PENDING) {
+            return AuthResponse.builder()
+                    .token(null)
+                    .tokenType("Bearer")
+                    .username(saved.getUsername())
+                    .email(saved.getEmail())
+                    .fullName(saved.getFullName())
+                    .role(saved.getRole().name())
+                    .userId(saved.getId())
+                    .success(true)
+                    .message("College registration request submitted! It is currently PENDING approval by Admin. Once approved, you can log in with your email/username and password.")
+                    .build();
+        }
+
         String token = jwtTokenProvider.generateTokenWithClaims(
                 saved.getUsername(),
                 Map.of("role", saved.getRole().name(), "userId", saved.getId()));
@@ -76,15 +107,34 @@ public class AuthService {
     // ── Login (email/password) ──
     @Transactional
     public AuthResponse login(LoginRequest request) {
+        String identifier = request.getUsernameOrEmail() != null ? request.getUsernameOrEmail().toLowerCase().trim() : "";
+        User user = userRepository.findByUsername(identifier)
+                .orElseGet(() -> userRepository.findByEmail(identifier).orElse(null));
+
+        if (user != null) {
+            if (user.getInstitution() != null) {
+                if (user.getInstitution().getStatus() == Institution.Status.PENDING) {
+                    throw new RuntimeException("Your College (" + user.getInstitution().getName() + ") registration is currently PENDING approval from Admin. Please wait for approval before logging in.");
+                } else if (user.getInstitution().getStatus() == Institution.Status.SUSPENDED) {
+                    throw new RuntimeException("Your College (" + user.getInstitution().getName() + ") account has been suspended. Please contact Admin.");
+                }
+            }
+            if (Boolean.FALSE.equals(user.getIsActive())) {
+                throw new RuntimeException("Your account is deactivated or locked. Please contact Admin.");
+            }
+        }
+
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getUsernameOrEmail(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-            User user = userRepository.findByUsername(request.getUsernameOrEmail())
-                    .orElseGet(() -> userRepository.findByEmail(request.getUsernameOrEmail())
-                            .orElseThrow(() -> new RuntimeException("User not found")));
+            if (user == null) {
+                user = userRepository.findByUsername(request.getUsernameOrEmail())
+                        .orElseGet(() -> userRepository.findByEmail(request.getUsernameOrEmail())
+                                .orElseThrow(() -> new RuntimeException("User not found")));
+            }
 
             userRepository.updateLastLogin(user.getId(), LocalDateTime.now());
             String token = jwtTokenProvider.generateTokenWithClaims(

@@ -26,10 +26,22 @@ public class LeaderboardController {
                 "topCoders", java.util.List.of(),
                 "topQuizTakers", java.util.List.of(),
                 "topAIUsers", java.util.List.of(),
+                "collegeLeaderboard", java.util.List.of(),
                 "totalUsers", 0,
                 "totalExecutionsToday", 0,
                 "error", "Login to see your rank"
             ));
+        }
+    }
+
+    // Public college-wise leaderboard
+    @GetMapping("/colleges")
+    public ResponseEntity<?> getCollegeLeaderboard() {
+        try {
+            var collegeLeaderboard = dashboardService.getCollegeLeaderboard();
+            return ResponseEntity.ok(collegeLeaderboard);
+        } catch (Exception e) {
+            return ResponseEntity.ok(java.util.List.of());
         }
     }
 }

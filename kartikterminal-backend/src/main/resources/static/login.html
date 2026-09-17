@@ -1617,6 +1617,12 @@ async function handleRegister() {
 
     if (data.success && data.token) {
       saveAuthAndRedirect(data);
+    } else if (data.success) {
+      showMsg('registerMsg', data.message || 'College registration submitted! Awaiting Admin approval. You can log in once approved.', 'success');
+      setTimeout(() => {
+        toggleAuthMode('login');
+        showMsg('loginMsg', 'Your college registration is pending approval by Admin. Once approved, you can log in.', 'info');
+      }, 4000);
     } else {
       showMsg('registerMsg', data.message || 'Registration failed.', 'error');
     }

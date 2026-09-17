@@ -267,6 +267,138 @@ public class AdminController {
         ));
     }
 
+    // ── All Registered Colleges & Status (Admin Directory) ──
+    @GetMapping("/colleges")
+    public ResponseEntity<?> getAllColleges() {
+        List<com.kartik.terminal.entity.Institution> institutions = institutionRepository.findAllByOrderByCreatedAtDesc();
+        List<Map<String, Object>> list = new java.util.ArrayList<>();
+        for (com.kartik.terminal.entity.Institution inst : institutions) {
+            List<User> students = userRepository.findTopUsersByPointsAndInstitution(inst);
+            long totalStudents = userRepository.countByInstitutionAndIsActiveTrue(inst);
+            int totalPoints = students.stream().mapToInt(u -> u.getTotalPoints() != null ? u.getTotalPoints() : 0).sum();
+            long totalRuns = students.stream().mapToLong(u -> u.getTotalExecutions() != null ? u.getTotalExecutions() : 0).sum();
+
+            String adminUser = "—";
+            if (inst.getSuperAdminId() != null) {
+                adminUser = userRepository.findById(inst.getSuperAdminId())
+                        .map(User::getUsername)
+                        .orElse("—");
+            } else if (!students.isEmpty()) {
+                adminUser = students.get(0).getUsername();
+            }
+
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", inst.getId());
+            map.put("name", inst.getName());
+            map.put("licenseKey", inst.getLicenseKey());
+            map.put("status", inst.getStatus() != null ? inst.getStatus().name() : "PENDING");
+            map.put("totalStudents", totalStudents);
+            map.put("totalUsers", students.size());
+            map.put("totalPoints", totalPoints);
+            map.put("totalRuns", totalRuns);
+            map.put("adminUser", adminUser);
+            map.put("createdAt", inst.getCreatedAt() != null ? inst.getCreatedAt().toString() : "");
+            list.add(map);
+        }
+        return ResponseEntity.ok(list);
+    }
+
+    // ── Pending College Approvals & Notifications ──
+    @GetMapping("/colleges/pending")
+    public ResponseEntity<?> getPendingColleges() {
+        List<com.kartik.terminal.entity.Institution> pending = institutionRepository.findByStatus(com.kartik.terminal.entity.Institution.Status.PENDING);
+        List<Map<String, Object>> list = pending.stream().map(inst -> {
+            String adminEmail = "—";
+            String adminName = "—";
+            if (inst.getSuperAdminId() != null) {
+                var uOpt = userRepository.findById(inst.getSuperAdminId());
+                if (uOpt.isPresent()) {
+                    adminEmail = uOpt.get().getEmail();
+                    adminName = uOpt.get().getFullName() != null ? uOpt.get().getFullName() : uOpt.get().getUsername();
+                }
+            }
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", inst.getId());
+            map.put("name", inst.getName());
+            map.put("licenseKey", inst.getLicenseKey());
+            map.put("status", "PENDING");
+            map.put("adminEmail", adminEmail);
+            map.put("adminName", adminName);
+            map.put("createdAt", inst.getCreatedAt() != null ? inst.getCreatedAt().toString() : "");
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(Map.of(
+            "count", list.size(),
+            "colleges", list
+        ));
+    }
+
+    // ── Approve a College Registration ──
+    @PostMapping("/colleges/{id}/approve")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> approveCollege(@PathVariable Long id) {
+        return institutionRepository.findById(id).map(inst -> {
+            inst.setStatus(com.kartik.terminal.entity.Institution.Status.APPROVED);
+            institutionRepository.save(inst);
+
+            // Activate all associated users of this institution
+            List<User> instUsers = userRepository.findTopUsersByPointsAndInstitution(inst);
+            for (User u : instUsers) {
+                u.setIsActive(true);
+            }
+            // Also check super admin user if any
+            if (inst.getSuperAdminId() != null) {
+                userRepository.findById(inst.getSuperAdminId()).ifPresent(su -> {
+                    su.setIsActive(true);
+                    userRepository.save(su);
+                });
+            }
+            if (!instUsers.isEmpty()) {
+                userRepository.saveAll(instUsers);
+            }
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "College '" + inst.getName() + "' approved successfully! Enrolled users can now log in."
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // ── Reject / Suspend a College Registration ──
+    @PostMapping("/colleges/{id}/reject")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> rejectCollege(@PathVariable Long id) {
+        return institutionRepository.findById(id).map(inst -> {
+            inst.setStatus(com.kartik.terminal.entity.Institution.Status.SUSPENDED);
+            institutionRepository.save(inst);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "College '" + inst.getName() + "' has been rejected / suspended."
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // ── Delete a College ──
+    @DeleteMapping("/colleges/{id}")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> deleteCollege(@PathVariable Long id) {
+        return institutionRepository.findById(id).map(inst -> {
+            List<User> users = inst.getUsers();
+            if (users != null) {
+                for (User u : users) {
+                    u.setInstitution(null);
+                }
+                userRepository.saveAll(users);
+            }
+            institutionRepository.delete(inst);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "College '" + inst.getName() + "' deleted successfully."
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     private Map<String, Object> safeUser(User u) {
         return Map.of(
             "id",          u.getId(),

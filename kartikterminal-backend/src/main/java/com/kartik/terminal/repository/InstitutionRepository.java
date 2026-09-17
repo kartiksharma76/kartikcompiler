@@ -4,10 +4,15 @@ import com.kartik.terminal.entity.Institution;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface InstitutionRepository extends JpaRepository<Institution, Long> {
     Optional<Institution> findByLicenseKey(String licenseKey);
     Optional<Institution> findByNameIgnoreCase(String name);
+    List<Institution> findByStatus(Institution.Status status);
+    long countByStatus(Institution.Status status);
+    List<Institution> findAllByOrderByCreatedAtDesc();
 }
+

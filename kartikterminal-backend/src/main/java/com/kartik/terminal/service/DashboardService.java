@@ -28,6 +28,7 @@ public class DashboardService {
     private final UserRepository userRepository;
     private final ExecutionRecordRepository executionRecordRepository;
     private final AuthService authService;
+    private final com.kartik.terminal.repository.InstitutionRepository institutionRepository;
 
     // ========== DASHBOARD ==========
     @Transactional(readOnly = true)
@@ -88,10 +89,69 @@ public class DashboardService {
                 .build();
     }
 
+    // ========== COLLEGE LEADERBOARD ==========
+    @Transactional(readOnly = true)
+    public List<CollegeLeaderboardEntry> getCollegeLeaderboard() {
+        List<com.kartik.terminal.entity.Institution> institutions = institutionRepository.findByStatus(com.kartik.terminal.entity.Institution.Status.APPROVED);
+        List<CollegeLeaderboardEntry> list = new ArrayList<>();
+
+        for (com.kartik.terminal.entity.Institution inst : institutions) {
+            List<User> students = userRepository.findTopUsersByPointsAndInstitution(inst);
+            long totalStudents = userRepository.countByInstitutionAndIsActiveTrue(inst);
+            int totalPoints = students.stream().mapToInt(u -> u.getTotalPoints() != null ? u.getTotalPoints() : 0).sum();
+            long totalExecs = students.stream().mapToLong(u -> u.getTotalExecutions() != null ? u.getTotalExecutions() : 0).sum();
+
+            double avgSuccess = 0.0;
+            if (!students.isEmpty()) {
+                double totalSuccess = students.stream().mapToDouble(User::getSuccessRate).sum();
+                avgSuccess = Math.round((totalSuccess / students.size()) * 10.0) / 10.0;
+            }
+
+            String topCoder = "—";
+            int topPoints = 0;
+            if (!students.isEmpty()) {
+                User best = students.get(0);
+                topCoder = best.getFullName() != null && !best.getFullName().isBlank() ? best.getFullName() : best.getUsername();
+                topPoints = best.getTotalPoints() != null ? best.getTotalPoints() : 0;
+            }
+
+            String regDate = inst.getCreatedAt() != null ? inst.getCreatedAt().toLocalDate().toString() : "Recent";
+
+            list.add(CollegeLeaderboardEntry.builder()
+                    .institutionId(inst.getId())
+                    .name(inst.getName())
+                    .licenseKey(inst.getLicenseKey())
+                    .status(inst.getStatus().name())
+                    .totalStudents(totalStudents)
+                    .totalPoints(totalPoints)
+                    .totalExecutions(totalExecs)
+                    .avgSuccessRate(avgSuccess)
+                    .topCoderName(topCoder)
+                    .topCoderPoints(topPoints)
+                    .registeredAt(regDate)
+                    .build());
+        }
+
+        list.sort((a, b) -> {
+            int cmp = Integer.compare(b.getTotalPoints(), a.getTotalPoints());
+            if (cmp != 0) return cmp;
+            return Long.compare(b.getTotalExecutions(), a.getTotalExecutions());
+        });
+
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setRank(i + 1);
+        }
+
+        return list;
+    }
+
     // ========== LEADERBOARD ==========
     @Transactional(readOnly = true)
     public LeaderboardResponse getLeaderboard() {
-        User currentUser = authService.getCurrentUser();
+        User currentUser = null;
+        try {
+            currentUser = authService.getCurrentUser();
+        } catch (Exception ignored) {}
         
         List<User> topCodersRaw;
         List<User> topQuizRaw;
@@ -102,7 +162,7 @@ public class DashboardService {
 
         LocalDateTime startOfToday = LocalDateTime.now().toLocalDate().atStartOfDay();
 
-        if (currentUser.getInstitution() != null) {
+        if (currentUser != null && currentUser.getInstitution() != null) {
             // Company/institution specific leaderboard
             companyName = currentUser.getInstitution().getName();
             topCodersRaw = userRepository.findTopUsersByPointsAndInstitution(currentUser.getInstitution());
@@ -122,30 +182,35 @@ public class DashboardService {
         List<LeaderboardEntry> topCoders = buildLeaderboardEntries(topCodersRaw, currentUser, "coding");
         List<LeaderboardEntry> topQuizTakers = buildLeaderboardEntries(topQuizRaw, currentUser, "quiz");
         List<LeaderboardEntry> topAIUsers = buildLeaderboardEntries(topAIRaw, currentUser, "ai");
+        List<CollegeLeaderboardEntry> collegeLeaderboard = getCollegeLeaderboard();
 
-        // Current user rank (based on their coding points by default for the main rank display)
-        int currentUserRankPos = getUserRank(currentUser);
-        LeaderboardEntry currentUserEntry = LeaderboardEntry.builder()
-                .rank(currentUserRankPos)
-                .userId(currentUser.getId())
-                .username(currentUser.getUsername())
-                .fullName(currentUser.getFullName())
-                .totalPoints(currentUser.getTotalPoints())
-                .totalExecutions(currentUser.getTotalExecutions())
-                .successfulExecutions(currentUser.getSuccessfulExecutions())
-                .successRate(Math.round(currentUser.getSuccessRate() * 10.0) / 10.0)
-                .favoriteLanguage(currentUser.getFavoriteLanguage())
-                .tier(getTier(currentUser.getTotalPoints()))
-                .isCurrentUser(true)
-                .cheatViolations(currentUser.getCheatViolations())
-                .isActive(currentUser.getIsActive())
-                .isDisqualified(currentUser.getIsDisqualified())
-                .build();
+        // Current user rank (if authenticated)
+        LeaderboardEntry currentUserEntry = null;
+        if (currentUser != null) {
+            int currentUserRankPos = getUserRank(currentUser);
+            currentUserEntry = LeaderboardEntry.builder()
+                    .rank(currentUserRankPos)
+                    .userId(currentUser.getId())
+                    .username(currentUser.getUsername())
+                    .fullName(currentUser.getFullName())
+                    .totalPoints(currentUser.getTotalPoints())
+                    .totalExecutions(currentUser.getTotalExecutions())
+                    .successfulExecutions(currentUser.getSuccessfulExecutions())
+                    .successRate(Math.round(currentUser.getSuccessRate() * 10.0) / 10.0)
+                    .favoriteLanguage(currentUser.getFavoriteLanguage())
+                    .tier(getTier(currentUser.getTotalPoints()))
+                    .isCurrentUser(true)
+                    .cheatViolations(currentUser.getCheatViolations())
+                    .isActive(currentUser.getIsActive())
+                    .isDisqualified(currentUser.getIsDisqualified())
+                    .build();
+        }
 
         return LeaderboardResponse.builder()
                 .topCoders(topCoders)
                 .topQuizTakers(topQuizTakers)
                 .topAIUsers(topAIUsers)
+                .collegeLeaderboard(collegeLeaderboard)
                 .currentUserRank(currentUserEntry)
                 .totalUsers(totalUsers)
                 .totalExecutionsToday(todayExecutions)
@@ -158,10 +223,12 @@ public class DashboardService {
         for (int i = 0; i < Math.min(topUsers.size(), 50); i++) {
             User u = topUsers.get(i);
             int points;
-            if ("quiz".equals(type)) points = u.getQuizPoints();
-            else if ("ai".equals(type)) points = u.getAiPoints();
-            else points = u.getTotalPoints();
+            if ("quiz".equals(type)) points = u.getQuizPoints() != null ? u.getQuizPoints() : 0;
+            else if ("ai".equals(type)) points = u.getAiPoints() != null ? u.getAiPoints() : 0;
+            else points = u.getTotalPoints() != null ? u.getTotalPoints() : 0;
             
+            boolean isMe = currentUser != null && u.getId().equals(currentUser.getId());
+
             entries.add(LeaderboardEntry.builder()
                     .rank(i + 1)
                     .userId(u.getId())
@@ -174,7 +241,7 @@ public class DashboardService {
                     .successRate(Math.round(u.getSuccessRate() * 10.0) / 10.0)
                     .favoriteLanguage(u.getFavoriteLanguage())
                     .tier(getTier(points))
-                    .isCurrentUser(u.getId().equals(currentUser.getId()))
+                    .isCurrentUser(isMe)
                     .cheatViolations(u.getCheatViolations())
                     .isActive(u.getIsActive())
                     .isDisqualified(u.getIsDisqualified())

@@ -598,6 +598,69 @@ tbody tr.is-me td {
   font-size: 14px;
 }
 
+.lb-mode-nav {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border);
+  padding: 4px;
+  border-radius: 14px;
+  gap: 6px;
+  margin-top: 20px;
+}
+.lb-mode-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lb-mode-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+.lb-mode-btn.active {
+  background: linear-gradient(135deg, #2563eb, #6366f1);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.35);
+}
+.lb-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+.lb-search-input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  width: 160px;
+}
+.college-badge-approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 @media (max-width: 800px) {
   .podium-grid { grid-template-columns: 1fr; }
   .podium-card.rank-1 { order: 1; transform: none; }
@@ -605,6 +668,7 @@ tbody tr.is-me td {
   .podium-card.rank-3 { order: 3; }
   .my-rank-card { flex-direction: column; align-items: flex-start; gap: 14px; }
   .nav-links { display: none; }
+  .lb-search-input { width: 100px; }
 }
 </style>
 </head>
@@ -639,15 +703,22 @@ tbody tr.is-me td {
   <!-- Hero -->
   <div class="hero">
     <h1>🏆 <span id="lbTitle">Global Leaderboard</span></h1>
-    <p>Top developers ranked by executions, code quality, and problem solving points. Code more, rise higher!</p>
+    <p id="lbSubtitle">Top developers and registered colleges ranked by executions, code quality, and problem solving points.</p>
+    
+    <!-- Tab Switcher -->
+    <div class="lb-mode-nav">
+      <button class="lb-mode-btn active" id="tabCodersBtn" onclick="switchLbMode('coders')">⚡ Top Developers</button>
+      <button class="lb-mode-btn" id="tabCollegesBtn" onclick="switchLbMode('colleges')">🏫 Colleges Leaderboard</button>
+    </div>
+
     <div class="platform-stats" id="platformStats">
       <div class="pstat">
         <div class="pstat-value" id="totalUsers">—</div>
-        <div class="pstat-label">Total Coders</div>
+        <div class="pstat-label" id="statLabel1">Total Coders</div>
       </div>
       <div class="pstat">
         <div class="pstat-value" id="todayRuns" style="color: #34d399;">—</div>
-        <div class="pstat-label">Runs Today</div>
+        <div class="pstat-label" id="statLabel2">Runs Today</div>
       </div>
     </div>
   </div>
@@ -667,8 +738,8 @@ tbody tr.is-me td {
     <div id="myRankTier"></div>
   </div>
 
-  <!-- Tier Legend -->
-  <div class="tier-legend">
+  <!-- Tier Legend (Coders View) -->
+  <div class="tier-legend" id="tierLegendBox">
     <div class="tier-pill tier-BRONZE">BRONZE 0–99 pts</div>
     <div class="tier-pill tier-SILVER">SILVER 100–249 pts</div>
     <div class="tier-pill tier-GOLD">GOLD 250–499 pts</div>
@@ -678,15 +749,21 @@ tbody tr.is-me td {
 
   <!-- Leaderboard Table -->
   <div class="lb-card">
-    <div class="lb-header">
-      <span class="lb-title">
+    <div class="lb-header" style="flex-wrap:wrap; gap:10px;">
+      <span class="lb-title" id="tableHeaderTitle">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
         Top Performing Coders
       </span>
-      <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono); font-weight:600;" id="lbMeta"></span>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="lb-search-box">
+          <span>🔍</span>
+          <input type="text" id="lbSearchInput" class="lb-search-input" placeholder="Search..." oninput="handleSearchFilter(this.value)">
+        </div>
+        <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono); font-weight:600;" id="lbMeta"></span>
+      </div>
     </div>
     <div class="table-responsive">
-      <div id="tableContainer"><div class="loading">Loading developer rankings...</div></div>
+      <div id="tableContainer"><div class="loading">Loading rankings...</div></div>
     </div>
   </div>
 
@@ -694,31 +771,67 @@ tbody tr.is-me td {
 
 <script>
 const meUsername = KTAuth.getUsername();
+let currentLbMode = 'coders'; // 'coders' or 'colleges'
+let globalData = null;
+let rawColleges = [];
+let rawCoders = [];
 
 async function loadLeaderboard() {
   try {
     const res = await fetch('/api/leaderboard');
     const d = await res.json();
+    globalData = d;
+    rawCoders = d.topCoders || [];
+    rawColleges = d.collegeLeaderboard || [];
 
-    // Custom leaderboard title based on companyName
-    if (d.companyName) {
-      document.getElementById('lbTitle').textContent = d.companyName + ' Leaderboard';
-      const labels = document.getElementsByClassName('pstat-label');
-      if (labels.length >= 2) {
-        labels[0].textContent = 'Company Coders';
-      }
-    } else {
-      document.getElementById('lbTitle').textContent = 'Global Leaderboard';
+    // Also fetch colleges list if empty
+    if (!rawColleges || rawColleges.length === 0) {
+      try {
+        const colRes = await fetch('/api/leaderboard/colleges');
+        if (colRes.ok) {
+          rawColleges = await colRes.json();
+          globalData.collegeLeaderboard = rawColleges;
+        }
+      } catch(e) {}
     }
 
-    // Platform stats
-    document.getElementById('totalUsers').textContent = d.totalUsers || 0;
-    document.getElementById('todayRuns').textContent  = d.totalExecutionsToday || 0;
-    document.getElementById('lbMeta').textContent = `Showing Top ${d.topCoders?.length || 0} Coders`;
+    renderCurrentView();
+  } catch (e) {
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">Failed to load leaderboard data. Please refresh.</div>';
+  }
+}
 
-    // Render podium for top 3
-    if (d.topCoders && d.topCoders.length >= 3) {
-      renderPodium(d.topCoders.slice(0, 3));
+function switchLbMode(mode) {
+  currentLbMode = mode;
+  document.getElementById('tabCodersBtn').classList.toggle('active', mode === 'coders');
+  document.getElementById('tabCollegesBtn').classList.toggle('active', mode === 'colleges');
+  document.getElementById('lbSearchInput').value = '';
+  renderCurrentView();
+}
+
+function renderCurrentView() {
+  if (!globalData) return;
+  const d = globalData;
+
+  if (currentLbMode === 'coders') {
+    // Coders View
+    document.getElementById('lbTitle').textContent = d.companyName ? d.companyName + ' Leaderboard' : 'Global Leaderboard';
+    document.getElementById('lbSubtitle').textContent = 'Top developers ranked by executions, code quality, and problem solving points. Code more, rise higher!';
+    document.getElementById('statLabel1').textContent = d.companyName ? 'Company Coders' : 'Total Coders';
+    document.getElementById('statLabel2').textContent = 'Runs Today';
+    document.getElementById('totalUsers').textContent = d.totalUsers || rawCoders.length || 0;
+    document.getElementById('todayRuns').textContent  = d.totalExecutionsToday || 0;
+    document.getElementById('tableHeaderTitle').innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+      Top Performing Coders
+    `;
+    document.getElementById('tierLegendBox').style.display = 'flex';
+
+    // Podium for coders
+    if (rawCoders && rawCoders.length >= 3) {
+      renderPodiumCoders(rawCoders.slice(0, 3));
+    } else {
+      document.getElementById('podiumGrid').style.display = 'none';
     }
 
     // My rank card
@@ -729,19 +842,39 @@ async function loadLeaderboard() {
       document.getElementById('myRankName').innerHTML = `${me.fullName || me.username} <span class="you-badge">YOU</span>`;
       document.getElementById('myRankSub').textContent  = `${me.totalPoints} pts • ${me.successfulExecutions} successful runs • ${(me.successRate || 0).toFixed(1)}% success rate`;
       document.getElementById('myRankTier').innerHTML   = `<span class="tier-pill tier-${me.tier}">${me.tier}</span>`;
+    } else {
+      document.getElementById('myRankCard').style.display = 'none';
     }
 
-    // Render table
-    renderTable(d.topCoders || []);
-  } catch (e) {
-    document.getElementById('tableContainer').innerHTML = '<div class="loading">Failed to load leaderboard data. Please refresh.</div>';
+    renderCodersTable(rawCoders);
+  } else {
+    // Colleges View
+    document.getElementById('lbTitle').textContent = 'Colleges Leaderboard';
+    document.getElementById('lbSubtitle').textContent = 'Rankings of registered colleges and universities based on cumulative student performance and executions.';
+    document.getElementById('statLabel1').textContent = 'Registered Colleges';
+    document.getElementById('statLabel2').textContent = 'Active Institutions';
+    document.getElementById('totalUsers').textContent = rawColleges.length || 0;
+    document.getElementById('todayRuns').textContent  = rawColleges.filter(c => c.status === 'APPROVED').length || rawColleges.length || 0;
+    document.getElementById('tableHeaderTitle').innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+      Registered Colleges & University Rankings
+    `;
+    document.getElementById('tierLegendBox').style.display = 'none';
+    document.getElementById('myRankCard').style.display = 'none';
+
+    // Podium for Colleges
+    if (rawColleges && rawColleges.length >= 3) {
+      renderPodiumColleges(rawColleges.slice(0, 3));
+    } else {
+      document.getElementById('podiumGrid').style.display = 'none';
+    }
+
+    renderCollegesTable(rawColleges);
   }
 }
 
-function renderPodium(top3) {
+function renderPodiumCoders(top3) {
   const podiumEl = document.getElementById('podiumGrid');
-  if (!top3 || top3.length < 3) return;
-  
   const medals = ['🥇', '🥈', '🥉'];
   const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
   const colors = ['#ffd700', '#e2e8f0', '#e59866'];
@@ -765,11 +898,39 @@ function renderPodium(top3) {
       </div>
     `;
   }).join('');
-  
   podiumEl.style.display = 'grid';
 }
 
-function renderTable(users) {
+function renderPodiumColleges(top3) {
+  const podiumEl = document.getElementById('podiumGrid');
+  const medals = ['🥇', '🥈', '🥉'];
+  const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
+  const colors = ['#ffd700', '#e2e8f0', '#e59866'];
+  const bgGradients = [
+    'linear-gradient(135deg, #4338ca, #6366f1)',
+    'linear-gradient(135deg, #0f766e, #14b8a6)',
+    'linear-gradient(135deg, #7c2d12, #ea580c)'
+  ];
+
+  podiumEl.innerHTML = top3.map((c, i) => {
+    const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3) || 'COL';
+    return `
+      <div class="podium-card ${rankClasses[i]}">
+        <div class="podium-badge">${medals[i]}</div>
+        <div class="podium-avatar" style="background: ${bgGradients[i]}; font-size:14px; font-weight:800; border-radius:12px;">
+          ${initials}
+        </div>
+        <div class="podium-name" style="font-size:14px;" title="${c.name}">${c.name}</div>
+        <div class="podium-pts" style="color: ${colors[i]}; font-size:18px;">💎 ${c.totalPoints} pts</div>
+        <span class="college-badge-approved">👥 ${c.totalStudents} Coders</span>
+      </div>
+    `;
+  }).join('');
+  podiumEl.style.display = 'grid';
+}
+
+function renderCodersTable(users) {
+  document.getElementById('lbMeta').textContent = `Showing ${users.length} Coders`;
   if (!users.length) {
     document.getElementById('tableContainer').innerHTML = '<div class="loading">No coders on the board yet. Start coding to claim #1! 🚀</div>';
     return;
@@ -797,7 +958,7 @@ function renderTable(users) {
             <tr class="${isMe ? 'is-me' : ''}">
               <td>
                 <span class="${rankClass} ${rankIcon ? 'rank-badge-podium' : ''}">
-                  ${rankIcon || '#' + (i + 1)}
+                  ${rankIcon || '#' + (u.rank || i + 1)}
                 </span>
               </td>
               <td>
@@ -822,6 +983,85 @@ function renderTable(users) {
       </tbody>
     </table>
   `;
+}
+
+function renderCollegesTable(colleges) {
+  document.getElementById('lbMeta').textContent = `Showing ${colleges.length} Registered Colleges`;
+  if (!colleges.length) {
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">No approved colleges registered yet. Register your college to see it here! 🏫</div>';
+    return;
+  }
+  document.getElementById('tableContainer').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>College / University</th>
+          <th>Enrolled Coders</th>
+          <th>Combined Points</th>
+          <th>Total Executions</th>
+          <th>Avg Quality</th>
+          <th>Star Performer</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${colleges.map((c, i) => {
+          const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3) || 'COL';
+          const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+          const rankIcon  = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+          return `
+            <tr>
+              <td>
+                <span class="${rankClass} ${rankIcon ? 'rank-badge-podium' : ''}">
+                  ${rankIcon || '#' + (c.rank || i + 1)}
+                </span>
+              </td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg, #4f46e5, #06b6d4); font-size:11px; font-weight:800;">
+                    ${initials}
+                  </div>
+                  <div>
+                    <div class="username" style="font-size:13.5px; font-weight:700;">${c.name}</div>
+                    <div class="fullname" style="font-family:var(--font-mono); font-size:11px; color:#94a3b8;">License: ${c.licenseKey ? c.licenseKey.slice(0,8) + '...' : 'ACTIVE'}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="exec-cell" style="color:#ffffff; font-weight:700;">👥 ${c.totalStudents} students</td>
+              <td class="points-cell" style="color:#60a5fa;">💎 ${c.totalPoints} pts</td>
+              <td class="exec-cell">${c.totalExecutions} runs</td>
+              <td class="success-cell">${(c.avgSuccessRate || 0).toFixed(1)}%</td>
+              <td>
+                <div style="font-size:12px; font-weight:700; color:#f8fafc;">${c.topCoderName || '—'}</div>
+                <div style="font-size:10.5px; color:#a5b4fc; font-family:var(--font-mono);">${c.topCoderPoints ? c.topCoderPoints + ' pts' : ''}</div>
+              </td>
+              <td>
+                <span class="college-badge-approved">✔ Approved</span>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function handleSearchFilter(q) {
+  const term = q.toLowerCase().trim();
+  if (currentLbMode === 'coders') {
+    const filtered = rawCoders.filter(u => 
+      (u.username && u.username.toLowerCase().includes(term)) ||
+      (u.fullName && u.fullName.toLowerCase().includes(term))
+    );
+    renderCodersTable(filtered);
+  } else {
+    const filtered = rawColleges.filter(c => 
+      (c.name && c.name.toLowerCase().includes(term)) ||
+      (c.topCoderName && c.topCoderName.toLowerCase().includes(term))
+    );
+    renderCollegesTable(filtered);
+  }
 }
 
 loadLeaderboard();
