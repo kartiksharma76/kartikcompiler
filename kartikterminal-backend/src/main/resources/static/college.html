@@ -530,7 +530,7 @@ nav {
   background: radial-gradient(circle at 85% 20%, rgba(99, 102, 241, 0.18) 0%, rgba(13, 18, 36, 0.95) 75%), #0a0e1c;
   border: 1px solid rgba(99, 102, 241, 0.3);
   border-radius: 20px;
-  padding: 22px 28px;
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -546,26 +546,28 @@ nav {
   align-items: center;
   gap: 16px;
   z-index: 2;
-  min-width: 280px;
+  flex: 1 1 280px;
+  min-width: 0;
 }
 .ca-icon-box {
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(99, 102, 241, 0.35));
   border: 1.5px solid rgba(56, 189, 248, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 22px;
   box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
   flex-shrink: 0;
 }
 .ca-title {
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.3px;
+  line-height: 1.25;
 }
 .ca-subtitle {
   font-size: 12.5px;
@@ -577,8 +579,15 @@ nav {
 .ca-header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   z-index: 2;
+  flex-wrap: wrap;
+}
+.ca-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 .ca-skyline-artwork {
   display: flex;
@@ -586,6 +595,8 @@ nav {
   gap: 12px;
   position: relative;
   user-select: none;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 .ca-empower-badge {
   display: flex;
@@ -594,12 +605,30 @@ nav {
 }
 .ca-empower-text {
   font-family: 'Caveat', 'Dancing Script', cursive;
-  font-size: 16px;
+  font-size: 15px;
   color: #c7d2fe;
   font-weight: 700;
   transform: rotate(-3deg);
   text-shadow: 0 0 10px rgba(199, 210, 254, 0.7);
   white-space: nowrap;
+}
+
+@media (max-width: 1220px) {
+  .ca-header-banner .ca-skyline-artwork {
+    display: none !important;
+  }
+}
+@media (max-width: 768px) {
+  .ca-header-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .ca-header-right, .ca-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
 }
 
 /* ── 4 Bento Metric Cards ── */
@@ -924,7 +953,7 @@ nav {
 .cam-header {
   background: radial-gradient(circle at 80% 30%, rgba(99, 102, 241, 0.22) 0%, rgba(11, 16, 34, 0.95) 70%), #0a0f22;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 22px 28px;
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -936,24 +965,27 @@ nav {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 1 1 260px;
+  min-width: 0;
 }
 .cam-college-icon {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
   background: linear-gradient(135deg, #38bdf8, #6366f1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 24px;
   box-shadow: 0 0 25px rgba(56, 189, 248, 0.45);
   flex-shrink: 0;
 }
 .cam-college-title {
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.2px;
+  line-height: 1.25;
 }
 .cam-college-meta {
   display: flex;
@@ -962,6 +994,7 @@ nav {
   font-size: 12px;
   color: #94a3b8;
   margin-top: 4px;
+  flex-wrap: wrap;
 }
 .cam-close-btn {
   background: rgba(255, 255, 255, 0.06);
@@ -976,11 +1009,18 @@ nav {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 .cam-close-btn:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.4);
   color: #fca5a5;
+}
+
+@media (max-width: 820px) {
+  .cam-header .ca-skyline-artwork {
+    display: none !important;
+  }
 }
 
 /* 4 KPI Cards in Modal */
@@ -5323,7 +5363,7 @@ async function renderCollegesAdminTab() {
       <div class="ca-header-right">
         <!-- University Skyline Vector Artwork & Script Badge -->
         <div class="ca-skyline-artwork">
-          <svg width="140" height="46" viewBox="0 0 140 46" fill="none" style="opacity:0.95;">
+          <svg width="140" height="46" viewBox="0 0 140 46" fill="none" style="opacity:0.95; flex-shrink:0;">
             <path d="M0 42 Q 45 32 90 40 T 140 36" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5"/>
             <circle cx="18" cy="36" r="7" fill="#10b981" opacity="0.35"/>
             <circle cx="28" cy="34" r="9" fill="#059669" opacity="0.45"/>
@@ -5353,8 +5393,10 @@ async function renderCollegesAdminTab() {
           </div>
         </div>
         
-        <button class="btn-secondary" onclick="renderCollegesAdminTab()" style="padding:8px 16px; border-radius:10px; font-weight:700; font-size:12.5px;">🔄 Refresh</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; padding:9px 18px; border-radius:10px; font-weight:800; font-size:12.5px; box-shadow:0 0 20px rgba(99,102,241,0.45);" onclick="window.open('/leaderboard.html', '_blank')">🏆 Public Leaderboard ↗</button>
+        <div class="ca-header-actions">
+          <button class="btn-secondary" onclick="renderCollegesAdminTab()" style="padding:8px 16px; border-radius:10px; font-weight:700; font-size:12.5px;">🔄 Refresh</button>
+          <button class="btn-primary" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; padding:9px 18px; border-radius:10px; font-weight:800; font-size:12.5px; box-shadow:0 0 20px rgba(99,102,241,0.45); white-space:nowrap;" onclick="window.open('/leaderboard.html', '_blank')">🏆 Public Leaderboard ↗</button>
+        </div>
       </div>
     </div>
 
