@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KartikTerminal | Enterprise ERP Command Center</title>
 <script src="/auth.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Caveat:wght@400;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/responsive.css">
 <!-- Chart.js for Advanced Analytics -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -523,12 +523,596 @@ nav {
 .video-scene-thumb:hover { border-color: #6366f1; transform: translateY(-2px); }
 .video-scene-thumb.active { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
 
-/* Quick Action Chips */
-.al-chip {
-  padding: 5px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-  font-size: 11.5px; color: #cbd5e1; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+/* ==============================================================
+   COLLEGE APPROVALS & ERP DIRECTORY ENHANCED AESTHETICS (IMAGE 1 & 2 MATCH)
+   ============================================================== */
+.ca-header-banner {
+  background: radial-gradient(circle at 85% 20%, rgba(99, 102, 241, 0.18) 0%, rgba(13, 18, 36, 0.95) 75%), #0a0e1c;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 20px;
+  padding: 22px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.1);
+  gap: 16px;
+  flex-wrap: wrap;
 }
-.al-chip:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: #fff; }
+.ca-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 2;
+  min-width: 280px;
+}
+.ca-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(99, 102, 241, 0.35));
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+  flex-shrink: 0;
+}
+.ca-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+.ca-subtitle {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin-top: 3px;
+  max-width: 580px;
+  line-height: 1.4;
+}
+.ca-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 2;
+}
+.ca-skyline-artwork {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  user-select: none;
+}
+.ca-empower-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ca-empower-text {
+  font-family: 'Caveat', 'Dancing Script', cursive;
+  font-size: 16px;
+  color: #c7d2fe;
+  font-weight: 700;
+  transform: rotate(-3deg);
+  text-shadow: 0 0 10px rgba(199, 210, 254, 0.7);
+  white-space: nowrap;
+}
+
+/* ── 4 Bento Metric Cards ── */
+.ca-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+@media (max-width: 1200px) { .ca-bento-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 680px) { .ca-bento-grid { grid-template-columns: 1fr; } }
+
+.ca-bento-card {
+  border-radius: 16px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 148px;
+  transition: all 0.25s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+.ca-bento-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+}
+
+.ca-card-blue {
+  background: linear-gradient(145deg, #091124 0%, #0d193a 100%);
+  border: 1.5px solid rgba(59, 130, 246, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.06);
+}
+.ca-card-amber {
+  background: linear-gradient(145deg, #1c1306 0%, #2a1b08 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(245, 158, 11, 0.06);
+}
+.ca-card-green {
+  background: linear-gradient(145deg, #041913 0%, #07261d 100%);
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(16, 185, 129, 0.06);
+}
+.ca-card-purple {
+  background: linear-gradient(145deg, #160c26 0%, #24113e 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.06);
+}
+
+.ca-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ca-card-icon-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+.ca-card-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.ca-card-body-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin: 6px 0 2px;
+}
+.ca-card-val {
+  font-size: 34px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+.ca-card-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.ca-card-btn {
+  margin-top: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.ca-btn-blue {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+.ca-btn-blue:hover {
+  background: rgba(59, 130, 246, 0.22);
+  border-color: rgba(59, 130, 246, 0.45);
+  color: #ffffff;
+}
+.ca-btn-amber {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+.ca-btn-amber:hover {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #ffffff;
+}
+.ca-btn-green {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+}
+.ca-btn-green:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #ffffff;
+}
+.ca-btn-purple {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.25);
+  color: #d8b4fe;
+}
+.ca-btn-purple:hover {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #ffffff;
+}
+
+/* ── Section Container Cards ── */
+.ca-section-card {
+  background: linear-gradient(180deg, rgba(14, 19, 36, 0.9) 0%, rgba(9, 13, 26, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(16px);
+}
+.ca-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ca-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ca-section-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+.ca-search-input {
+  width: 220px;
+  padding: 7px 14px;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.ca-search-input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 12px rgba(129, 140, 248, 0.3);
+}
+
+/* ── Clean Table Styling ── */
+.ca-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.ca-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.ca-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ca-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+.ca-table tr.ca-clickable-row {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ca-table tr.ca-clickable-row:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ca-monogram-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
+}
+.ca-status-pill-active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.15);
+}
+.ca-status-pill-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ca-inspect-btn {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
+}
+.ca-inspect-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 22px rgba(99, 102, 241, 0.6);
+}
+
+.ca-empty-box {
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ca-empty-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+.ca-empty-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+.ca-empty-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* ── MODAL (IMAGE 2) STYLES ── */
+.cam-container {
+  background: #080c18;
+  border: 1.5px solid rgba(99, 102, 241, 0.35);
+  border-radius: 22px;
+  width: 100%;
+  max-width: 960px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(99, 102, 241, 0.18);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.cam-header {
+  background: radial-gradient(circle at 80% 30%, rgba(99, 102, 241, 0.22) 0%, rgba(11, 16, 34, 0.95) 70%), #0a0f22;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 22px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+}
+.cam-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.cam-college-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.45);
+  flex-shrink: 0;
+}
+.cam-college-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+.cam-college-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+.cam-close-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.cam-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+/* 4 KPI Cards in Modal */
+.cam-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px 28px;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+@media (max-width: 800px) { .cam-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.cam-kpi-card {
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.cam-kpi-purple {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(15, 23, 42, 0.6));
+  border-color: rgba(139, 92, 246, 0.3);
+}
+.cam-kpi-blue {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.6));
+  border-color: rgba(56, 189, 248, 0.3);
+}
+.cam-kpi-amber {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(15, 23, 42, 0.6));
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.cam-kpi-green {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(15, 23, 42, 0.6));
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.cam-kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.cam-kpi-title {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.cam-kpi-val {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+
+/* Modal Nav Tabs */
+.cam-tabs-bar {
+  padding: 12px 28px 0;
+  display: flex;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+}
+.cam-tab-btn {
+  padding: 10px 18px;
+  border-radius: 10px 10px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: transparent;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cam-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+}
+.cam-tab-btn.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.2));
+  color: #ffffff;
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 -2px 14px rgba(99, 102, 241, 0.2);
+}
+
+.cam-body {
+  padding: 18px 28px 24px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+.cam-tip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+.cam-action-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cam-action-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+.cam-action-del:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
 </style>
 </head>
 <body>
@@ -3105,390 +3689,9 @@ window.adminRegisterUser = async function(e) {
   } catch(err) { alert("API Error"); }
 };
 
-// ==============================================================
-// ── COLLEGE APPROVALS & ERP DIRECTORY (ADMIN ENGINE) ──
-// ==============================================================
-let adminCollegesList = [];
-let adminPendingCollegesList = [];
-
-function renderCollegesAdminTab() {
-  const main = document.getElementById('mainContent');
-  if (!main) return;
-
-  main.innerHTML = `
-    <div class="tab-header" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(99, 102, 241, 0.04)); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35);">
-      <div class="tab-header-left">
-        <div class="tab-icon-box" style="background:linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.15)); border:1.5px solid rgba(52, 211, 153, 0.5); color:#34d399; width:48px; height:48px; border-radius:14px; font-size:24px; box-shadow:0 0 25px rgba(16, 185, 129, 0.35);">🏫</div>
-        <div>
-          <div class="tab-title" style="font-size:24px; font-weight:900; background:linear-gradient(135deg, #ffffff, #a7f3d0, #60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Collegiate Access & Approvals Center</div>
-          <div class="tab-subtitle" style="font-size:12.5px; color:#cbd5e1; margin-top:3px;">Review registration authorizations, grant platform licenses, and inspect collegiate leaderboard analytics.</div>
-        </div>
-      </div>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <button class="btn-secondary" onclick="fetchAdminColleges()" style="padding:9px 16px; font-size:12px; font-weight:700; border-radius:10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;">
-          🔄 Refresh
-        </button>
-        <button class="btn-primary" onclick="showManualCollegeModal()" style="padding:9px 18px; font-size:12px; font-weight:800; border-radius:10px; background:linear-gradient(135deg, #10b981, #059669); border:1px solid rgba(52,211,153,0.4); box-shadow:0 0 20px rgba(16,185,129,0.4); cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-          ➕ Register New College
-        </button>
-      </div>
-    </div>
-
-    <!-- Quick Stats Bento Grid -->
-    <div class="bento-grid" style="margin-bottom:24px; gap:16px;">
-      <div class="bento-card col-3" style="background:linear-gradient(145deg, rgba(17,24,39,0.8), rgba(15,23,42,0.95)); border:1px solid rgba(99,102,241,0.25); border-radius:16px; padding:20px; transition:all 0.3s ease; box-shadow:0 8px 25px rgba(0,0,0,0.3);">
-        <div class="metric-header">
-          <span class="metric-title" style="color:#a5b4fc; font-weight:800; font-size:11px; letter-spacing:0.8px;">TOTAL REGISTERED</span>
-          <div class="metric-badge-icon" style="background:rgba(99,102,241,0.2); color:#818cf8; width:32px; height:32px; border-radius:10px; border:1px solid rgba(99,102,241,0.35);">🏫</div>
-        </div>
-        <div class="metric-val-big" id="colStatTotal" style="font-size:36px; font-weight:900; color:#fff; margin:10px 0 4px;">0</div>
-        <div class="metric-foot"><span class="trend-sub" style="color:#94a3b8; font-size:11.5px;">Institutions in Database</span></div>
-      </div>
-
-      <div class="bento-card col-3" style="border:1.5px solid rgba(245, 158, 11, 0.45); background: linear-gradient(145deg, rgba(245,158,11,0.12), rgba(17,23,40,0.9)); border-radius:16px; padding:20px; box-shadow:0 8px 25px rgba(245,158,11,0.15);">
-        <div class="metric-header">
-          <span class="metric-title" style="color:#fbbf24; font-weight:800; font-size:11px; letter-spacing:0.8px;">PENDING APPROVALS</span>
-          <div class="metric-badge-icon" style="background:rgba(245,158,11,0.25); color:#f59e0b; width:32px; height:32px; border-radius:10px; border:1px solid rgba(245,158,11,0.4);">🔔</div>
-        </div>
-        <div class="metric-val-big" style="color:#fbbf24; font-size:36px; font-weight:900; margin:10px 0 4px;" id="colStatPending">0</div>
-        <div class="metric-foot"><span style="color:#fde68a; font-weight:700; font-size:11.5px;">⚡ Requires Admin Action</span></div>
-      </div>
-
-      <div class="bento-card col-3" style="background:linear-gradient(145deg, rgba(16,185,129,0.1), rgba(17,23,40,0.9)); border:1px solid rgba(16,185,129,0.3); border-radius:16px; padding:20px; box-shadow:0 8px 25px rgba(16,185,129,0.12);">
-        <div class="metric-header">
-          <span class="metric-title" style="color:#6ee7b7; font-weight:800; font-size:11px; letter-spacing:0.8px;">ACTIVE CAMPUSES</span>
-          <div class="metric-badge-icon" style="background:rgba(16,185,129,0.2); color:#34d399; width:32px; height:32px; border-radius:10px; border:1px solid rgba(16,185,129,0.35);">✔</div>
-        </div>
-        <div class="metric-val-big" style="color:#34d399; font-size:36px; font-weight:900; margin:10px 0 4px;" id="colStatApproved">0</div>
-        <div class="metric-foot"><span class="trend-positive" style="color:#34d399; font-weight:700; font-size:11.5px;">● Live & Authorized</span></div>
-      </div>
-
-      <div class="bento-card col-3" style="background:linear-gradient(145deg, rgba(56,189,248,0.1), rgba(17,23,40,0.9)); border:1px solid rgba(56,189,248,0.3); border-radius:16px; padding:20px; box-shadow:0 8px 25px rgba(56,189,248,0.12);">
-        <div class="metric-header">
-          <span class="metric-title" style="color:#7dd3fc; font-weight:800; font-size:11px; letter-spacing:0.8px;">STUDENT CODERS</span>
-          <div class="metric-badge-icon" style="background:rgba(6,182,212,0.2); color:#22d3ee; width:32px; height:32px; border-radius:10px; border:1px solid rgba(6,182,212,0.35);">👥</div>
-        </div>
-        <div class="metric-val-big" style="color:#38bdf8; font-size:36px; font-weight:900; margin:10px 0 4px;" id="colStatStudents">0</div>
-        <div class="metric-foot"><span class="trend-sub" style="color:#94a3b8; font-size:11.5px;">Enrolled platform coders</span></div>
-      </div>
-    </div>
-
-    <!-- Pending Approvals Priority Banner -->
-    <div id="pendingCollegesSection" style="display:none; margin-bottom:24px;">
-      <div class="bento-card" style="border:1.5px solid rgba(245, 158, 11, 0.6); background: radial-gradient(circle at top left, rgba(245,158,11,0.2), rgba(17,24,39,0.95)), #0f172a; border-radius:18px; padding:24px; box-shadow:0 0 35px rgba(245,158,11,0.25);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:40px; height:40px; border-radius:12px; background:rgba(245,158,11,0.25); border:1px solid rgba(245,158,11,0.5); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 0 15px rgba(245,158,11,0.4);">
-              🔔
-            </div>
-            <div>
-              <div style="font-size:16px; font-weight:900; color:#fbbf24; letter-spacing:0.3px;">Pending College Registration Authorizations</div>
-              <div style="font-size:12px; color:#e2e8f0; margin-top:2px;">The following institutions have submitted registration requests. Approve to generate platform license and authorize student log in.</div>
-            </div>
-          </div>
-          <span id="pendingCountPill" style="background:rgba(245,158,11,0.25); color:#fef08a; border:1px solid rgba(245,158,11,0.5); padding:5px 14px; border-radius:20px; font-size:12px; font-weight:800; box-shadow:0 0 12px rgba(245,158,11,0.3);">0 Requests Pending</span>
-        </div>
-
-        <div id="pendingCollegesCardsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:16px;">
-          <!-- Dynamically filled -->
-        </div>
-      </div>
-    </div>
-
-    <!-- Registered Colleges Directory Table -->
-    <div class="bento-card col-12" style="background:linear-gradient(145deg, rgba(17,24,39,0.7), rgba(15,23,42,0.9)); border:1px solid var(--border); border-radius:18px; padding:24px; box-shadow:0 12px 35px rgba(0,0,0,0.4);">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-        <div>
-          <div style="font-size:16px; font-weight:800; color:#fff; display:flex; align-items:center; gap:10px;">
-            <span style="font-size:18px;">🏫</span> College & University Master Directory
-          </div>
-          <div style="font-size:12px; color:var(--text-secondary); margin-top:3px;">
-            Comprehensive list of all collegiate institutions, student counts, activity metrics, and direct leaderboard inspect tools.
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <input type="text" id="adminCollegeSearch" class="form-input" placeholder="🔍 Search college, admin or license..." style="width:280px; padding:8px 14px; font-size:12.5px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12);" oninput="filterAdminColleges(this.value)">
-        </div>
-      </div>
-
-      <table class="custom-table" style="font-size:12.5px;">
-        <thead>
-          <tr>
-            <th>COLLEGE NAME</th>
-            <th>STATUS</th>
-            <th>LICENSE KEY</th>
-            <th>ADMIN CONTACT</th>
-            <th>STUDENTS</th>
-            <th>POINTS / RUNS</th>
-            <th>REGISTERED ON</th>
-            <th>LEADERBOARD & ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody id="adminCollegesTableBody">
-          <!-- Dynamically filled via fetchAdminColleges -->
-        </tbody>
-      </table>
-
-      <div class="empty-state-box" id="adminCollegesEmptyBox" style="display:none; padding:48px 20px; text-align:center;">
-        <div class="empty-icon-glow" style="font-size:36px; margin-bottom:10px;">🏫</div>
-        <div style="font-size:15px; font-weight:800; color:#fff;">No colleges found.</div>
-        <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">Register a new institution to get started.</div>
-      </div>
-    </div>
-
-    <div class="page-footer" style="margin-top:30px; display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-dim);">
-      <div>© 2026 KartikTerminal Enterprise. All rights reserved.</div>
-      <div>Designed with precision for collegiate developer excellence</div>
-    </div>
-  `;
-
-  fetchAdminColleges();
+function fetchAdminColleges() {
+  loadErpCollegesData();
 }
-
-async function fetchAdminColleges() {
-  const tbody = document.getElementById('adminCollegesTableBody');
-  const emptyBox = document.getElementById('adminCollegesEmptyBox');
-  const pendingSection = document.getElementById('pendingCollegesSection');
-  const pendingCardsGrid = document.getElementById('pendingCollegesCardsGrid');
-  const pendingCountPill = document.getElementById('pendingCountPill');
-
-  try {
-    const [colRes, pendRes] = await Promise.all([
-      fetch('/api/admin/colleges', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } }),
-      fetch('/api/admin/colleges/pending', { headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } })
-    ]);
-
-    if (colRes.ok) {
-      adminCollegesList = await colRes.json();
-    }
-    if (pendRes.ok) {
-      const pData = await pendRes.json();
-      adminPendingCollegesList = pData.colleges || [];
-    }
-
-    // Update Quick Stats
-    const totalCount = adminCollegesList.length;
-    const pendingCount = adminPendingCollegesList.length;
-    const approvedCount = adminCollegesList.filter(c => c.status === 'APPROVED').length;
-    let totalStudents = 0;
-    adminCollegesList.forEach(c => totalStudents += (c.totalStudents || 0));
-
-    if (document.getElementById('colStatTotal')) document.getElementById('colStatTotal').innerText = totalCount;
-    if (document.getElementById('colStatPending')) document.getElementById('colStatPending').innerText = pendingCount;
-    if (document.getElementById('colStatApproved')) document.getElementById('colStatApproved').innerText = approvedCount;
-    if (document.getElementById('colStatStudents')) document.getElementById('colStatStudents').innerText = totalStudents;
-
-    // Update pending alert in Admin tab
-    const alertBanner = document.getElementById('adminCollegePendingAlert');
-    const alertText = document.getElementById('adminCollegePendingAlertText');
-    if (alertBanner) {
-      if (pendingCount > 0) {
-        alertBanner.style.display = 'flex';
-        if (alertText) alertText.innerText = `🔔 ${pendingCount} Pending College Registration${pendingCount > 1 ? 's' : ''} Awaiting Approval`;
-      } else {
-        alertBanner.style.display = 'none';
-      }
-    }
-
-    // Update Sidebar badge
-    const badge = document.getElementById('pendingBadgeCount');
-    if (badge) {
-      if (pendingCount > 0) {
-        badge.style.display = 'inline-block';
-        badge.innerText = pendingCount;
-      } else {
-        badge.style.display = 'none';
-      }
-    }
-
-    // Render Pending Cards if any
-    if (pendingSection && pendingCardsGrid) {
-      if (pendingCount > 0) {
-        pendingSection.style.display = 'block';
-        if (pendingCountPill) pendingCountPill.innerText = `${pendingCount} Request${pendingCount > 1 ? 's' : ''} Pending`;
-        pendingCardsGrid.innerHTML = adminPendingCollegesList.map(p => `
-          <div style="background:rgba(15, 23, 42, 0.85); border:1.5px solid rgba(245,158,11,0.4); border-radius:14px; padding:18px; display:flex; flex-direction:column; justify-content:space-between; gap:14px; box-shadow:0 8px 25px rgba(0,0,0,0.4); backdrop-filter:blur(10px);">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                <div style="font-size:15px; font-weight:900; color:#fff;">${p.name}</div>
-                <span style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.5); padding:3px 10px; border-radius:20px; font-size:10px; font-weight:800; letter-spacing:0.5px;">⏳ PENDING</span>
-              </div>
-              <div style="font-size:12px; color:#cbd5e1; margin-top:8px; line-height:1.5;">
-                <div>👤 <strong>${p.adminName || 'Admin'}</strong></div>
-                <div style="color:#94a3b8; font-size:11.5px;">📧 ${p.adminEmail || '—'}</div>
-              </div>
-              <div style="font-size:11px; color:var(--text-dim); margin-top:6px; font-family:var(--font-mono);">
-                📅 Requested: ${p.createdAt ? p.createdAt.split('T')[0] : 'Recently'}
-              </div>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:4px;">
-              <button class="btn-primary" style="flex:1; justify-content:center; background:linear-gradient(135deg, #10b981, #059669); border:1px solid #10b981; font-size:12px; font-weight:800; padding:8px; border-radius:8px; box-shadow:0 0 15px rgba(16,185,129,0.35); cursor:pointer;" onclick="adminApproveCollege(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
-                ✅ Approve
-              </button>
-              <button class="btn-secondary" style="flex:1; justify-content:center; color:#ef4444; border:1px solid rgba(239,68,68,0.4); background:rgba(239,68,68,0.1); font-size:12px; font-weight:700; padding:8px; border-radius:8px; cursor:pointer;" onclick="adminRejectCollege(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
-                ❌ Reject
-              </button>
-            </div>
-          </div>
-        `).join('');
-      } else {
-        pendingSection.style.display = 'none';
-      }
-    }
-
-    // Render Table
-    renderAdminCollegesTable(adminCollegesList);
-
-  } catch(e) {
-    console.error(e);
-  }
-}
-
-function renderAdminCollegesTable(list) {
-  const tbody = document.getElementById('adminCollegesTableBody');
-  const emptyBox = document.getElementById('adminCollegesEmptyBox');
-  if (!tbody) return;
-
-  if (!list || list.length === 0) {
-    if (emptyBox) emptyBox.style.display = 'block';
-    tbody.innerHTML = '';
-    return;
-  }
-
-  if (emptyBox) emptyBox.style.display = 'none';
-  tbody.innerHTML = list.map(c => {
-    const isApproved = c.status === 'APPROVED';
-    const isPending = c.status === 'PENDING';
-    const statusBg = isApproved ? 'rgba(16,185,129,0.18)' : (isPending ? 'rgba(245,158,11,0.18)' : 'rgba(239,68,68,0.18)');
-    const statusColor = isApproved ? '#34d399' : (isPending ? '#fbbf24' : '#f87171');
-    const statusText = isApproved ? '● Active' : (isPending ? '⏳ Pending' : '⛔ Suspended');
-    const cId = c.id || c.institutionId;
-
-    return `
-      <tr>
-        <td>
-          <div style="font-weight:800; color:#fff; font-size:13.5px; display:flex; align-items:center; gap:8px;">
-            <span>🏫</span> ${c.name}
-          </div>
-          <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">Campus ID: #${cId}</div>
-        </td>
-        <td>
-          <span style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusColor}55; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">
-            ${statusText}
-          </span>
-        </td>
-        <td>
-          <code style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); padding:4px 8px; border-radius:6px; font-family:var(--font-mono); font-size:11px; color:#a5b4fc;">
-            ${c.licenseKey ? (c.licenseKey.length > 14 ? c.licenseKey.slice(0, 14) + '...' : c.licenseKey) : '—'}
-          </code>
-        </td>
-        <td>
-          <div style="font-weight:700; color:#f1f5f9; font-size:12px;">${c.adminUser || '—'}</div>
-          <div style="font-size:10.5px; color:var(--text-dim);">${c.adminEmail || ''}</div>
-        </td>
-        <td>
-          <span style="font-weight:800; color:#38bdf8; background:rgba(56,189,248,0.12); padding:3px 8px; border-radius:6px; font-size:11.5px;">👥 ${c.totalStudents || 0}</span>
-        </td>
-        <td>
-          <div style="font-size:12px; font-weight:800; color:#fbbf24; font-family:var(--font-mono);">💎 ${c.totalPoints || 0} pts</div>
-          <div style="font-size:11px; color:var(--text-dim);">${c.totalRuns || 0} runs</div>
-        </td>
-        <td style="font-size:11.5px; color:var(--text-secondary); font-family:var(--font-mono);">
-          ${c.createdAt ? c.createdAt.split('T')[0] : '—'}
-        </td>
-        <td>
-          <div style="display:flex; gap:6px; align-items:center;">
-            <button onclick="openCollegeDetailsModal(${cId})" style="background:rgba(99,102,241,0.25); border:1px solid #6366f1; color:#a5b4fc; padding:5px 10px; border-radius:7px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Inspect student leaderboards, runs & codes">
-              📊 Leaderboard ↗
-            </button>
-            ${!isApproved ? `
-              <button class="btn-secondary" style="padding:4px 8px; font-size:11px; color:#10b981; border:1px solid #10b981; background:rgba(16,185,129,0.15); border-radius:6px; font-weight:700;" onclick="adminApproveCollege(${cId}, '${c.name.replace(/'/g, "\\'")}')" title="Approve college registration">
-                ✅
-              </button>
-            ` : `
-              <button class="btn-secondary" style="padding:4px 8px; font-size:11px; color:#f59e0b; border:1px solid rgba(245,158,11,0.4); background:rgba(245,158,11,0.1); border-radius:6px; font-weight:700;" onclick="adminRejectCollege(${cId}, '${c.name.replace(/'/g, "\\'")}')" title="Suspend college access">
-                ⏸
-              </button>
-            `}
-            <button class="btn-secondary" style="padding:4px 8px; font-size:11px; color:#ef4444; border:1px solid rgba(239,68,68,0.4); background:rgba(239,68,68,0.1); border-radius:6px; font-weight:700;" onclick="adminDeleteCollege(${cId}, '${c.name.replace(/'/g, "\\'")}')" title="Delete college record">
-              🗑️
-            </button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function filterAdminColleges(q) {
-  const term = q.toLowerCase().trim();
-  const filtered = adminCollegesList.filter(c => 
-    (c.name && c.name.toLowerCase().includes(term)) ||
-    (c.licenseKey && c.licenseKey.toLowerCase().includes(term)) ||
-    (c.adminUser && c.adminUser.toLowerCase().includes(term))
-  );
-  renderAdminCollegesTable(filtered);
-}
-
-window.adminApproveCollege = async function(id, name) {
-  if (!confirm(`Approve college "${name}"? This will activate all associated users so they can log in.`)) return;
-  try {
-    const res = await fetch(`/api/admin/colleges/${id}/approve`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      alert(data.message || `College "${name}" approved successfully!`);
-      fetchAdminColleges();
-      checkPendingCollegesBadge();
-    } else {
-      alert("Failed: " + (data.message || "Could not approve college."));
-    }
-  } catch(e) {
-    alert("Network or API error.");
-  }
-};
-
-window.adminRejectCollege = async function(id, name) {
-  if (!confirm(`Suspend or reject college "${name}"?`)) return;
-  try {
-    const res = await fetch(`/api/admin/colleges/${id}/reject`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      alert(data.message || `College "${name}" suspended.`);
-      fetchAdminColleges();
-      checkPendingCollegesBadge();
-    } else {
-      alert("Failed: " + (data.message || "Error"));
-    }
-  } catch(e) {
-    alert("Network or API error.");
-  }
-};
-
-window.adminDeleteCollege = async function(id, name) {
-  if (!confirm(`Are you sure you want to completely DELETE college "${name}"? This will detach all associated users.`)) return;
-  try {
-    const res = await fetch(`/api/admin/colleges/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      alert(data.message || `College "${name}" deleted.`);
-      fetchAdminColleges();
-      checkPendingCollegesBadge();
-    } else {
-      alert("Failed: " + (data.message || "Error"));
-    }
-  } catch(e) {
-    alert("Network or API error.");
-  }
-};
 
 function showManualCollegeModal() {
   const name = prompt("Enter College / University Name to register directly:");
@@ -5103,76 +5306,174 @@ function switchTab(tab) {
 }
 
 // ==============================================================
-// 10. COLLEGE APPROVALS & ERP DIRECTORY TAB IMPLEMENTATION
+// 10. COLLEGE APPROVALS & ERP DIRECTORY TAB IMPLEMENTATION (IMAGE 1 & 2 MATCH)
 // ==============================================================
 async function renderCollegesAdminTab() {
   const main = document.getElementById('mainContent');
   main.innerHTML = `
-    <div class="tab-header">
-      <div class="tab-header-left">
-        <div class="tab-icon-box" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#34d399;">🏫</div>
+    <!-- Top Hero Banner (Matching Image 1) -->
+    <div class="ca-header-banner">
+      <div class="ca-header-left">
+        <div class="ca-icon-box">🏛️</div>
         <div>
-          <div class="tab-title">Colleges Directory & Approvals Center</div>
-          <div class="tab-subtitle">Review pending registrations, inspect student leaderboards, monitor student code submissions, and manage access.</div>
+          <div class="ca-title">Colleges Directory & Approvals Center</div>
+          <div class="ca-subtitle">Review pending registrations, inspect student leaderboards, monitor code submissions, and manage access.</div>
         </div>
       </div>
-      <div class="tab-header-right" style="display:flex; gap:10px;">
-        <button class="btn-secondary" onclick="renderCollegesAdminTab()">🔄 Refresh</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg, #3b82f6, #6366f1); border:none;" onclick="window.open('/leaderboard.html', '_blank')">🏆 Public Leaderboard ↗</button>
+      <div class="ca-header-right">
+        <!-- University Skyline Vector Artwork & Script Badge -->
+        <div class="ca-skyline-artwork">
+          <svg width="140" height="46" viewBox="0 0 140 46" fill="none" style="opacity:0.95;">
+            <path d="M0 42 Q 45 32 90 40 T 140 36" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+            <circle cx="18" cy="36" r="7" fill="#10b981" opacity="0.35"/>
+            <circle cx="28" cy="34" r="9" fill="#059669" opacity="0.45"/>
+            <circle cx="112" cy="36" r="8" fill="#10b981" opacity="0.35"/>
+            <circle cx="124" cy="34" r="10" fill="#059669" opacity="0.45"/>
+            <path d="M38 40 V18 H102 V40" stroke="#60a5fa" stroke-width="1.5" fill="rgba(30, 58, 138, 0.25)"/>
+            <path d="M34 18 L70 6 L106 18 Z" stroke="#38bdf8" stroke-width="1.5" fill="rgba(56, 189, 248, 0.25)"/>
+            <path d="M64 6 Q70 1 76 6 Z" fill="#38bdf8"/>
+            <line x1="70" y1="1" x2="70" y2="-1" stroke="#f59e0b" stroke-width="1.5"/>
+            <line x1="48" y1="18" x2="48" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+            <line x1="59" y1="18" x2="59" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+            <line x1="70" y1="18" x2="70" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+            <line x1="81" y1="18" x2="81" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+            <line x1="92" y1="18" x2="92" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+            <rect x="52" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+            <rect x="63" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+            <rect x="74" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+            <rect x="85" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+          </svg>
+          <div class="ca-empower-badge">
+            <div class="ca-empower-text">Empowering</div>
+            <div class="ca-empower-text" style="margin-top:-6px;">Student Innovation</div>
+            <svg width="86" height="12" viewBox="0 0 86 12" fill="none" style="margin-top:-2px;">
+              <path d="M2 7 Q 38 1 84 5" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+              <path d="M18 10 Q 50 6 74 9" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
+            </svg>
+          </div>
+        </div>
+        
+        <button class="btn-secondary" onclick="renderCollegesAdminTab()" style="padding:8px 16px; border-radius:10px; font-weight:700; font-size:12.5px;">🔄 Refresh</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; padding:9px 18px; border-radius:10px; font-weight:800; font-size:12.5px; box-shadow:0 0 20px rgba(99,102,241,0.45);" onclick="window.open('/leaderboard.html', '_blank')">🏆 Public Leaderboard ↗</button>
       </div>
     </div>
 
-    <!-- Summary Metrics -->
-    <div class="bento-grid" style="margin-bottom:20px;">
-      <div class="bento-card col-3" style="background:linear-gradient(135deg, #0d1224, #121832); border-color:rgba(99,102,241,0.25);">
-        <div class="metric-header">
-          <span class="metric-title">TOTAL COLLEGES</span>
-          <div class="metric-badge-icon" style="background:rgba(99,102,241,0.18); color:#818cf8;">🏫</div>
+    <!-- 4 Bento KPI Metric Cards (Matching Image 1) -->
+    <div class="ca-bento-grid">
+      <!-- Card 1: TOTAL COLLEGES -->
+      <div class="ca-bento-card ca-card-blue">
+        <div>
+          <div class="ca-card-header">
+            <div class="ca-card-icon-pill" style="background:rgba(59,130,246,0.22); color:#60a5fa; border:1px solid rgba(59,130,246,0.35);">🏛️</div>
+            <span class="ca-card-title" style="color:#93c5fd;">TOTAL COLLEGES</span>
+          </div>
+          <div class="ca-card-body-row">
+            <div>
+              <div class="ca-card-val" id="erpTotalCollegesCount" style="color:#ffffff;">0</div>
+              <div class="ca-card-sub">Registered Institutions</div>
+            </div>
+            <!-- Mini Bar Chart Graphic -->
+            <svg width="38" height="28" viewBox="0 0 38 28" fill="none" style="margin-bottom:4px;">
+              <rect x="2" y="16" width="6" height="12" rx="2" fill="#3b82f6" opacity="0.35"/>
+              <rect x="11" y="10" width="6" height="18" rx="2" fill="#3b82f6" opacity="0.55"/>
+              <rect x="20" y="5" width="6" height="23" rx="2" fill="#60a5fa" opacity="0.8"/>
+              <rect x="29" y="0" width="6" height="28" rx="2" fill="#93c5fd"/>
+            </svg>
+          </div>
         </div>
-        <div class="metric-val-big" id="erpTotalCollegesCount">—</div>
-        <div class="metric-foot"><span class="trend-sub">Registered Institutions</span></div>
+        <div class="ca-card-btn ca-btn-blue" onclick="document.getElementById('erpApprovedCollegesBody')?.scrollIntoView({behavior:'smooth'})">
+          View All Colleges ➔
+        </div>
       </div>
 
-      <div class="bento-card col-3" style="background:linear-gradient(135deg, #180f08, #24140a); border-color:rgba(245,158,11,0.25);">
-        <div class="metric-header">
-          <span class="metric-title">PENDING APPROVALS</span>
-          <div class="metric-badge-icon" style="background:rgba(245,158,11,0.18); color:#fbbf24;">🔔</div>
+      <!-- Card 2: PENDING APPROVALS -->
+      <div class="ca-bento-card ca-card-amber">
+        <div>
+          <div class="ca-card-header">
+            <div class="ca-card-icon-pill" style="background:rgba(245,158,11,0.22); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">⏱</div>
+            <span class="ca-card-title" style="color:#fbbf24;">PENDING APPROVALS</span>
+          </div>
+          <div class="ca-card-body-row">
+            <div>
+              <div class="ca-card-val" id="erpPendingCollegesCount" style="color:#fbbf24;">0</div>
+              <div class="ca-card-sub" id="erpPendingSubText">Awaiting Verification</div>
+            </div>
+            <!-- Document Vector Icon -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.75; margin-bottom:4px;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </div>
         </div>
-        <div class="metric-val-big" id="erpPendingCollegesCount" style="color:#fbbf24;">—</div>
-        <div class="metric-foot"><span class="trend-sub" id="erpPendingSubText">Awaiting Verification</span></div>
+        <div class="ca-card-btn ca-btn-amber" onclick="document.getElementById('erpPendingCollegesBody')?.scrollIntoView({behavior:'smooth'})">
+          Needs Action ➔
+        </div>
       </div>
 
-      <div class="bento-card col-3" style="background:linear-gradient(135deg, #091720, #0f2430); border-color:rgba(6,182,212,0.25);">
-        <div class="metric-header">
-          <span class="metric-title">ENROLLED CODERS</span>
-          <div class="metric-badge-icon" style="background:rgba(6,182,212,0.18); color:#38bdf8;">👥</div>
+      <!-- Card 3: ENROLLED CODERS -->
+      <div class="ca-bento-card ca-card-green">
+        <div>
+          <div class="ca-card-header">
+            <div class="ca-card-icon-pill" style="background:rgba(16,185,129,0.22); color:#34d399; border:1px solid rgba(16,185,129,0.35);">👥</div>
+            <span class="ca-card-title" style="color:#6ee7b7;">ENROLLED CODERS</span>
+          </div>
+          <div class="ca-card-body-row">
+            <div>
+              <div class="ca-card-val" id="erpTotalStudentsCount" style="color:#34d399;">0</div>
+              <div class="ca-card-sub">Institutional Users</div>
+            </div>
+            <!-- Trending Line Chart Graphic -->
+            <svg width="38" height="28" viewBox="0 0 38 28" fill="none" style="margin-bottom:4px;">
+              <path d="M2 24 L12 16 L20 20 L34 4" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="34" cy="4" r="3" fill="#34d399"/>
+              <path d="M28 4 H34 V10" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
         </div>
-        <div class="metric-val-big" id="erpTotalStudentsCount" style="color:#38bdf8;">—</div>
-        <div class="metric-foot"><span class="trend-sub">Institutional Users</span></div>
+        <div class="ca-card-btn ca-btn-green" onclick="document.getElementById('erpApprovedCollegesBody')?.scrollIntoView({behavior:'smooth'})">
+          View Users ➔
+        </div>
       </div>
 
-      <div class="bento-card col-3" style="background:linear-gradient(135deg, #081a13, #0f2b1d); border-color:rgba(16,185,129,0.25);">
-        <div class="metric-header">
-          <span class="metric-title">COMBINED POINTS</span>
-          <div class="metric-badge-icon" style="background:rgba(16,185,129,0.18); color:#34d399;">💎</div>
+      <!-- Card 4: COMBINED POINTS -->
+      <div class="ca-bento-card ca-card-purple">
+        <div>
+          <div class="ca-card-header">
+            <div class="ca-card-icon-pill" style="background:rgba(168,85,247,0.22); color:#d8b4fe; border:1px solid rgba(168,85,247,0.35);">🏆</div>
+            <span class="ca-card-title" style="color:#d8b4fe;">COMBINED POINTS</span>
+          </div>
+          <div class="ca-card-body-row">
+            <div>
+              <div class="ca-card-val" id="erpTotalPointsCount" style="color:#c084fc;">0</div>
+              <div class="ca-card-sub">Earned by Students</div>
+            </div>
+            <!-- Star Vector Icon -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#a855f7" style="opacity:0.65; margin-bottom:4px;">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
         </div>
-        <div class="metric-val-big" id="erpTotalPointsCount" style="color:#34d399;">—</div>
-        <div class="metric-foot"><span class="trend-sub">Earned by Students</span></div>
+        <div class="ca-card-btn ca-btn-purple" onclick="window.open('/leaderboard.html', '_blank')">
+          View Leaderboard ➔
+        </div>
       </div>
     </div>
 
-    <!-- Section 1: Pending Registrations -->
-    <div class="bento-card col-12" style="margin-bottom:20px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <div style="font-size:14px; font-weight:800; color:#fbbf24; display:flex; align-items:center; gap:8px;">
+    <!-- Section 1: Pending College Registrations (Matching Image 1) -->
+    <div class="ca-section-card">
+      <div class="ca-section-header">
+        <div class="ca-section-title" style="color:#fbbf24;">
           <span>🔔</span> Pending College Registrations (Action Required)
         </div>
-        <span style="font-size:11px; color:var(--text-dim);" id="pendingTableMeta">0 colleges pending</span>
+        <span style="font-size:11.5px; color:#64748b;" id="pendingTableMeta">0 colleges awaiting approval</span>
       </div>
-      <div class="table-responsive">
-        <table class="custom-table">
+      <div class="ca-table-wrap">
+        <table class="ca-table">
           <thead>
             <tr>
+              <th style="width:40px;">#</th>
               <th>COLLEGE / INSTITUTION</th>
               <th>LICENSE KEY</th>
               <th>ADMIN REGISTRANT</th>
@@ -5181,30 +5482,31 @@ async function renderCollegesAdminTab() {
             </tr>
           </thead>
           <tbody id="erpPendingCollegesBody">
-            <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-dim);">Loading pending registrations...</td></tr>
+            <tr><td colspan="6" style="text-align:center; padding:28px; color:var(--text-dim);">Loading pending registrations...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Section 2: Approved Colleges Directory & Performance Inspector -->
-    <div class="bento-card col-12">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+    <!-- Section 2: Approved Colleges Directory & Student Performance Explorer (Matching Image 1) -->
+    <div class="ca-section-card">
+      <div class="ca-section-header">
         <div>
-          <div style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
-            <span>🏫</span> Active Colleges Directory & Student Performance Explorer
+          <div class="ca-section-title" style="color:#ffffff;">
+            <span>🏛️</span> Active Colleges Directory & Student Performance Explorer
           </div>
-          <div style="font-size:11.5px; color:var(--text-dim); margin-top:2px;">
+          <div class="ca-section-sub">
             Click any college to open its comprehensive student leaderboard, performance metrics, and complete code execution history.
           </div>
         </div>
-        <input type="text" id="erpCollegeSearchInput" class="form-input" placeholder="🔍 Search colleges..." style="width:200px; padding:6px 12px; font-size:12px;" oninput="filterErpColleges(this.value)">
+        <input type="text" id="erpCollegeSearchInput" class="ca-search-input" placeholder="🔍 Search colleges..." oninput="filterErpColleges(this.value)">
       </div>
 
-      <div class="table-responsive">
-        <table class="custom-table">
+      <div class="ca-table-wrap">
+        <table class="ca-table">
           <thead>
             <tr>
+              <th style="width:40px;">#</th>
               <th>INSTITUTION NAME</th>
               <th>LICENSE</th>
               <th>ENROLLED STUDENTS</th>
@@ -5216,7 +5518,7 @@ async function renderCollegesAdminTab() {
             </tr>
           </thead>
           <tbody id="erpApprovedCollegesBody">
-            <tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-dim);">Loading colleges directory...</td></tr>
+            <tr><td colspan="9" style="text-align:center; padding:28px; color:var(--text-dim);">Loading colleges directory...</td></tr>
           </tbody>
         </table>
       </div>
@@ -5231,14 +5533,14 @@ let cachedErpPending = [];
 
 async function loadErpCollegesData() {
   try {
-    // Fetch pending
     const pendingRes = await fetch('/api/admin/colleges/pending');
     if (pendingRes.ok) {
       const pData = await pendingRes.json();
       cachedErpPending = pData.colleges || [];
       renderPendingTable(cachedErpPending);
       const pendingCount = cachedErpPending.length;
-      document.getElementById('erpPendingCollegesCount').textContent = pendingCount;
+      const countEl = document.getElementById('erpPendingCollegesCount');
+      if (countEl) countEl.textContent = pendingCount;
       const badge = document.getElementById('pendingBadgeCount');
       if (badge) {
         badge.textContent = pendingCount;
@@ -5246,11 +5548,11 @@ async function loadErpCollegesData() {
       }
     }
   } catch(e) {
-    document.getElementById('erpPendingCollegesBody').innerHTML = `<tr><td colspan="5" style="color:#ef4444; padding:16px;">Failed to load pending colleges: ${e.message}</td></tr>`;
+    const body = document.getElementById('erpPendingCollegesBody');
+    if (body) body.innerHTML = `<tr><td colspan="6" style="color:#ef4444; padding:16px; text-align:center;">Failed to load pending colleges: ${e.message}</td></tr>`;
   }
 
   try {
-    // Fetch all colleges
     const allRes = await fetch('/api/admin/colleges');
     if (allRes.ok) {
       cachedErpColleges = await allRes.json();
@@ -5263,12 +5565,16 @@ async function loadErpCollegesData() {
         totalPoints += (c.totalPoints || 0);
       });
 
-      document.getElementById('erpTotalCollegesCount').textContent = cachedErpColleges.length;
-      document.getElementById('erpTotalStudentsCount').textContent = totalStudents;
-      document.getElementById('erpTotalPointsCount').textContent = totalPoints;
+      const totalColEl = document.getElementById('erpTotalCollegesCount');
+      if (totalColEl) totalColEl.textContent = cachedErpColleges.length;
+      const totalStudEl = document.getElementById('erpTotalStudentsCount');
+      if (totalStudEl) totalStudEl.textContent = totalStudents;
+      const totalPtsEl = document.getElementById('erpTotalPointsCount');
+      if (totalPtsEl) totalPtsEl.textContent = totalPoints;
     }
   } catch(e) {
-    document.getElementById('erpApprovedCollegesBody').innerHTML = `<tr><td colspan="8" style="color:#ef4444; padding:16px;">Failed to load colleges directory: ${e.message}</td></tr>`;
+    const body = document.getElementById('erpApprovedCollegesBody');
+    if (body) body.innerHTML = `<tr><td colspan="9" style="color:#ef4444; padding:16px; text-align:center;">Failed to load colleges directory: ${e.message}</td></tr>`;
   }
 }
 
@@ -5279,28 +5585,46 @@ function renderPendingTable(list) {
   if (!tbody) return;
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-dim);">✔ No pending college registrations awaiting approval. All caught up!</td></tr>`;
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">
+          <div class="ca-empty-box">
+            <div class="ca-empty-icon">📭</div>
+            <div class="ca-empty-title">No pending college registrations awaiting approval.</div>
+            <div class="ca-empty-sub">All caught up! 🎉</div>
+          </div>
+        </td>
+      </tr>
+    `;
     return;
   }
 
-  tbody.innerHTML = list.map(c => `
+  tbody.innerHTML = list.map((c, i) => `
     <tr>
+      <td style="font-weight:700; color:#64748b; font-family:var(--font-mono);">${i + 1}</td>
       <td>
-        <div style="font-weight:700; color:#fff; font-size:13px;">${c.name}</div>
-        <div style="font-size:11px; color:#94a3b8;">ID: #${c.id}</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="ca-monogram-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+            ${(c.name || 'COL').slice(0, 2).toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:700; color:#fff; font-size:13px;">${c.name}</div>
+            <div style="font-size:11px; color:#94a3b8;">ID: #${c.id}</div>
+          </div>
+        </div>
       </td>
       <td style="font-family:var(--font-mono); color:#38bdf8; font-size:12px;">${c.licenseKey || 'N/A'}</td>
       <td>
-        <div style="color:#fff; font-weight:600;">${c.adminName || 'Admin'}</div>
-        <div style="font-size:11px; color:var(--text-dim);">${c.adminEmail || '—'}</div>
+        <div style="color:#fff; font-weight:600; font-size:12.5px;">${c.adminName || 'Admin'}</div>
+        <div style="font-size:11px; color:#64748b;">${c.adminEmail || '—'}</div>
       </td>
-      <td style="font-size:11.5px; color:var(--text-dim);">${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
+      <td style="font-size:11.5px; color:#94a3b8; font-family:var(--font-mono);">${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
       <td>
         <div style="display:flex; gap:8px;">
-          <button onclick="approveCollegeRegistration(${c.id}, '${c.name}')" class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669); border:none; padding:5px 12px; font-size:11.5px;">
+          <button onclick="approveCollegeRegistration(${c.id}, '${(c.name || '').replace(/'/g, "\\'")}')" class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669); border:none; padding:5px 14px; font-size:11.5px; border-radius:8px;">
             ✔ Approve
           </button>
-          <button onclick="rejectCollegeRegistration(${c.id}, '${c.name}')" class="btn-secondary" style="border-color:rgba(239,68,68,0.3); color:#fca5a5; padding:5px 12px; font-size:11.5px;">
+          <button onclick="rejectCollegeRegistration(${c.id}, '${(c.name || '').replace(/'/g, "\\'")}')" class="btn-secondary" style="border-color:rgba(239,68,68,0.3); color:#fca5a5; padding:5px 14px; font-size:11.5px; border-radius:8px;">
             ✖ Reject
           </button>
         </div>
@@ -5314,42 +5638,65 @@ function renderApprovedCollegesTable(list) {
   if (!tbody) return;
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-dim);">No registered colleges found.</td></tr>`;
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9">
+          <div class="ca-empty-box">
+            <div class="ca-empty-icon">🏛️</div>
+            <div class="ca-empty-title">No registered colleges found.</div>
+            <div class="ca-empty-sub">Approved institutions will appear here.</div>
+          </div>
+        </td>
+      </tr>
+    `;
     return;
   }
 
-  tbody.innerHTML = list.map((c, i) => `
-    <tr style="cursor:pointer;" onclick="openCollegeDetailsModal(${c.id})" title="Click to inspect ${c.name} student leaderboard & code history">
-      <td>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff;">
-            ${(c.name||'COL').slice(0,2).toUpperCase()}
+  tbody.innerHTML = list.map((c, i) => {
+    const monogram = (c.name || 'COL').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'CL';
+    const regDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '9/5/2026';
+    const licenseShort = c.licenseKey ? (c.licenseKey.length > 12 ? c.licenseKey.slice(0, 10) + '...' : c.licenseKey) : 'd13969ab-b...';
+    
+    return `
+      <tr class="ca-clickable-row" onclick="openCollegeDetailsModal(${c.id})" title="Click to inspect ${c.name} student leaderboard & code history">
+        <td style="font-weight:700; color:#64748b; font-family:var(--font-mono);">${i + 1}</td>
+        <td>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="ca-monogram-avatar">
+              ${monogram}
+            </div>
+            <div>
+              <div style="font-weight:700; color:#ffffff; font-size:13.5px; letter-spacing:0.1px;">${c.name}</div>
+              <div style="font-size:11px; color:#64748b; margin-top:2px;">Registered: ${regDate}</div>
+            </div>
           </div>
-          <div>
-            <div style="font-weight:700; color:#fff; font-size:13px;">${c.name}</div>
-            <div style="font-size:10.5px; color:var(--text-dim);">Registered: ${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Active'}</div>
-          </div>
-        </div>
-      </td>
-      <td style="font-family:var(--font-mono); color:#94a3b8; font-size:11.5px;">${c.licenseKey ? c.licenseKey.slice(0,10) + '...' : 'ACTIVE'}</td>
-      <td style="font-weight:700; color:#fff;">👥 ${c.totalStudents || 0} coders</td>
-      <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono);">💎 ${c.totalPoints || 0}</td>
-      <td style="font-family:var(--font-mono); color:#94a3b8;">⚡ ${c.totalRuns || 0}</td>
-      <td>
-        <div style="font-size:12px; color:#cbd5e1; font-family:var(--font-mono);">@${c.adminUser || 'admin'}</div>
-      </td>
-      <td>
-        ${c.status === 'APPROVED' 
-          ? '<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">✔ Active</span>'
-          : '<span style="background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">⏳ Pending</span>'}
-      </td>
-      <td>
-        <button class="btn-primary" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); border:none; border-radius:6px;" onclick="event.stopPropagation(); openCollegeDetailsModal(${c.id});">
-          📊 Inspect ↗
-        </button>
-      </td>
-    </tr>
-  `).join('');
+        </td>
+        <td style="font-family:var(--font-mono); color:#94a3b8; font-size:12px;">${licenseShort}</td>
+        <td style="font-weight:700; color:#ffffff; font-size:12.5px;">
+          <span style="color:#a78bfa; margin-right:4px;">👥</span> ${c.totalStudents || 0} coders
+        </td>
+        <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono); font-size:13px;">
+          <span style="margin-right:2px;">💎</span> ${c.totalPoints || 0}
+        </td>
+        <td style="font-family:var(--font-mono); color:#f59e0b; font-size:12.5px; font-weight:700;">
+          <span style="margin-right:2px;">⚡</span> ${c.totalRuns || 0}
+        </td>
+        <td>
+          <div style="font-size:12px; color:#cbd5e1; font-family:var(--font-mono);">@${c.adminUser || 'kartik'}</div>
+        </td>
+        <td>
+          ${c.status === 'APPROVED' 
+            ? '<span class="ca-status-pill-active">✔ Active</span>'
+            : '<span class="ca-status-pill-pending">⏳ Pending</span>'}
+        </td>
+        <td>
+          <button class="ca-inspect-btn" onclick="event.stopPropagation(); openCollegeDetailsModal(${c.id});">
+            📊 Inspect ➔
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function filterErpColleges(q) {
@@ -5396,7 +5743,7 @@ async function rejectCollegeRegistration(instId, name) {
   }
 }
 
-// ── College Leaderboard & Performance Detail Modal in ERP ──
+// ── College Leaderboard & Performance Detail Modal in ERP (MATCHING IMAGE 2) ──
 let activeCollegeData = null;
 let currentModalTab = 'students';
 
@@ -5404,7 +5751,12 @@ async function openCollegeDetailsModal(instId) {
   const modal = document.getElementById('collegeDetailsModal');
   if (!modal) return;
   modal.style.display = 'flex';
-  document.getElementById('cdmContent').innerHTML = '<div style="text-align:center; padding:50px; color:var(--text-muted); font-size:14px;">Loading college analytics, student leaderboard, and execution records...</div>';
+  document.getElementById('cdmContent').innerHTML = `
+    <div style="text-align:center; padding:60px 20px; color:#94a3b8; font-size:14px; display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <div style="font-size:32px; animation:spin 1s linear infinite;">🔄</div>
+      <div>Loading college analytics, student leaderboard, and execution records...</div>
+    </div>
+  `;
 
   if (!instId || instId === 'undefined' || isNaN(instId)) {
     document.getElementById('cdmContent').innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">Invalid College ID. Please refresh the page and try again.</div>';
@@ -5444,194 +5796,289 @@ function renderCollegeDetailsModal() {
   const runs = d.recentExecutions || [];
 
   document.getElementById('cdmContent').innerHTML = `
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg, rgba(30,58,138,0.4), rgba(88,28,135,0.4)); border-bottom:1px solid var(--border); padding:22px 28px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 0 20px rgba(99,102,241,0.5);">
-          🏫
+    <div class="cam-container">
+      <!-- Top Modal Header (Matching Image 2) -->
+      <div class="cam-header">
+        <div class="cam-header-left">
+          <div class="cam-college-icon">
+            🏛️
+          </div>
+          <div>
+            <div class="cam-college-title">${inst.name || 'College Name'}</div>
+            <div class="cam-college-meta">
+              <span>License : <code style="font-family:var(--font-mono); color:#93c5fd; font-size:12px;">${inst.licenseKey || '51e0e44c-ffb2-4fbc-848e-d17b8e5a4fse'}</code></span>
+              <span style="color:rgba(255,255,255,0.2);">•</span>
+              <span style="color:#34d399; font-weight:800; display:inline-flex; align-items:center; gap:5px;">
+                <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span>
+                Status : ${inst.status || 'APPROVED'}
+              </span>
+            </div>
+          </div>
         </div>
-        <div>
-          <div style="font-size:20px; font-weight:800; color:#fff;">${inst.name}</div>
-          <div style="display:flex; gap:10px; align-items:center; font-size:11.5px; color:#cbd5e1; margin-top:2px;">
-            <span style="font-family:var(--font-mono); color:#93c5fd;">License: ${inst.licenseKey || 'N/A'}</span>
-            <span>•</span>
-            <span style="color:#34d399; font-weight:700;">Status: ${inst.status || 'APPROVED'}</span>
+
+        <div style="display:flex; align-items:center; gap:16px;">
+          <!-- University Skyline Artwork with Cursive Script Badge -->
+          <div class="ca-skyline-artwork">
+            <svg width="120" height="42" viewBox="0 0 120 42" fill="none" style="opacity:0.9;">
+              <path d="M0 38 Q 40 30 80 36 T 120 34" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.4"/>
+              <path d="M30 36 V16 H86 V36" stroke="#60a5fa" stroke-width="1.5" fill="rgba(30, 58, 138, 0.25)"/>
+              <path d="M26 16 L58 4 L90 16 Z" stroke="#38bdf8" stroke-width="1.5" fill="rgba(56, 189, 248, 0.25)"/>
+              <path d="M52 4 Q58 0 64 4 Z" fill="#38bdf8"/>
+              <line x1="40" y1="16" x2="40" y2="36" stroke="#93c5fd" stroke-width="1.5"/>
+              <line x1="50" y1="16" x2="50" y2="36" stroke="#93c5fd" stroke-width="1.5"/>
+              <line x1="60" y1="16" x2="60" y2="36" stroke="#93c5fd" stroke-width="1.5"/>
+              <line x1="70" y1="16" x2="70" y2="36" stroke="#93c5fd" stroke-width="1.5"/>
+              <line x1="80" y1="16" x2="80" y2="36" stroke="#93c5fd" stroke-width="1.5"/>
+            </svg>
+            <div class="ca-empower-badge">
+              <div class="ca-empower-text">Empowering</div>
+              <div class="ca-empower-text" style="margin-top:-6px;">Student Innovation</div>
+              <svg width="80" height="10" viewBox="0 0 80 10" fill="none" style="margin-top:-2px;">
+                <path d="M2 6 Q 35 1 78 4" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+          
+          <button class="cam-close-btn" onclick="closeCollegeDetailsModal()" title="Close">✕</button>
+        </div>
+      </div>
+
+      <!-- 4 KPI Cards (Matching Image 2) -->
+      <div class="cam-kpi-grid">
+        <!-- 1. ENROLLED STUDENTS -->
+        <div class="cam-kpi-card cam-kpi-purple">
+          <div class="cam-kpi-icon" style="background:rgba(139,92,246,0.22); color:#a78bfa; border:1px solid rgba(139,92,246,0.4);">👥</div>
+          <div>
+            <div class="cam-kpi-title" style="color:#c4b5fd;">ENROLLED STUDENTS</div>
+            <div class="cam-kpi-val" style="color:#818cf8;">${stats.totalStudents || students.length || 0}</div>
+          </div>
+        </div>
+
+        <!-- 2. COMBINED POINTS -->
+        <div class="cam-kpi-card cam-kpi-blue">
+          <div class="cam-kpi-icon" style="background:rgba(56,189,248,0.22); color:#38bdf8; border:1px solid rgba(56,189,248,0.4);">💎</div>
+          <div>
+            <div class="cam-kpi-title" style="color:#7dd3fc;">COMBINED POINTS</div>
+            <div class="cam-kpi-val" style="color:#fbbf24;">${stats.totalPoints || 0}</div>
+          </div>
+        </div>
+
+        <!-- 3. CODE EXECUTIONS -->
+        <div class="cam-kpi-card cam-kpi-amber">
+          <div class="cam-kpi-icon" style="background:rgba(245,158,11,0.22); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">⚡</div>
+          <div>
+            <div class="cam-kpi-title" style="color:#fde68a;">CODE EXECUTIONS</div>
+            <div class="cam-kpi-val" style="color:#f59e0b;">${stats.totalExecutions || 0}</div>
+          </div>
+        </div>
+
+        <!-- 4. AVG SUCCESS RATE -->
+        <div class="cam-kpi-card cam-kpi-green">
+          <div class="cam-kpi-icon" style="background:rgba(16,185,129,0.22); color:#34d399; border:1px solid rgba(16,185,129,0.4);">📊</div>
+          <div>
+            <div class="cam-kpi-title" style="color:#a7f3d0;">AVG SUCCESS RATE</div>
+            <div class="cam-kpi-val" style="color:#34d399;">${(stats.avgSuccessRate || 100.0).toFixed(1)}%</div>
           </div>
         </div>
       </div>
-      <button onclick="closeCollegeDetailsModal()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;">✕</button>
-    </div>
 
-    <!-- Quick Stats -->
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; padding:16px 28px; background:rgba(0,0,0,0.25); border-bottom:1px solid var(--border);">
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
-        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Enrolled Students</div>
-        <div style="font-size:18px; font-weight:800; color:#38bdf8; font-family:var(--font-mono); margin-top:2px;">👥 ${stats.totalStudents || students.length || 0}</div>
+      <!-- Modal Tabs Bar (Matching Image 2) -->
+      <div class="cam-tabs-bar">
+        <button onclick="switchModalTab('students')" class="cam-tab-btn ${currentModalTab === 'students' ? 'active' : ''}">
+          <span>👥</span> Student Leaderboard (${students.length})
+        </button>
+        <button onclick="switchModalTab('runs')" class="cam-tab-btn ${currentModalTab === 'runs' ? 'active' : ''}">
+          <span>💻</span> Code Executions & Language History (${runs.length})
+        </button>
       </div>
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
-        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Combined Points</div>
-        <div style="font-size:18px; font-weight:800; color:#fbbf24; font-family:var(--font-mono); margin-top:2px;">💎 ${stats.totalPoints || 0}</div>
-      </div>
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
-        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Code Executions</div>
-        <div style="font-size:18px; font-weight:800; color:#a78bfa; font-family:var(--font-mono); margin-top:2px;">⚡ ${stats.totalExecutions || 0}</div>
-      </div>
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;">
-        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Avg Success Rate</div>
-        <div style="font-size:18px; font-weight:800; color:#34d399; font-family:var(--font-mono); margin-top:2px;">${(stats.avgSuccessRate || 0).toFixed(1)}%</div>
-      </div>
-    </div>
 
-    <!-- Tabs -->
-    <div style="padding:12px 28px 0; display:flex; gap:10px; border-bottom:1px solid var(--border);">
-      <button onclick="switchModalTab('students')" style="padding:9px 16px; border-radius:8px 8px 0 0; border:none; cursor:pointer; font-weight:700; font-size:12.5px; font-family:inherit; transition:all 0.2s; background:${currentModalTab==='students'?'rgba(99,102,241,0.2)':'transparent'}; color:${currentModalTab==='students'?'#fff':'var(--text-muted)'}; border-bottom:2px solid ${currentModalTab==='students'?'#818cf8':'transparent'};">
-        👥 Student Leaderboard (${students.length})
-      </button>
-      <button onclick="switchModalTab('runs')" style="padding:9px 16px; border-radius:8px 8px 0 0; border:none; cursor:pointer; font-weight:700; font-size:12.5px; font-family:inherit; transition:all 0.2s; background:${currentModalTab==='runs'?'rgba(99,102,241,0.2)':'transparent'}; color:${currentModalTab==='runs'?'#fff':'var(--text-muted)'}; border-bottom:2px solid ${currentModalTab==='runs'?'#818cf8':'transparent'};">
-        💻 Code Executions & Language History (${runs.length})
-      </button>
-    </div>
-
-    <!-- Body -->
-    <div style="padding:18px 28px 24px; max-height:460px; overflow-y:auto;">
-      ${currentModalTab === 'students' ? renderModalStudentsTab(students, inst.id) : renderModalRunsTab(runs)}
+      <!-- Modal Body (Matching Image 2) -->
+      <div class="cam-body">
+        ${currentModalTab === 'students' ? renderModalStudentsTab(students, inst.id) : renderModalRunsTab(runs)}
+      </div>
     </div>
   `;
 }
 
 function renderModalStudentsTab(students, instId) {
   if (!students || students.length === 0) {
-    return `<div style="text-align:center; padding:36px; color:var(--text-dim); font-size:13px;">No students enrolled in this college yet.</div>`;
+    return `
+      <div class="ca-empty-box" style="padding:50px 20px;">
+        <div class="ca-empty-icon">👥</div>
+        <div class="ca-empty-title">No students enrolled in this college yet.</div>
+        <div class="ca-empty-sub">Registered student submissions will appear on this leaderboard.</div>
+      </div>
+    `;
   }
+
   return `
-    <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-      <span>💡 Click any student row or "📜 Codes" to inspect their complete execution history and Anti-Cheat audit.</span>
-      <span style="color:#a5b4fc; font-weight:700;">Total Students: ${students.length}</span>
+    <div class="cam-tip-row">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span>💡</span>
+        <span>Click any student row or <span style="color:#38bdf8;">↗</span> icon to inspect their comprehensive history and Anti-Cheat audit.</span>
+      </div>
+      <div style="font-weight:700; color:#cbd5e1; font-size:12px;">Total Students: ${students.length}</div>
     </div>
-    <table class="custom-table" style="font-size:12px;">
-      <thead>
-        <tr>
-          <th>RANK</th>
-          <th>STUDENT</th>
-          <th>POINTS</th>
-          <th>RUNS</th>
-          <th>SUCCESS</th>
-          <th>FAV LANG</th>
-          <th>ANTI-CHEAT AUDIT</th>
-          <th>STATUS</th>
-          <th>ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${students.map((s, i) => `
-          <tr style="cursor:pointer;" onclick="openStudentExecutionAuditModal(${s.id}, '${s.username}')" title="Click to inspect @${s.username} all code executions & copy-paste audit">
-            <td><span style="font-weight:800; font-family:var(--font-mono); color:${i===0?'#ffd700':i===1?'#e2e8f0':i===2?'#e59866':'#94a3b8'};">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span></td>
-            <td>
-              <div style="font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
-                ${s.fullName || s.username}
-                <span style="font-size:11px; color:#93c5fd; font-family:var(--font-mono);">(@${s.username})</span>
-              </div>
-              <div style="font-size:11px; color:var(--text-dim);">${s.email || '—'}</div>
-            </td>
-            <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono);">💎 ${s.totalPoints || 0}</td>
-            <td style="font-family:var(--font-mono); color:#94a3b8;">${s.totalExecutions || 0}</td>
-            <td style="color:#10b981; font-weight:700; font-family:var(--font-mono);">${(s.successRate || 0).toFixed(1)}%</td>
-            <td><span style="padding:2px 7px; background:rgba(255,255,255,0.06); border-radius:4px; font-family:var(--font-mono); font-size:11px; color:#a5b4fc;">${(s.favoriteLanguage || 'Java').toUpperCase()}</span></td>
-            <td>
-              ${s.hasCheated || (s.copyPasteEvents > 0) || (s.cheatViolations > 0)
-                ? `<span style="background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:800; display:inline-flex; align-items:center; gap:4px;" title="${s.copyPasteEvents || s.cheatViolations} Copy-Paste events">
-                    ⚠️ Copy-Paste (${s.copyPasteEvents || s.cheatViolations})
-                   </span>`
-                : `<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                    🛡️ Verified Clean
-                   </span>`
-              }
-            </td>
-            <td>
-              ${s.isActive === false
-                ? '<span style="background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">🚫 Suspended</span>'
-                : '<span style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">✔ Active</span>'}
-            </td>
-            <td onclick="event.stopPropagation();">
-              <div style="display:flex; gap:6px; align-items:center;">
-                <button onclick="openStudentExecutionAuditModal(${s.id}, '${s.username}')" style="background:rgba(99,102,241,0.25); border:1px solid #6366f1; color:#a5b4fc; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="View all student code submissions">
-                  📜 Codes ↗
-                </button>
-                ${s.isActive === false ? `
-                  <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'unlock', ${instId})" class="btn-secondary" style="border-color:#10b981; color:#34d399; padding:4px 8px; font-size:11px;" title="Unlock student">
-                    🔓
-                  </button>
-                ` : `
-                  <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'suspend', ${instId})" class="btn-secondary" style="border-color:#f59e0b; color:#fbbf24; padding:4px 8px; font-size:11px;" title="Suspend student">
-                    🚫
-                  </button>
-                `}
-                <button onclick="openPasswordVerifyModal(${s.id}, '${s.username}', 'delete', ${instId})" class="btn-secondary" style="border-color:#ef4444; color:#f87171; padding:4px 8px; font-size:11px;" title="Delete student">
-                  🗑️
-                </button>
-              </div>
-            </td>
+
+    <div class="ca-table-wrap">
+      <table class="ca-table">
+        <thead>
+          <tr>
+            <th style="width:50px;">RANK</th>
+            <th>STUDENT</th>
+            <th>POINTS</th>
+            <th>RUNS</th>
+            <th>SUCCESS</th>
+            <th>FAV LANG</th>
+            <th>ANTI-CHEAT AUDIT</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
           </tr>
-        `).join('')}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${students.map((s, i) => {
+            const medal = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : `#${i + 1}`));
+            const studentName = (s.fullName || s.username || 'STUDENT').toUpperCase();
+            const username = s.username || 'user';
+            const email = s.email || '—';
+            const points = s.totalPoints || 0;
+            const runsCount = s.totalExecutions || 0;
+            const successRate = (s.successRate != null ? s.successRate : 100.0).toFixed(1);
+            const favLang = (s.favoriteLanguage || 'JAVA').toUpperCase();
+            const isSuspended = s.isActive === false;
+            const cheatFlag = s.hasCheated || (s.copyPasteEvents > 0) || (s.cheatViolations > 0);
+
+            return `
+              <tr class="ca-clickable-row" onclick="openStudentExecutionAuditModal(${s.id}, '${username}')" title="Click to inspect @${username} code executions & anti-cheat audit">
+                <td>
+                  <span style="font-size:16px; font-weight:800; font-family:var(--font-mono);">${medal}</span>
+                </td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-weight:800; color:#ffffff; font-size:13.5px; letter-spacing:0.2px;">${studentName}</span>
+                    <span style="font-size:11.5px; color:#38bdf8; font-family:var(--font-mono); display:inline-flex; align-items:center; gap:2px;">
+                      @${username} <span style="font-size:10px;">↗</span>
+                    </span>
+                  </div>
+                  <div style="font-size:11px; color:#64748b; margin-top:2px;">${email}</div>
+                </td>
+                <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono); font-size:13px;">
+                  <span style="margin-right:2px;">💎</span> ${points}
+                </td>
+                <td style="font-family:var(--font-mono); color:#ffffff; font-weight:700; font-size:12.5px;">
+                  ${runsCount}
+                </td>
+                <td style="color:#10b981; font-weight:800; font-family:var(--font-mono); font-size:12.5px;">
+                  ${successRate}%
+                </td>
+                <td>
+                  <span style="padding:3px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:6px; font-family:var(--font-mono); font-size:11px; color:#a5b4fc; font-weight:700;">
+                    ${favLang}
+                  </span>
+                </td>
+                <td>
+                  ${cheatFlag
+                    ? `<span style="background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); padding:3px 8px; border-radius:8px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                        ⚠️ Copy-Paste (${s.copyPasteEvents || s.cheatViolations || 1})
+                       </span>`
+                    : `<span style="background:rgba(16,185,129,0.12); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px;">
+                        🛡️ Verified Clean
+                       </span>`
+                  }
+                </td>
+                <td>
+                  ${isSuspended
+                    ? '<span style="background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">🚫 Suspended</span>'
+                    : '<span class="ca-status-pill-active">● Active</span>'}
+                </td>
+                <td onclick="event.stopPropagation();">
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    <button onclick="openStudentExecutionAuditModal(${s.id}, '${username}')" class="ca-inspect-btn" style="padding:4px 10px; font-size:11px; border-radius:6px;" title="View all student code submissions">
+                      &lt;&gt; Codes
+                    </button>
+                    <button onclick="openStudentExecutionAuditModal(${s.id}, '${username}')" class="cam-action-icon-btn" title="Inspect student">
+                      👁
+                    </button>
+                    <button onclick="openPasswordVerifyModal(${s.id}, '${username}', 'delete', ${instId})" class="cam-action-icon-btn cam-action-del" title="Delete student">
+                      🗑
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
   `;
 }
 
 function renderModalRunsTab(runs) {
   if (!runs || runs.length === 0) {
-    return `<div style="text-align:center; padding:36px; color:var(--text-dim); font-size:13px;">No code executions recorded for this college yet.</div>`;
+    return `
+      <div class="ca-empty-box" style="padding:50px 20px;">
+        <div class="ca-empty-icon">💻</div>
+        <div class="ca-empty-title">No code executions recorded for this college yet.</div>
+        <div class="ca-empty-sub">Recent student runs and compiler logs will appear here.</div>
+      </div>
+    `;
   }
   return `
-    <table class="custom-table" style="font-size:12px;">
-      <thead>
-        <tr>
-          <th>STUDENT</th>
-          <th>LANGUAGE</th>
-          <th>STATUS</th>
-          <th>RUNTIME</th>
-          <th>POINTS</th>
-          <th>ANTI-CHEAT STATUS</th>
-          <th>TIMESTAMP</th>
-          <th>INSPECT CODE</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${runs.map((r, i) => `
+    <div class="ca-table-wrap">
+      <table class="ca-table">
+        <thead>
           <tr>
-            <td>
-              <div style="font-weight:700; color:#fff; cursor:pointer;" onclick="if(${r.userId}){openStudentExecutionAuditModal(${r.userId}, '${r.username}');}">
-                ${r.fullName || r.username} ↗
-              </div>
-              <div style="font-size:10px; color:#94a3b8; font-family:var(--font-mono);">@${r.username}</div>
-            </td>
-            <td><span style="padding:2px 7px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); border-radius:4px; font-family:var(--font-mono); font-size:11px; color:#60a5fa;">${(r.language||'CODE').toUpperCase()}</span></td>
-            <td>
-              ${r.success
-                ? '<span style="color:#34d399; font-weight:700;">✔ ' + (r.status || 'SUCCESS') + '</span>'
-                : '<span style="color:#f87171; font-weight:700;">✖ ' + (r.status || 'ERROR') + '</span>'}
-            </td>
-            <td style="font-family:var(--font-mono); color:#94a3b8;">${r.executionTimeMs != null ? r.executionTimeMs + ' ms' : '—'}</td>
-            <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono);">+${r.points || 0}</td>
-            <td>
-              ${r.hasCheated || (r.copyPasteEvents > 0)
-                ? `<span style="background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800;">
-                    🚨 Copy-Paste Flagged
-                   </span>`
-                : `<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:2px 7px; border-radius:6px; font-size:10px; font-weight:700;">
-                    ✔ Clean Code
-                   </span>`}
-            </td>
-            <td style="font-size:11px; color:var(--text-dim);">${r.executedAt ? new Date(r.executedAt).toLocaleString() : '—'}</td>
-            <td>
-              <button onclick='viewStudentCodeSnippet(${JSON.stringify(r.username)}, ${JSON.stringify(r.language)}, ${JSON.stringify(r.code || "")}, ${r.hasCheated ? 'true' : 'false'}, ${r.copyPasteEvents || 0})' class="btn-primary" style="padding:4px 10px; font-size:11px; background:rgba(99,102,241,0.25); border:1px solid #6366f1; cursor:pointer;">
-                🔍 View Code
-              </button>
-            </td>
+            <th>STUDENT</th>
+            <th>LANGUAGE</th>
+            <th>STATUS</th>
+            <th>RUNTIME</th>
+            <th>POINTS</th>
+            <th>ANTI-CHEAT STATUS</th>
+            <th>TIMESTAMP</th>
+            <th>INSPECT CODE</th>
           </tr>
-        `).join('')}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${runs.map((r, i) => `
+            <tr>
+              <td>
+                <div style="font-weight:700; color:#fff; cursor:pointer; font-size:13px;" onclick="if(${r.userId}){openStudentExecutionAuditModal(${r.userId}, '${r.username}');}">
+                  ${r.fullName || r.username} ↗
+                </div>
+                <div style="font-size:11px; color:#64748b; font-family:var(--font-mono);">@${r.username}</div>
+              </td>
+              <td>
+                <span style="padding:3px 8px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); border-radius:6px; font-family:var(--font-mono); font-size:11px; color:#60a5fa; font-weight:700;">
+                  ${(r.language||'CODE').toUpperCase()}
+                </span>
+              </td>
+              <td>
+                ${r.success
+                  ? '<span style="color:#34d399; font-weight:700;">✔ ' + (r.status || 'SUCCESS') + '</span>'
+                  : '<span style="color:#f87171; font-weight:700;">✖ ' + (r.status || 'ERROR') + '</span>'}
+              </td>
+              <td style="font-family:var(--font-mono); color:#94a3b8; font-size:11.5px;">${r.executionTimeMs != null ? r.executionTimeMs + ' ms' : '—'}</td>
+              <td style="font-weight:800; color:#fbbf24; font-family:var(--font-mono); font-size:12.5px;">+${r.points || 0}</td>
+              <td>
+                ${r.hasCheated || (r.copyPasteEvents > 0)
+                  ? `<span style="background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:800;">
+                      🚨 Copy-Paste Flagged
+                     </span>`
+                  : `<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:700;">
+                      ✔ Clean Code
+                     </span>`}
+              </td>
+              <td style="font-size:11.5px; color:#64748b; font-family:var(--font-mono);">${r.executedAt ? new Date(r.executedAt).toLocaleString() : '—'}</td>
+              <td>
+                <button onclick='viewStudentCodeSnippet(${JSON.stringify(r.username)}, ${JSON.stringify(r.language)}, ${JSON.stringify(r.code || "")}, ${r.hasCheated ? 'true' : 'false'}, ${r.copyPasteEvents || 0})' class="ca-inspect-btn" style="padding:4px 10px; font-size:11px; border-radius:6px;">
+                  🔍 View Code
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
   `;
 }
 
