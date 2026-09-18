@@ -548,60 +548,13 @@ nav {
   display: flex;
   flex-direction: column;
   position: relative;
-  min-height: 100%;
-}
-.ca-floating-scroll-bar {
-  position: fixed;
-  bottom: 24px;
-  right: 28px;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(10, 14, 30, 0.88);
-  border: 1.5px solid rgba(99, 102, 241, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 6px 10px;
-  border-radius: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 25px rgba(99, 102, 241, 0.3);
-  transition: all 0.25s ease;
-}
-.ca-floating-scroll-bar:hover {
-  border-color: rgba(56, 189, 248, 0.6);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.35);
-}
-.ca-scroll-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  padding: 7px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-.ca-scroll-btn:hover {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-color: #a855f7;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5);
-}
-.ca-scroll-btn-label {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #f1f5f9;
 }
 
 .ca-header-banner {
   background: radial-gradient(circle at 85% 20%, rgba(99, 102, 241, 0.22) 0%, rgba(13, 18, 36, 0.95) 75%), #0a0e1c;
   border: 1.5px solid rgba(99, 102, 241, 0.35);
-  border-radius: 22px;
-  padding: clamp(16px, 2vw, 26px) clamp(18px, 2.4vw, 32px);
+  border-radius: 20px;
+  padding: 22px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -609,82 +562,80 @@ nav {
   overflow: hidden;
   margin-bottom: 24px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.15);
-  gap: clamp(12px, 1.6vw, 22px);
-  flex-wrap: wrap;
+  gap: 20px;
+  min-height: 96px;
 }
 .ca-header-left {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 1.4vw, 18px);
+  gap: 18px;
   z-index: 2;
-  flex: 1 1 300px;
-  min-width: 220px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .ca-icon-box {
-  width: clamp(44px, 3.8vw, 56px);
-  height: clamp(44px, 3.8vw, 56px);
-  border-radius: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(99, 102, 241, 0.4));
   border: 1.5px solid rgba(56, 189, 248, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(22px, 2vw, 28px);
+  font-size: 26px;
   box-shadow: 0 0 24px rgba(56, 189, 248, 0.4);
   flex-shrink: 0;
 }
 .ca-title {
-  font-size: clamp(19px, 1.8vw, 25px);
+  font-size: 23px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.4px;
   line-height: 1.25;
 }
 .ca-subtitle {
-  font-size: clamp(11.5px, 0.95vw, 14px);
+  font-size: 13px;
   color: #94a3b8;
-  margin-top: 4px;
-  max-width: 620px;
-  line-height: 1.45;
-}
-.ca-header-right {
-  display: flex;
-  align-items: center;
-  gap: clamp(10px, 1.4vw, 18px);
-  z-index: 2;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  flex: 0 1 auto;
+  margin-top: 3px;
+  max-width: 600px;
+  line-height: 1.4;
 }
 .ca-header-actions {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1vw, 12px);
+  gap: 12px;
+  z-index: 2;
+  margin-left: auto;
   flex-shrink: 0;
 }
 .ca-skyline-artwork {
+  position: absolute;
+  right: 285px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: clamp(6px, 0.9vw, 12px);
-  position: relative;
+  gap: 12px;
+  pointer-events: none;
   user-select: none;
-  flex-shrink: 1;
-  transition: all 0.2s ease;
+  z-index: 1;
+  opacity: 0.9;
+  transition: all 0.25s ease;
 }
 .ca-skyline-artwork svg.ca-skyline-svg {
-  width: clamp(80px, 9.5vw, 150px);
-  height: auto;
-  flex-shrink: 1;
+  width: 140px;
+  height: 46px;
+  flex-shrink: 0;
 }
 .ca-empower-badge {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 1;
+  flex-shrink: 0;
 }
 .ca-empower-text {
   font-family: 'Caveat', 'Dancing Script', cursive;
-  font-size: clamp(12px, 1.15vw, 17px);
+  font-size: 16px;
   color: #c7d2fe;
   font-weight: 700;
   transform: rotate(-3deg);
@@ -692,25 +643,29 @@ nav {
   white-space: nowrap;
 }
 .ca-empower-badge svg {
-  width: clamp(50px, 6vw, 86px);
-  height: auto;
+  width: 86px;
+  height: 12px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .ca-skyline-artwork {
+    opacity: 0.35;
+    right: 270px;
+  }
+}
+@media (max-width: 850px) {
+  .ca-skyline-artwork {
+    display: none !important;
+  }
   .ca-header-banner {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
     padding: 18px 20px;
-    gap: 14px;
-  }
-  .ca-header-right {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
   }
   .ca-header-actions {
-    margin-left: auto;
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
   }
 }
 
@@ -5449,43 +5404,42 @@ async function renderCollegesAdminTab() {
           <div class="ca-subtitle">Review pending registrations, inspect student leaderboards, monitor code submissions, and manage access.</div>
         </div>
       </div>
-      <div class="ca-header-right">
-        <!-- University Skyline Vector Artwork & Script Badge -->
-        <div class="ca-skyline-artwork">
-          <svg class="ca-skyline-svg" viewBox="0 0 140 46" fill="none" style="opacity:0.95;">
-            <path d="M0 42 Q 45 32 90 40 T 140 36" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5"/>
-            <circle cx="18" cy="36" r="7" fill="#10b981" opacity="0.35"/>
-            <circle cx="28" cy="34" r="9" fill="#059669" opacity="0.45"/>
-            <circle cx="112" cy="36" r="8" fill="#10b981" opacity="0.35"/>
-            <circle cx="124" cy="34" r="10" fill="#059669" opacity="0.45"/>
-            <path d="M38 40 V18 H102 V40" stroke="#60a5fa" stroke-width="1.5" fill="rgba(30, 58, 138, 0.25)"/>
-            <path d="M34 18 L70 6 L106 18 Z" stroke="#38bdf8" stroke-width="1.5" fill="rgba(56, 189, 248, 0.25)"/>
-            <path d="M64 6 Q70 1 76 6 Z" fill="#38bdf8"/>
-            <line x1="70" y1="1" x2="70" y2="-1" stroke="#f59e0b" stroke-width="1.5"/>
-            <line x1="48" y1="18" x2="48" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
-            <line x1="59" y1="18" x2="59" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
-            <line x1="70" y1="18" x2="70" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
-            <line x1="81" y1="18" x2="81" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
-            <line x1="92" y1="18" x2="92" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
-            <rect x="52" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
-            <rect x="63" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
-            <rect x="74" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
-            <rect x="85" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+      
+      <!-- Integrated Skyline Artwork & Script Badge (Backdrop) -->
+      <div class="ca-skyline-artwork">
+        <svg class="ca-skyline-svg" viewBox="0 0 140 46" fill="none" style="opacity:0.95;">
+          <path d="M0 42 Q 45 32 90 40 T 140 36" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+          <circle cx="18" cy="36" r="7" fill="#10b981" opacity="0.35"/>
+          <circle cx="28" cy="34" r="9" fill="#059669" opacity="0.45"/>
+          <circle cx="112" cy="36" r="8" fill="#10b981" opacity="0.35"/>
+          <circle cx="124" cy="34" r="10" fill="#059669" opacity="0.45"/>
+          <path d="M38 40 V18 H102 V40" stroke="#60a5fa" stroke-width="1.5" fill="rgba(30, 58, 138, 0.25)"/>
+          <path d="M34 18 L70 6 L106 18 Z" stroke="#38bdf8" stroke-width="1.5" fill="rgba(56, 189, 248, 0.25)"/>
+          <path d="M64 6 Q70 1 76 6 Z" fill="#38bdf8"/>
+          <line x1="70" y1="1" x2="70" y2="-1" stroke="#f59e0b" stroke-width="1.5"/>
+          <line x1="48" y1="18" x2="48" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+          <line x1="59" y1="18" x2="59" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+          <line x1="70" y1="18" x2="70" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+          <line x1="81" y1="18" x2="81" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+          <line x1="92" y1="18" x2="92" y2="40" stroke="#93c5fd" stroke-width="1.5"/>
+          <rect x="52" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+          <rect x="63" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+          <rect x="74" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+          <rect x="85" y="22" width="4" height="6" rx="1" fill="#60a5fa" opacity="0.85"/>
+        </svg>
+        <div class="ca-empower-badge">
+          <div class="ca-empower-text">Empowering</div>
+          <div class="ca-empower-text" style="margin-top:-6px;">Student Innovation</div>
+          <svg width="86" height="12" viewBox="0 0 86 12" fill="none" style="margin-top:-2px;">
+            <path d="M2 7 Q 38 1 84 5" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18 10 Q 50 6 74 9" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
           </svg>
-          <div class="ca-empower-badge">
-            <div class="ca-empower-text">Empowering</div>
-            <div class="ca-empower-text" style="margin-top:-6px;">Student Innovation</div>
-            <svg width="86" height="12" viewBox="0 0 86 12" fill="none" style="margin-top:-2px;">
-              <path d="M2 7 Q 38 1 84 5" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
-              <path d="M18 10 Q 50 6 74 9" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
-            </svg>
-          </div>
         </div>
-        
-        <div class="ca-header-actions">
-          <button class="btn-secondary" onclick="renderCollegesAdminTab()" style="padding:8px 16px; border-radius:10px; font-weight:700; font-size:12.5px;">🔄 Refresh</button>
-          <button class="btn-primary" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; padding:9px 18px; border-radius:10px; font-weight:800; font-size:12.5px; box-shadow:0 0 20px rgba(99,102,241,0.45); white-space:nowrap;" onclick="window.open('/leaderboard.html', '_blank')">🏆 Public Leaderboard ↗</button>
-        </div>
+      </div>
+      
+      <div class="ca-header-actions">
+        <button class="btn-secondary" onclick="renderCollegesAdminTab()" style="padding:8px 16px; border-radius:10px; font-weight:700; font-size:12.5px;">🔄 Refresh</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; padding:9px 18px; border-radius:10px; font-weight:800; font-size:12.5px; box-shadow:0 0 20px rgba(99,102,241,0.45); white-space:nowrap;" onclick="window.open('/leaderboard.html', '_blank')">🏆 Public Leaderboard ↗</button>
       </div>
     </div>
 
@@ -5654,34 +5608,10 @@ async function renderCollegesAdminTab() {
         </table>
       </div>
     </div>
-
-    <!-- Floating Quick-Scroll Controller (Uper & Neeche Buttons) -->
-    <div class="ca-floating-scroll-bar" id="caFloatingScroll">
-      <button class="ca-scroll-btn" onclick="scrollCollegePage('top')" title="Uper Scroll Karein (Scroll to Top)">
-        <span>⬆️</span>
-        <span class="ca-scroll-btn-label">Uper (Top)</span>
-      </button>
-      <button class="ca-scroll-btn" onclick="scrollCollegePage('bottom')" title="Neeche Scroll Karein (Scroll to Bottom)">
-        <span>⬇️</span>
-        <span class="ca-scroll-btn-label">Neeche (Bottom)</span>
-      </button>
-    </div>
   </div>
   `;
 
   await loadErpCollegesData();
-}
-
-function scrollCollegePage(direction) {
-  const main = document.getElementById('mainContent') || document.querySelector('.workspace-main');
-  if (!main) return;
-  if (direction === 'top') {
-    main.scrollTo({ top: 0, behavior: 'smooth' });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else if (direction === 'bottom') {
-    main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  }
 }
 
 let cachedErpColleges = [];
