@@ -151,7 +151,24 @@ nav {
 /* ── Main View Panel ── */
 .workspace-main {
   flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
-  padding: 24px 32px 60px; position: relative; width: 100%; min-width: 0; max-width: 100%;
+  padding: 24px 32px 100px; position: relative; width: 100%; min-width: 0; max-width: 100%;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.workspace-main::-webkit-scrollbar {
+  width: 10px;
+}
+.workspace-main::-webkit-scrollbar-track {
+  background: rgba(10, 14, 28, 0.85);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+.workspace-main::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #38bdf8);
+  border-radius: 6px;
+  border: 2px solid rgba(10, 14, 28, 0.85);
+}
+.workspace-main::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #818cf8, #60a5fa);
 }
 .tab-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -526,6 +543,60 @@ nav {
 /* ==============================================================
    COLLEGE APPROVALS & ERP DIRECTORY ENHANCED AESTHETICS (IMAGE 1 & 2 MATCH)
    ============================================================== */
+.ca-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 100%;
+}
+.ca-floating-scroll-bar {
+  position: fixed;
+  bottom: 24px;
+  right: 28px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 14, 30, 0.88);
+  border: 1.5px solid rgba(99, 102, 241, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 6px 10px;
+  border-radius: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 25px rgba(99, 102, 241, 0.3);
+  transition: all 0.25s ease;
+}
+.ca-floating-scroll-bar:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.35);
+}
+.ca-scroll-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.ca-scroll-btn:hover {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: #a855f7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5);
+}
+.ca-scroll-btn-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
 .ca-header-banner {
   background: radial-gradient(circle at 85% 20%, rgba(99, 102, 241, 0.18) 0%, rgba(13, 18, 36, 0.95) 75%), #0a0e1c;
   border: 1px solid rgba(99, 102, 241, 0.3);
@@ -5376,9 +5447,11 @@ function switchTab(tab) {
 // ==============================================================
 async function renderCollegesAdminTab() {
   const main = document.getElementById('mainContent');
+  if (main) main.scrollTop = 0;
   main.innerHTML = `
-    <!-- Top Hero Banner (Matching Image 1) -->
-    <div class="ca-header-banner">
+    <div class="ca-page-container">
+      <!-- Top Hero Banner (Matching Image 1) -->
+      <div class="ca-header-banner">
       <div class="ca-header-left">
         <div class="ca-icon-box">🏛️</div>
         <div>
@@ -5591,9 +5664,34 @@ async function renderCollegesAdminTab() {
         </table>
       </div>
     </div>
+
+    <!-- Floating Quick-Scroll Controller (Uper & Neeche Buttons) -->
+    <div class="ca-floating-scroll-bar" id="caFloatingScroll">
+      <button class="ca-scroll-btn" onclick="scrollCollegePage('top')" title="Uper Scroll Karein (Scroll to Top)">
+        <span>⬆️</span>
+        <span class="ca-scroll-btn-label">Uper (Top)</span>
+      </button>
+      <button class="ca-scroll-btn" onclick="scrollCollegePage('bottom')" title="Neeche Scroll Karein (Scroll to Bottom)">
+        <span>⬇️</span>
+        <span class="ca-scroll-btn-label">Neeche (Bottom)</span>
+      </button>
+    </div>
+  </div>
   `;
 
   await loadErpCollegesData();
+}
+
+function scrollCollegePage(direction) {
+  const main = document.getElementById('mainContent') || document.querySelector('.workspace-main');
+  if (!main) return;
+  if (direction === 'top') {
+    main.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (direction === 'bottom') {
+    main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
 }
 
 let cachedErpColleges = [];
