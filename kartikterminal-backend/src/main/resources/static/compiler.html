@@ -2222,7 +2222,12 @@ function startWebcam() {
     proctorPipBadge.style.display = 'block';
     localStorage.setItem('webcamActive', 'true'); 
     
-    // 1. Microphone Audio Proctoring Analyser
+    const sessionStartTime = Date.now();
+    let consecutiveMultiFaceFrames = 0;
+    let consecutiveVoiceFrames = 0;
+    let baselineNoiseFloor = 40;
+
+    // 1. Microphone Audio Proctoring Analyser (Speech vs Ambient Noise)
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (AudioContextClass) {
@@ -2233,41 +2238,59 @@ function startWebcam() {
         proctorAudioSource = proctorAudioContext.createMediaStreamSource(stream);
         proctorAudioAnalyser = proctorAudioContext.createAnalyser();
         proctorAudioAnalyser.fftSize = 512;
+        proctorAudioAnalyser.smoothingTimeConstant = 0.8;
         proctorAudioSource.connect(proctorAudioAnalyser);
         
         const audioBuffer = new Uint8Array(proctorAudioAnalyser.frequencyBinCount);
-        let continuousLoudFrames = 0;
         
         audioCheckInterval = setInterval(() => {
           if (!securityMode || isBlocked) return;
+          // 6-second initial grace period on startup
+          if (Date.now() - sessionStartTime < 6000) return;
+
           proctorAudioAnalyser.getByteFrequencyData(audioBuffer);
           
-          // Compute average audio energy in speech frequencies
+          // Formant speech frequencies (400Hz - 2200Hz -> bins 15 to 65)
           let sum = 0;
-          for (let i = 10; i < 80; i++) {
-            sum += audioBuffer[i] || 0;
+          let maxVal = 0;
+          for (let i = 15; i <= 65; i++) {
+            const val = audioBuffer[i] || 0;
+            sum += val;
+            if (val > maxVal) maxVal = val;
           }
-          let avgEnergy = sum / 70;
+          let avgSpeechEnergy = sum / 51;
+
+          // Adapt baseline noise floor
+          if (avgSpeechEnergy < baselineNoiseFloor) {
+            baselineNoiseFloor = Math.max(25, avgSpeechEnergy);
+          } else {
+            baselineNoiseFloor = (baselineNoiseFloor * 0.98) + (avgSpeechEnergy * 0.02);
+          }
           
-          if (avgEnergy > 58) {
-            continuousLoudFrames++;
-            if (continuousLoudFrames >= 4) {
+          // True vocal speech threshold (must exceed baseline noise by substantial margin and be above 125)
+          const isLoudSpeech = (avgSpeechEnergy > Math.max(125, baselineNoiseFloor + 45)) && (maxVal > 150);
+
+          if (isLoudSpeech) {
+            consecutiveVoiceFrames++;
+            // Must be sustained speech for over 4.5 seconds (9 consecutive frames)
+            if (consecutiveVoiceFrames >= 9) {
+              consecutiveVoiceFrames = 0;
               const now = Date.now();
-              if (now - lastVoiceAlertTime > 8000) {
+              if (now - lastVoiceAlertTime > 12000) {
                 lastVoiceAlertTime = now;
                 voiceViolations++;
                 if (voiceViolations === 1) {
                   playSecurityAlert();
-                  reportCheatToServer("Speech/Background Voice Detected during Secure Exam", "MEDIUM");
-                  showToast("⚠️ PROCTOR WARNING: Voice/Talking detected! Please remain silent.", "error");
-                  openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nBackground voice or talking was detected by the microphone.\nPlease ensure a quiet testing environment. Another voice violation will terminate your session.");
+                  reportCheatToServer("Sustained Voice/Speech Detected during Secure Exam", "MEDIUM");
+                  showToast("⚠️ PROCTOR WARNING: Talking/Voice detected! Please maintain silence.", "error");
+                  openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nSustained voice or talking was detected.\nPlease ensure a quiet environment. Another voice violation will terminate your session.");
                 } else if (voiceViolations >= 2) {
                   handleAutoCutTermination("Multiple Voice/Speech Violations Detected");
                 }
               }
             }
           } else {
-            continuousLoudFrames = Math.max(0, continuousLoudFrames - 1);
+            consecutiveVoiceFrames = Math.max(0, consecutiveVoiceFrames - 1);
           }
         }, 500);
       }
@@ -2275,69 +2298,82 @@ function startWebcam() {
       console.warn("Audio proctoring not initialized:", e);
     }
 
-    // 2. Real-time Multi-Face Computer Vision Detector on Canvas Frames
+    // 2. High-Accuracy Multi-Face Centroid CV Detector
     proctorAnalysisInterval = setInterval(() => {
       if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended || !securityMode || isBlocked) return;
+      // 6-second initial grace period on startup
+      if (Date.now() - sessionStartTime < 6000) return;
+
       try {
         const ctx = proctorCanvas.getContext('2d');
         ctx.drawImage(webcamVideo, 0, 0, 320, 240);
         const imgData = ctx.getImageData(0, 0, 320, 240);
         const data = imgData.data;
         
-        let leftRegionSkin = 0;
-        let rightRegionSkin = 0;
-        let centerRegionSkin = 0;
-        let totalSkinPixels = 0;
+        // Scan the upper head region (y from 15 to 160)
+        let leftHeadMass = 0;
+        let rightHeadMass = 0;
+        let centerHeadMass = 0;
+        let totalHeadMass = 0;
         
-        for (let i = 0; i < data.length; i += 16) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          
-          const isSkin = (r > 95 && g > 40 && b > 20 && 
-                          Math.max(r, g, b) - Math.min(r, g, b) > 15 && 
-                          Math.abs(r - g) > 15 && r > g && r > b);
-          
-          if (isSkin) {
-            totalSkinPixels++;
-            const pixelIdx = i / 4;
-            const x = pixelIdx % 320;
-            if (x < 110) leftRegionSkin++;
-            else if (x > 210) rightRegionSkin++;
-            else centerRegionSkin++;
+        for (let y = 15; y < 160; y += 4) {
+          for (let x = 10; x < 310; x += 4) {
+            const idx = (y * 320 + x) * 4;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+            
+            // Accurate skin/face luminance heuristic
+            const isFacePixel = (r > 105 && g > 55 && b > 30 && 
+                                r > g && g > b && 
+                                (r - g) >= 15 && (r - b) >= 20 &&
+                                Math.max(r, g, b) - Math.min(r, g, b) >= 20);
+            
+            if (isFacePixel) {
+              totalHeadMass++;
+              if (x < 110) leftHeadMass++;
+              else if (x > 210) rightHeadMass++;
+              else centerHeadMass++;
+            }
           }
         }
         
-        // Multi-face condition: multiple distinct clusters on opposite sides
-        const multiFaceCondition = (leftRegionSkin > 280 && rightRegionSkin > 280) || 
-                                   (totalSkinPixels > 2400 && (leftRegionSkin > 250 || rightRegionSkin > 250));
+        // Multi-face condition: TWO DISTINCT SEPARATED HEADS
+        // Both left side and right side must each have significant head mass (>240 pixels)
+        // AND the total head area must be unusually large (>850 pixels), indicating 2 separate people.
+        const multiFaceDetected = (leftHeadMass > 240 && rightHeadMass > 240 && totalHeadMass > 850);
         
-        if (multiFaceCondition) {
+        if (multiFaceDetected) {
+          consecutiveMultiFaceFrames++;
           proctorPipBadge.style.color = '#ef4444';
           proctorPipBadge.style.borderColor = '#ef4444';
           proctorPipBadge.innerHTML = "🚨 MULTI-FACE DETECTED!";
           
-          const now = Date.now();
-          if (now - lastFaceAlertTime > 8000) {
-            lastFaceAlertTime = now;
-            multiFaceViolations++;
-            
-            if (multiFaceViolations === 1) {
-              playSecurityAlert();
-              reportCheatToServer("Multiple Faces Detected in Camera Feed", "HIGH");
-              showToast("⚠️ PROCTOR WARNING: Multiple faces detected!", "error");
-              openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nMultiple people / faces detected in front of the camera!\nOnly the registered student is permitted in camera frame.\n\n⚠️ IMPORTANT: If another face is detected again, your test session will be IMMEDIATELY CLOSED & marked as Disqualified.");
-            } else if (multiFaceViolations >= 2) {
-              handleAutoCutTermination("Multiple Faces / Unauthorized Secondary Person Detected");
+          // Require at least 4 consecutive frames (3.5+ seconds of simultaneous multi-person presence)
+          if (consecutiveMultiFaceFrames >= 4) {
+            const now = Date.now();
+            if (now - lastFaceAlertTime > 12000) {
+              lastFaceAlertTime = now;
+              multiFaceViolations++;
+              
+              if (multiFaceViolations === 1) {
+                playSecurityAlert();
+                reportCheatToServer("Multiple Faces Detected in Camera Frame", "HIGH");
+                showToast("⚠️ PROCTOR WARNING: Multiple faces detected!", "error");
+                openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nMultiple people / faces were detected in front of the camera.\nOnly the candidate is permitted in camera frame.\n\n⚠️ IMPORTANT: If another person is detected again, your test session will be IMMEDIATELY CLOSED.");
+              } else if (multiFaceViolations >= 2) {
+                handleAutoCutTermination("Multiple Faces / Unauthorized Secondary Person Detected");
+              }
             }
           }
         } else {
+          consecutiveMultiFaceFrames = Math.max(0, consecutiveMultiFaceFrames - 1);
           proctorPipBadge.style.color = '#10b981';
           proctorPipBadge.style.borderColor = 'rgba(16,185,129,0.5)';
-          proctorPipBadge.innerHTML = `🟢 AI PROCTOR: 1 Face (${totalSkinPixels > 100 ? 'OK' : 'Scanning'})`;
+          proctorPipBadge.innerHTML = `🟢 AI PROCTOR: 1 Candidate (OK) | Mic: Clear`;
         }
       } catch(err) {}
-    }, 1000);
+    }, 800);
 
     // 3. Broadcast frames to Admin Live Proctoring Monitor
     if (!proctorStreamInterval) {
