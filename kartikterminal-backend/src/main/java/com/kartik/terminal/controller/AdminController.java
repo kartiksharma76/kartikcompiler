@@ -113,10 +113,20 @@ public class AdminController {
         ));
     }
 
+    private boolean isProtectedAdmin(User user) {
+        if (user == null) return false;
+        if ("kartiksharma768976@gmail.com".equalsIgnoreCase(user.getEmail())) return true;
+        if ("kartik_admin".equalsIgnoreCase(user.getUsername())) return true;
+        return user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.SUPER_ADMIN;
+    }
+
     // ── Deactivate/Lock a user ──
     @PostMapping("/users/{id}/lock")
     public ResponseEntity<?> lockUser(@PathVariable Long id) {
         return userRepository.findById(id).map(user -> {
+            if (isProtectedAdmin(user)) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Admin accounts are protected and cannot be locked!"));
+            }
             user.setIsActive(false);
             userRepository.save(user);
             return ResponseEntity.ok(Map.of("success", true, "message", "User locked"));
@@ -128,6 +138,9 @@ public class AdminController {
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         return userRepository.findById(id).map(user -> {
+            if (isProtectedAdmin(user)) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Admin accounts are permanently protected and cannot be deleted!"));
+            }
             userRepository.deleteTeamMembersByUserId(id);
             userRepository.deleteTeamsByUserId(id);
             userRepository.deleteExamProblemsByUserId(id);
@@ -153,6 +166,9 @@ public class AdminController {
     @PostMapping("/users/{id}/disqualify")
     public ResponseEntity<?> disqualifyUser(@PathVariable Long id) {
         return userRepository.findById(id).map(user -> {
+            if (isProtectedAdmin(user)) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Admin accounts are protected and cannot be disqualified!"));
+            }
             user.setIsDisqualified(true);
             user.setTotalPoints(0);
             userRepository.save(user);
@@ -409,6 +425,13 @@ public class AdminController {
         User student = userRepository.findById(studentId).orElse(null);
         if (student == null) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Student not found with ID: " + studentId));
+        }
+
+        if (isProtectedAdmin(student)) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "Protected Admin accounts cannot be deleted, suspended, or modified via secure action."
+            ));
         }
 
         boolean isPlatformAdmin = adminUser.getRole() == User.Role.ADMIN || adminUser.getRole() == User.Role.SUPER_ADMIN;

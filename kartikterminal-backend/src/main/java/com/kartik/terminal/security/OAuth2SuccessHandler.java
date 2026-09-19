@@ -102,29 +102,46 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private User findOrCreateUser(String email, String name,
                                   String pictureUrl, String googleSub) {
 
-        Optional<User> existingUser = userRepository.findByEmail(email.toLowerCase());
+        String cleanEmail = email != null ? email.toLowerCase().trim() : "";
+        boolean isMasterAdmin = "kartiksharma768976@gmail.com".equalsIgnoreCase(cleanEmail);
+
+        Optional<User> existingUser = userRepository.findByEmail(cleanEmail);
 
         if (existingUser.isPresent()) {
-            // User already registered — update their avatar in case it changed
+            // User already registered — update their avatar in case it changed & ensure admin privileges if master admin
             User user = existingUser.get();
+            boolean changed = false;
+
+            if (isMasterAdmin && (user.getRole() != User.Role.ADMIN || Boolean.FALSE.equals(user.getIsActive()) || Boolean.TRUE.equals(user.getIsDisqualified()))) {
+                user.setRole(User.Role.ADMIN);
+                user.setIsActive(true);
+                user.setIsDisqualified(false);
+                changed = true;
+                log.info("Master admin logged in via OAuth2. Re-applied ADMIN role & active status.");
+            }
+
             if (pictureUrl != null && !pictureUrl.equals(user.getAvatarUrl())) {
                 user.setAvatarUrl(pictureUrl);
+                changed = true;
+            }
+            if (changed) {
                 userRepository.save(user);
             }
             return user;
         }
 
         // First time login — auto-register
-        String username = generateUsername(email, name);
+        String username = isMasterAdmin ? "kartik_admin" : generateUsername(cleanEmail, name);
 
         User newUser = User.builder()
                 .username(username)
-                .email(email.toLowerCase().trim())
+                .email(cleanEmail)
                 .password("")                    // No password — OAuth2 only account
-                .fullName(name != null ? name.trim() : username)
+                .fullName(name != null ? name.trim() : (isMasterAdmin ? "Kartik Admin" : username))
                 .avatarUrl(pictureUrl)
-                .role(User.Role.USER)
+                .role(isMasterAdmin ? User.Role.ADMIN : User.Role.USER)
                 .isActive(true)
+                .isDisqualified(false)
                 .totalExecutions(0)
                 .successfulExecutions(0)
                 .totalPoints(0)
@@ -133,7 +150,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build();
 
         User saved = userRepository.save(newUser);
-        log.info("Auto-registered new OAuth2 user: {}", saved.getUsername());
+        log.info("Auto-registered new OAuth2 user: {} with role {}", saved.getUsername(), saved.getRole());
         return saved;
     }
 

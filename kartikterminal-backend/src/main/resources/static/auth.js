@@ -144,24 +144,41 @@ const KTAuth = (() => {
         font-size: 12px; cursor: pointer; position: relative; z-index: 10000;
       `;
 
-      const initials = fullName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+      const isAdminUser = role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'COLLEGE_ADMIN' || role === 'FACULTY' || (localStorage.getItem(EMAIL_KEY) || '').toLowerCase() === 'kartiksharma768976@gmail.com';
+      const adminLinkHtml = isAdminUser ? `
+          <a href="/college.html?tab=admin" style="display:block;padding:10px 14px;font-size:12px;
+             color:#fbbf24;font-weight:700;text-decoration:none;background:rgba(245,158,11,0.1);" onmouseover="this.style.background='rgba(245,158,11,0.2)'" onmouseout="this.style.background='rgba(245,158,11,0.1)'">
+            👑 Admin Control Center
+          </a>
+          <a href="/college.html" style="display:block;padding:10px 14px;font-size:12px;
+             color:#34d399;font-weight:600;text-decoration:none;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''">
+            🎓 College ERP
+          </a>
+      ` : `
+          <a href="/college.html" style="display:block;padding:10px 14px;font-size:12px;
+             color:var(--text-main);text-decoration:none;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''">
+            🎓 College Portal
+          </a>
+      `;
+
       widget.innerHTML = `
         <div style="width:26px;height:26px;border-radius:50%;background:#2563eb;
              display:flex;align-items:center;justify-content:center;
              font-size:11px;font-weight:700;color:#fff;" id="kt-avatar">${initials}</div>
         <div style="line-height:1.3;">
           <div style="color:var(--text-main);font-weight:600;">${username}</div>
-          <div style="color:var(--text-muted);font-size:10px;">${role}</div>
+          <div style="color:${isAdminUser ? '#fbbf24' : 'var(--text-muted)'};font-size:10px;font-weight:${isAdminUser ? '700' : '400'};">${role}</div>
         </div>
         <div id="kt-user-menu" style="
           display:none; position:absolute; top:110%; right:0;
           background:var(--bg-panel); border:1px solid var(--border);
-          border-radius:var(--radius-md); min-width:170px; z-index:99999;
+          border-radius:var(--radius-md); min-width:185px; z-index:99999;
           box-shadow:0 8px 30px rgba(0,0,0,0.6); overflow:hidden;
         ">
           <div style="padding:10px 14px 6px; font-size:11px; color:var(--text-muted);">Signed in as</div>
           <div style="padding:0 14px 10px; font-size:13px; font-weight:600;">${fullName}</div>
           <hr style="border-color:var(--border); margin:0;">
+          ${adminLinkHtml}
           <a href="/dashboard.html" style="display:block;padding:10px 14px;font-size:12px;
              color:var(--text-main);text-decoration:none;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''">
             📊 Dashboard

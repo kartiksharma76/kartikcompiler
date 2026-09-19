@@ -26,22 +26,23 @@ public class KartikTerminalApplication {
 
 			if (existingAdmin.isPresent()) {
 				com.kartik.terminal.entity.User admin = existingAdmin.get();
-				if (admin.getRole() != com.kartik.terminal.entity.User.Role.ADMIN) {
-					admin.setRole(com.kartik.terminal.entity.User.Role.ADMIN);
-					admin.setIsActive(true);
-					userRepository.save(admin);
-					System.out.println("Existing user " + adminEmail + " has been promoted to ADMIN.");
-				}
+				admin.setRole(com.kartik.terminal.entity.User.Role.ADMIN);
+				admin.setIsActive(true);
+				admin.setIsDisqualified(false);
+				admin.setPassword(passwordEncoder.encode("Kartik@2005"));
+				userRepository.save(admin);
+				System.out.println("Admin user " + adminEmail + " verified and updated with ADMIN role & active status.");
 			} else {
 				com.kartik.terminal.entity.User admin = new com.kartik.terminal.entity.User();
 				admin.setUsername("kartik_admin");
 				admin.setEmail(adminEmail);
-				admin.setPassword(passwordEncoder.encode("kartik@2005"));
+				admin.setPassword(passwordEncoder.encode("Kartik@2005"));
 				admin.setRole(com.kartik.terminal.entity.User.Role.ADMIN);
 				admin.setIsActive(true);
+				admin.setIsDisqualified(false);
 				admin.setFullName("Kartik Admin");
 				userRepository.save(admin);
-				System.out.println("New admin user created: " + adminEmail + " / kartik@2005");
+				System.out.println("New admin user created: " + adminEmail + " / Kartik@2005");
 			}
 		};
 	}
