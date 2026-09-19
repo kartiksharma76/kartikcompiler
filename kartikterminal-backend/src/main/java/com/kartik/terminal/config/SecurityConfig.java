@@ -68,6 +68,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 // ── Public: WebSockets HTTP Handshake ──
                 .requestMatchers("/ws/**").permitAll()
+                // ── Public: problems read ──
+                .requestMatchers(HttpMethod.GET, "/api/problems", "/api/problems/**").permitAll()
                 // ── Public: Dev Studio & Intelligence APIs ──
                 .requestMatchers("/api/devstudio/**", "/api/intelligence/**").permitAll()
                 // ── Serve static files ──

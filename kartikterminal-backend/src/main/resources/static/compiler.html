@@ -1541,24 +1541,44 @@ function handleKeydown(e) {
 // ── Security ──
 let securityMode=false, violations=0, isBlocked=false;
 const MAX_VIOLATIONS=3;
-function toggleSecurity() {
+function toggleSecurity(forceState) {
   if (isBlocked) {
     showErrorEffect();
     showToast("Account locked by Anti-Cheat. Contact Admin to unlock.", "error");
     return;
   }
-  securityMode=!securityMode; securityToggle.classList.toggle('active');
-  securityLabel.innerText=securityMode?'SECURE':'NORMAL';
-  securityStatus.innerText=`STATUS: ${securityMode?'SECURE':'NORMAL'}`;
-  logToTerminal(`🔐 Security Mode: ${securityMode?'ON':'OFF'}`,"warning");
-  showToast(`Security Mode ${securityMode?'Activated':'Deactivated'}`,securityMode?'security':'info');
+  if (typeof forceState === 'boolean') {
+    securityMode = forceState;
+  } else {
+    securityMode = !securityMode;
+  }
+  const secToggle = document.getElementById('securityToggle');
+  if (secToggle) {
+    if (securityMode) secToggle.classList.add('active');
+    else secToggle.classList.remove('active');
+  }
+  const secLabel = document.getElementById('securityLabel');
+  if (secLabel) secLabel.innerText = securityMode ? 'SECURE' : 'NORMAL';
+  const secStatus = document.getElementById('securityStatus');
+  if (secStatus) secStatus.innerText = `STATUS: ${securityMode ? 'SECURE' : 'NORMAL'}`;
+
+  logToTerminal(`🔐 Security Mode: ${securityMode ? 'ON' : 'OFF'}`, "warning");
+  showToast(`Security Mode ${securityMode ? 'Activated' : 'Deactivated'}`, securityMode ? 'security' : 'info');
   
   if (securityMode) {
     startWebcam();
-    try { document.documentElement.requestFullscreen(); } catch (e) {}
+    try { 
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {}); 
+      }
+    } catch (e) {}
   } else {
     stopWebcam();
-    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+    try { 
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {}); 
+      }
+    } catch (e) {}
   }
 }
 
@@ -2120,14 +2140,16 @@ Est. Space:      ${mockReport.spaceComplexity}
 // --- REAL ANTI-CHEAT PROCTORING & MULTI-FACE / AUDIO ANALYSIS ---
 const webcamVideo = document.createElement('video');
 webcamVideo.id = "realWebcamFeed";
-webcamVideo.autoplay = true; webcamVideo.muted = true;
-webcamVideo.style.cssText = "width: 170px; height: 130px; object-fit: cover; position: fixed; bottom: 20px; right: 20px; border-radius: 10px; border: 2px solid #ef4444; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); background: #000;";
+webcamVideo.autoplay = true; 
+webcamVideo.muted = true;
+webcamVideo.playsInline = true;
+webcamVideo.style.cssText = "width: 175px; height: 135px; object-fit: cover; position: fixed; bottom: 20px; right: 20px; border-radius: 10px; border: 2px solid #ef4444; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(239, 68, 68, 0.6); background: #000;";
 document.body.appendChild(webcamVideo);
 
 // Live PIP Status Overlay on Webcam
 const proctorPipBadge = document.createElement('div');
 proctorPipBadge.id = "proctorPipBadge";
-proctorPipBadge.style.cssText = "position: fixed; bottom: 125px; right: 25px; z-index: 1001; background: rgba(0,0,0,0.85); color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.4); display: none; pointer-events: none;";
+proctorPipBadge.style.cssText = "position: fixed; bottom: 132px; right: 24px; z-index: 1001; background: rgba(0,0,0,0.85); color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.5); display: none; pointer-events: none; text-shadow: 0 0 6px #10b981;";
 proctorPipBadge.innerHTML = "🟢 AI PROCTOR: ACTIVE";
 document.body.appendChild(proctorPipBadge);
 
@@ -2151,7 +2173,7 @@ proctorCanvas.height = 240;
 function reportCheatToServer(reason = 'General Security Violation', severity = 'HIGH') {
   try {
     let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-    logs.push({ time: new Date().toLocaleTimeString(), student: KTAuth.getUsername() || 'Student', activity: reason, severity: severity });
+    logs.push({ time: new Date().toLocaleTimeString(), student: (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student', activity: reason, severity: severity });
     localStorage.setItem('cheatLogs', JSON.stringify(logs));
 
     if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
@@ -2179,11 +2201,16 @@ function handleAutoCutTermination(reason) {
   setTimeout(() => {
     stopWebcam();
     window.location.href = '/dashboard.html';
-  }, 4000);
+  }, 3800);
 }
 
 function startWebcam() {
   if (globalWebcamStream) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast("⚠️ Webcam not supported on this device/browser", "warning");
+    return;
+  }
+
   navigator.mediaDevices.getUserMedia({ 
     video: { width: { ideal: 320 }, height: { ideal: 240 } }, 
     audio: true 
@@ -2215,17 +2242,16 @@ function startWebcam() {
           if (!securityMode || isBlocked) return;
           proctorAudioAnalyser.getByteFrequencyData(audioBuffer);
           
-          // Compute average audio energy in speech frequencies (300Hz - 3400Hz)
+          // Compute average audio energy in speech frequencies
           let sum = 0;
           for (let i = 10; i < 80; i++) {
             sum += audioBuffer[i] || 0;
           }
           let avgEnergy = sum / 70;
           
-          // Voice threshold detection
           if (avgEnergy > 58) {
             continuousLoudFrames++;
-            if (continuousLoudFrames >= 4) { // Sustained speech detected
+            if (continuousLoudFrames >= 4) {
               const now = Date.now();
               if (now - lastVoiceAlertTime > 8000) {
                 lastVoiceAlertTime = now;
@@ -2233,7 +2259,7 @@ function startWebcam() {
                 if (voiceViolations === 1) {
                   playSecurityAlert();
                   reportCheatToServer("Speech/Background Voice Detected during Secure Exam", "MEDIUM");
-                  showToast("⚠️ PROCTOR WARNING: Voice/Talking detected! Please remain completely silent.", "error");
+                  showToast("⚠️ PROCTOR WARNING: Voice/Talking detected! Please remain silent.", "error");
                   openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nBackground voice or talking was detected by the microphone.\nPlease ensure a quiet testing environment. Another voice violation will terminate your session.");
                 } else if (voiceViolations >= 2) {
                   handleAutoCutTermination("Multiple Voice/Speech Violations Detected");
@@ -2246,7 +2272,7 @@ function startWebcam() {
         }, 500);
       }
     } catch(e) {
-      console.warn("Audio proctoring not supported in this browser:", e);
+      console.warn("Audio proctoring not initialized:", e);
     }
 
     // 2. Real-time Multi-Face Computer Vision Detector on Canvas Frames
@@ -2258,18 +2284,16 @@ function startWebcam() {
         const imgData = ctx.getImageData(0, 0, 320, 240);
         const data = imgData.data;
         
-        // Multi-region skin & face centroid density analysis
         let leftRegionSkin = 0;
         let rightRegionSkin = 0;
         let centerRegionSkin = 0;
         let totalSkinPixels = 0;
         
-        for (let i = 0; i < data.length; i += 16) { // Sample every 4th pixel
+        for (let i = 0; i < data.length; i += 16) {
           const r = data[i];
           const g = data[i + 1];
           const b = data[i + 2];
           
-          // Normalized skin color classification (RGB / YCbCr heuristic)
           const isSkin = (r > 95 && g > 40 && b > 20 && 
                           Math.max(r, g, b) - Math.min(r, g, b) > 15 && 
                           Math.abs(r - g) > 15 && r > g && r > b);
@@ -2284,7 +2308,7 @@ function startWebcam() {
           }
         }
         
-        // Check for multiple distinct face clusters simultaneously active on distinct sides
+        // Multi-face condition: multiple distinct clusters on opposite sides
         const multiFaceCondition = (leftRegionSkin > 280 && rightRegionSkin > 280) || 
                                    (totalSkinPixels > 2400 && (leftRegionSkin > 250 || rightRegionSkin > 250));
         
@@ -2309,8 +2333,8 @@ function startWebcam() {
           }
         } else {
           proctorPipBadge.style.color = '#10b981';
-          proctorPipBadge.style.borderColor = 'rgba(16,185,129,0.4)';
-          proctorPipBadge.innerHTML = `🟢 AI PROCTOR: 1 Face (${totalSkinPixels > 100 ? 'OK' : 'Searching'})`;
+          proctorPipBadge.style.borderColor = 'rgba(16,185,129,0.5)';
+          proctorPipBadge.innerHTML = `🟢 AI PROCTOR: 1 Face (${totalSkinPixels > 100 ? 'OK' : 'Scanning'})`;
         }
       } catch(err) {}
     }, 1000);
@@ -2323,13 +2347,13 @@ function startWebcam() {
           const ctx = proctorCanvas.getContext('2d');
           ctx.drawImage(webcamVideo, 0, 0, 320, 240);
           const dataUrl = proctorCanvas.toDataURL('image/jpeg', 0.5);
-          const user = KTAuth.getUser() || {};
+          const user = (typeof KTAuth !== 'undefined' ? KTAuth.getUser() : {}) || {};
           fetch('/api/proctor/stream-frame', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${typeof KTAuth !== 'undefined' ? KTAuth.getToken() : ''}` },
             body: JSON.stringify({
               userId: user.id || 1,
-              username: user.username || KTAuth.getUsername() || 'Student',
+              username: user.username || (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student',
               fullName: user.fullName || user.username || 'Student',
               frame: dataUrl,
               violations: violations + multiFaceViolations + voiceViolations,
@@ -2341,7 +2365,7 @@ function startWebcam() {
     }
   })
   .catch(err => { 
-    console.error("Webcam/Mic access denied", err); 
+    console.error("Webcam/Mic access error", err); 
     localStorage.setItem('webcamActive', 'false'); 
     showToast("⚠️ Camera/Microphone access required for Secure Mode", "error");
   });
@@ -2364,8 +2388,8 @@ function stopWebcam() {
   proctorPipBadge.style.display = 'none';
   localStorage.setItem('webcamActive', 'false');
   try {
-    const user = KTAuth.getUser() || {};
-    if (user.id) {
+    const user = (typeof KTAuth !== 'undefined' ? KTAuth.getUser() : {}) || {};
+    if (user && user.id) {
       fetch(`/api/proctor/stop-feed/${user.id}`, { method: 'POST', headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } });
     }
   } catch(e) {}
@@ -2376,106 +2400,138 @@ function stopWebcam() {
 // ─────────────────────────────────────────────────────────
 let currentProblem = null;
 
-function toggleProblemDrawer() {
-  const drawer = document.getElementById('problemDrawer');
-  const toggleBtn = document.getElementById('problemToggleBtn');
+function toggleProblemPanel() {
+  const drawer = document.getElementById('problemDrawerPanel') || document.getElementById('problemDrawer');
+  const toggleBtn = document.getElementById('problemToggleNavBtn') || document.getElementById('problemToggleBtn');
   if (!drawer) return;
-  const isHidden = drawer.style.display === 'none' || drawer.classList.contains('collapsed');
+  const isHidden = drawer.classList.contains('collapsed') || drawer.style.display === 'none';
   if (isHidden) {
-    drawer.style.display = 'flex';
     drawer.classList.remove('collapsed');
-    if (toggleBtn) { toggleBtn.style.background = 'rgba(99,102,241,0.3)'; toggleBtn.style.borderColor = '#6366f1'; }
+    drawer.style.display = 'flex';
+    if (toggleBtn) {
+      toggleBtn.style.background = 'rgba(59, 130, 246, 0.35)';
+      toggleBtn.style.borderColor = '#3b82f6';
+    }
   } else {
-    drawer.style.display = 'none';
     drawer.classList.add('collapsed');
-    if (toggleBtn) { toggleBtn.style.background = 'rgba(99,102,241,0.12)'; toggleBtn.style.borderColor = 'rgba(99,102,241,0.3)'; }
+    drawer.style.display = 'none';
+    if (toggleBtn) {
+      toggleBtn.style.background = 'rgba(59, 130, 246, 0.15)';
+      toggleBtn.style.borderColor = 'rgba(59, 130, 246, 0.35)';
+    }
   }
   if (window.monacoEditor) {
     setTimeout(() => window.monacoEditor.layout(), 180);
   }
 }
+window.toggleProblemDrawer = toggleProblemPanel;
+
+function copySampleInputToStdin() {
+  const sampleIn = (currentProblem && currentProblem.sampleInput) ? currentProblem.sampleInput : (document.getElementById('probViewSampleInput')?.innerText || '');
+  const stdinEl = document.getElementById('stdin');
+  if (stdinEl) {
+    stdinEl.value = sampleIn;
+    showToast("📋 Sample input copied to Stdin panel", "success");
+    if (typeof switchVSTab === 'function') switchVSTab('stdin');
+  }
+}
 
 async function loadProblemFromQuery() {
   const params = new URLSearchParams(window.location.search);
-  const problemId = params.get('problemId') || params.get('problem');
+  const problemId = params.get('problemId') || params.get('problem') || params.get('id');
   const requireSecure = params.get('secure') === 'true';
 
-  if (requireSecure && !securityMode) {
-    toggleSecurity();
+  if (requireSecure) {
+    toggleSecurity(true);
   }
 
   if (!problemId) return;
 
   try {
-    const drawer = document.getElementById('problemDrawer');
+    const drawer = document.getElementById('problemDrawerPanel') || document.getElementById('problemDrawer');
     if (drawer) {
-      drawer.style.display = 'flex';
       drawer.classList.remove('collapsed');
+      drawer.style.display = 'flex';
     }
-    const probBtn = document.getElementById('problemToggleBtn');
-    if (probBtn) probBtn.style.display = 'inline-flex';
+    const probBtn = document.getElementById('problemToggleNavBtn') || document.getElementById('problemToggleBtn');
+    if (probBtn) {
+      probBtn.style.display = 'inline-flex';
+      probBtn.style.background = 'rgba(59, 130, 246, 0.35)';
+      probBtn.style.borderColor = '#3b82f6';
+    }
 
-    const res = await fetch(`/api/problems/${problemId}`, {
-      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
-    });
+    let headers = {};
+    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+      headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
+    }
 
+    const res = await fetch(`/api/problems/${problemId}`, { headers });
     if (!res.ok) {
-      showToast("Could not load problem details", "error");
+      showToast("Could not load problem details (" + res.status + ")", "error");
       return;
     }
 
     const prob = await res.json();
     currentProblem = prob;
 
-    // Render Drawer Details
-    document.getElementById('probTitle').innerText = prob.title || 'Untitled Problem';
+    // Title
+    const titleEl = document.getElementById('probViewTitle') || document.getElementById('probTitle');
+    if (titleEl) titleEl.innerText = prob.title || 'Untitled Problem';
     
     // Difficulty
-    const diffBadge = document.getElementById('probDifficultyBadge');
-    diffBadge.innerText = prob.difficulty || 'MEDIUM';
-    if (prob.difficulty === 'EASY') {
-      diffBadge.style.background = 'rgba(16,185,129,0.2)'; diffBadge.style.color = '#10b981';
-    } else if (prob.difficulty === 'HARD') {
-      diffBadge.style.background = 'rgba(239,68,68,0.2)'; diffBadge.style.color = '#ef4444';
-    } else {
-      diffBadge.style.background = 'rgba(245,158,11,0.2)'; diffBadge.style.color = '#f59e0b';
-    }
-
-    // Scope Badge
-    const scopeBadge = document.getElementById('probScopeBadge');
-    if (prob.institution) {
-      scopeBadge.innerText = `🎓 ${prob.institution}`;
-      scopeBadge.style.background = 'rgba(139,92,246,0.2)';
-      scopeBadge.style.color = '#c4b5fd';
-    } else {
-      scopeBadge.innerText = '🌐 Global Platform Assignment';
-      scopeBadge.style.background = 'rgba(59,130,246,0.2)';
-      scopeBadge.style.color = '#93c5fd';
+    const diffBadge = document.getElementById('probViewDifficulty') || document.getElementById('probDifficultyBadge');
+    if (diffBadge) {
+      diffBadge.innerText = prob.difficulty || 'MEDIUM';
+      if (prob.difficulty === 'EASY') {
+        diffBadge.style.background = 'rgba(16,185,129,0.2)'; diffBadge.style.color = '#10b981';
+      } else if (prob.difficulty === 'HARD') {
+        diffBadge.style.background = 'rgba(239,68,68,0.2)'; diffBadge.style.color = '#ef4444';
+      } else {
+        diffBadge.style.background = 'rgba(245,158,11,0.2)'; diffBadge.style.color = '#f59e0b';
+      }
     }
 
     // Points
-    document.getElementById('probPointsBadge').innerText = `⭐ ${prob.points || 50} pts`;
+    const pointsEl = document.getElementById('probViewPoints') || document.getElementById('probPointsBadge');
+    if (pointsEl) pointsEl.innerText = `⭐ ${prob.points || 50} pts`;
 
-    // Content Fields
-    document.getElementById('probDescription').innerText = prob.description || 'No description provided.';
-    
-    // Input / Output Formats
-    if (prob.inputFormat) {
-      document.getElementById('probInputFormatBox').style.display = 'block';
-      document.getElementById('probInputFormat').innerText = prob.inputFormat;
+    // Scope Badge
+    const scopeBadge = document.getElementById('probViewScope') || document.getElementById('probScopeBadge');
+    if (scopeBadge) {
+      if (prob.institution || prob.institutionName) {
+        scopeBadge.innerText = `🎓 ${prob.institution || prob.institutionName}`;
+        scopeBadge.style.background = 'rgba(139,92,246,0.2)';
+        scopeBadge.style.color = '#c4b5fd';
+      } else {
+        scopeBadge.innerText = '🌍 Global Platform';
+        scopeBadge.style.background = 'rgba(16,185,129,0.15)';
+        scopeBadge.style.color = '#34d399';
+      }
     }
-    if (prob.outputFormat) {
-      document.getElementById('probOutputFormatBox').style.display = 'block';
-      document.getElementById('probOutputFormat').innerText = prob.outputFormat;
+
+    // Solved status
+    const solvedBadge = document.getElementById('probViewStatusBadge');
+    if (solvedBadge && prob.isSolved) {
+      solvedBadge.style.display = 'inline-block';
     }
-    if (prob.constraints) {
-      document.getElementById('probConstraintsBox').style.display = 'block';
-      document.getElementById('probConstraints').innerText = prob.constraints;
-    }
+
+    // Content Description
+    const descEl = document.getElementById('probViewDescription') || document.getElementById('probDescription');
+    if (descEl) descEl.innerText = prob.description || 'No description provided.';
 
     // Samples
-    if (prob.sampleInput) document.getElementById('probSampleInput').innerText = prob.sampleInput;
-    if (prob.sampleOutput) document.getElementById('probSampleOutput').innerText = prob.sampleOutput;
+    const sampleInEl = document.getElementById('probViewSampleInput') || document.getElementById('probSampleInput');
+    if (sampleInEl) sampleInEl.innerText = prob.sampleInput || '(No sample input provided)';
+
+    const sampleOutEl = document.getElementById('probViewSampleOutput') || document.getElementById('probSampleOutput');
+    if (sampleOutEl) sampleOutEl.innerText = prob.sampleOutput || '(No sample output provided)';
+
+    // Tests summary
+    const testsSumEl = document.getElementById('probTestsSummary');
+    if (testsSumEl) {
+      const hiddenCount = prob.hiddenTestCasesCount || (prob.testCases ? prob.testCases.filter(t => t.isHidden).length : 4);
+      testsSumEl.innerText = `1 Sample + ${hiddenCount} Hidden Cases`;
+    }
 
     // Load Starter Code into Monaco Editor
     if (prob.starterCode && window.monacoEditor) {
@@ -2493,7 +2549,7 @@ async function loadProblemFromQuery() {
 
   } catch (err) {
     console.error("Error loading problem:", err);
-    showToast("Failed to load problem statement", "error");
+    showToast("Failed to load problem statement: " + err.message, "error");
   }
 }
 
@@ -2507,31 +2563,38 @@ async function runProblemSampleTests() {
   const sampleIn = currentProblem.sampleInput || '';
   const sampleExpected = (currentProblem.sampleOutput || '').trim();
 
-  const resultsCard = document.getElementById('probResultsCard');
-  const resultsArea = document.getElementById('probResultsArea');
-  resultsCard.style.display = 'block';
-  resultsArea.innerHTML = `<div style="color:var(--text-muted); font-size:12px;">⏳ Running code against sample test cases...</div>`;
+  const resultsArea = document.getElementById('probTestResultsArea') || document.getElementById('probResultsArea');
+  if (resultsArea) {
+    resultsArea.style.display = 'block';
+    resultsArea.innerHTML = `<div style="color:var(--text-muted); font-size:12px;">⏳ Running code against sample test cases...</div>`;
+  }
 
   try {
+    let headers = { 'Content-Type': 'application/json' };
+    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+      headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
+    }
     const res = await fetch('/compiler/run', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      headers: headers,
       body: JSON.stringify({ code: code, language: lang, stdin: sampleIn })
     });
     const data = await res.json();
     const actualOut = (data.output || '').trim();
     const isPass = actualOut === sampleExpected;
 
-    resultsArea.innerHTML = `
-      <div style="background:${isPass ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border:1px solid ${isPass ? '#10b981' : '#ef4444'}; border-radius:8px; padding:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="font-weight:700; font-size:12px; color:${isPass ? '#10b981' : '#ef4444'};">${isPass ? '✅ SAMPLE TEST PASSED' : '❌ SAMPLE TEST FAILED'}</span>
-          <span style="font-size:10.5px; color:var(--text-muted); font-family:monospace;">${data.executionTime || '0ms'}</span>
+    if (resultsArea) {
+      resultsArea.innerHTML = `
+        <div style="background:${isPass ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border:1px solid ${isPass ? '#10b981' : '#ef4444'}; border-radius:8px; padding:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:700; font-size:12px; color:${isPass ? '#10b981' : '#ef4444'};">${isPass ? '✅ SAMPLE TEST PASSED' : '❌ SAMPLE TEST FAILED'}</span>
+            <span style="font-size:10.5px; color:var(--text-muted); font-family:monospace;">${data.executionTime || '0ms'}</span>
+          </div>
+          <div style="font-size:11px; margin-bottom:4px; color:var(--text-muted);"><strong>Expected:</strong> <code style="color:#e2e8f0;">${escapeHtml(sampleExpected)}</code></div>
+          <div style="font-size:11px; color:var(--text-muted);"><strong>Your Output:</strong> <code style="color:${isPass ? '#10b981' : '#ef4444'};">${escapeHtml(actualOut)}</code></div>
         </div>
-        <div style="font-size:11px; margin-bottom:4px; color:var(--text-muted);"><strong>Expected:</strong> <code style="color:#e2e8f0;">${escapeHtml(sampleExpected)}</code></div>
-        <div style="font-size:11px; color:var(--text-muted);"><strong>Your Output:</strong> <code style="color:${isPass ? '#10b981' : '#ef4444'};">${escapeHtml(actualOut)}</code></div>
-      </div>
-    `;
+      `;
+    }
 
     if (isPass) {
       showToast("Sample tests passed! Ready to Submit & verify 4 Hidden Cases.", "success");
@@ -2539,7 +2602,7 @@ async function runProblemSampleTests() {
       showToast("Sample test failed. Check your logic and output formatting.", "error");
     }
   } catch (e) {
-    resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Execution error: ${e.message}</div>`;
+    if (resultsArea) resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Execution error: ${e.message}</div>`;
   }
 }
 
@@ -2552,27 +2615,36 @@ async function submitProblemGrader() {
   const lang = document.getElementById('language').value || 'java';
 
   const btn = document.getElementById('probSubmitGraderBtn');
-  const resultsCard = document.getElementById('probResultsCard');
-  const resultsArea = document.getElementById('probResultsArea');
+  const resultsArea = document.getElementById('probTestResultsArea') || document.getElementById('probResultsArea');
   
-  btn.disabled = true;
-  btn.innerHTML = `<span>⏳</span> Evaluating 4 Hidden Tests...`;
-  resultsCard.style.display = 'block';
-  resultsArea.innerHTML = `<div style="color:#60a5fa; font-size:12px; font-weight:600;">🔒 Sandboxing code & executing against all 4 hidden test cases in parallel...</div>`;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>⏳</span> Evaluating 4 Hidden Tests...`;
+  }
+  if (resultsArea) {
+    resultsArea.style.display = 'block';
+    resultsArea.innerHTML = `<div style="color:#60a5fa; font-size:12px; font-weight:600;">🔒 Sandboxing code & executing against all 4 hidden test cases in parallel...</div>`;
+  }
 
   try {
+    let headers = { 'Content-Type': 'application/json' };
+    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+      headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
+    }
     const res = await fetch(`/api/problems/${currentProblem.id}/submit`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      headers: headers,
       body: JSON.stringify({ code: code, language: lang })
     });
 
     const data = await res.json();
-    btn.disabled = false;
-    btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
+    }
 
     if (!res.ok) {
-      resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Submission failed: ${data.message || 'Error'}</div>`;
+      if (resultsArea) resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Submission failed: ${data.message || 'Error'}</div>`;
       showToast(data.message || "Grading error", "error");
       return;
     }
@@ -2583,7 +2655,7 @@ async function submitProblemGrader() {
           ${data.isSolved ? '🎉 ACCEPTED — ALL TEST CASES PASSED!' : '❌ NOT ACCEPTED — TEST CASES FAILED'}
         </div>
         <div style="font-size:11.5px; color:var(--text-main); line-height:1.5;">
-          ${data.message}<br>
+          ${data.message || ''}<br>
           <strong>Total Passed:</strong> ${data.passedCount} / ${data.totalCount} (🔒 Hidden: ${data.hiddenPassed}/${data.hiddenTotal}) • <strong>Time:</strong> ${data.executionTimeMs}ms
         </div>
       </div>
@@ -2609,7 +2681,7 @@ async function submitProblemGrader() {
     }
 
     resultsHtml += `</div>`;
-    resultsArea.innerHTML = resultsHtml;
+    if (resultsArea) resultsArea.innerHTML = resultsHtml;
 
     if (data.isSolved) {
       createConfetti();
@@ -2621,9 +2693,11 @@ async function submitProblemGrader() {
     }
 
   } catch (err) {
-    btn.disabled = false;
-    btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
-    resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Grading exception: ${err.message}</div>`;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
+    }
+    if (resultsArea) resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Grading exception: ${err.message}</div>`;
   }
 }
 
@@ -2665,6 +2739,11 @@ require(['vs/editor/editor.main'], function() {
     // Load problem from URL query if ?problemId= is supplied
     loadProblemFromQuery();
     loadUserPoints();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadProblemFromQuery();
+  loadUserPoints();
 });
 
 // Mobile Action Helpers
