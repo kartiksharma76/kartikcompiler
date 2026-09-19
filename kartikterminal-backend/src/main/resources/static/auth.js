@@ -129,6 +129,7 @@ const KTAuth = (() => {
     const username = localStorage.getItem(USERNAME_KEY) || 'User';
     const fullName = localStorage.getItem(FULLNAME_KEY) || username;
     const role     = localStorage.getItem(ROLE_KEY)     || 'USER';
+    const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'KT';
 
     // Inject user widget into .navbar .controls if not already there
     if (!document.getElementById('kt-user-widget')) {

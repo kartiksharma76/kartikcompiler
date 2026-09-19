@@ -980,6 +980,9 @@ tr:hover td {
         </span>
       </div>
       <div class="bar-chart" id="weekChart"><div class="loading">Loading weekly metrics...</div></div>
+    </div>
+  </div>
+
   <!-- Assigned Problem Statements & Secure Sandboxes -->
   <div class="section" id="assignedProblemsSection">
     <div class="section-header">
@@ -1144,27 +1147,39 @@ function createNewExam() {
 
 async function loadDashboard() {
   try {
-    const res = await fetch('/api/dashboard');
+    const headers = {};
+    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+      headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
+    }
+    const res = await fetch('/api/dashboard', { headers });
     if (res.status === 401) { KTAuth.logout(); return; }
+    if (!res.ok) throw new Error('Failed to load dashboard statistics');
     const d = await res.json();
-    renderStats(d.stats, d.rank, d.tier, d.currentStreak);
-    renderLangChart(d.languageBreakdown);
-    renderWeekChart(d.weeklyActivity);
+    renderStats(d.stats || {}, d.rank, d.tier, d.currentStreak);
+    renderLangChart(d.languageBreakdown || {});
+    renderWeekChart(d.weeklyActivity || []);
   } catch (e) {
-    document.getElementById('statsGrid').innerHTML = '<div class="loading">Failed to load statistics.</div>';
+    document.getElementById('statsGrid').innerHTML = '<div class="loading" style="color:#f87171;">Failed to load statistics. Please try refreshing.</div>';
   }
 }
 
 async function loadHistory(page = 0) {
   document.getElementById('historyBody').innerHTML = '<div class="loading">Loading execution history...</div>';
   try {
-    const res = await fetch(`/api/dashboard/history?page=${page}&size=15`);
+    const headers = {};
+    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+      headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
+    }
+    const res = await fetch(`/api/dashboard/history?page=${page}&size=15`, { headers });
+    if (res.status === 401) { KTAuth.logout(); return; }
+    if (!res.ok) throw new Error('Failed to load history');
     const d = await res.json();
-    renderHistory(d.content);
-    renderPagination(d.currentPage, d.totalPages);
-    document.getElementById('historyMeta').textContent = `${d.totalElements} Total Runs`;
+    renderHistory(d.content || []);
+    renderPagination(d.currentPage || 0, d.totalPages || 0);
+    const metaEl = document.getElementById('historyMeta');
+    if (metaEl) metaEl.textContent = `${d.totalElements || 0} Total Runs`;
   } catch (e) {
-    document.getElementById('historyBody').innerHTML = '<div class="loading">Failed to load history.</div>';
+    document.getElementById('historyBody').innerHTML = '<div class="loading" style="color:#f87171;">Failed to load history.</div>';
   }
 }
 
