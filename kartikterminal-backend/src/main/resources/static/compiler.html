@@ -8,11 +8,6 @@
 <!-- ✅ STEP 1: Load auth.js FIRST — redirects to login.html if not authenticated -->
 <script src="/auth.js"></script>
 
-<!-- Real-time AI Proctoring Computer Vision & Object Detection Models -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
-
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/responsive.css">
 <style>
@@ -1545,7 +1540,9 @@ function handleKeydown(e) {
 
 // ── Security ──
 let securityMode=false, violations=0, isBlocked=false;
-const MAX_VIOLATIONS=3;
+const MAX_VIOLATIONS=2;
+let secureModeActivatedTimestamp = 0;
+
 function toggleSecurity(forceState) {
   if (isBlocked) {
     showErrorEffect();
@@ -1571,14 +1568,13 @@ function toggleSecurity(forceState) {
   showToast(`Security Mode ${securityMode ? 'Activated' : 'Deactivated'}`, securityMode ? 'security' : 'info');
   
   if (securityMode) {
-    startWebcam();
+    secureModeActivatedTimestamp = Date.now();
     try { 
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(() => {}); 
       }
     } catch (e) {}
   } else {
-    stopWebcam();
     try { 
       if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen().catch(() => {}); 
@@ -1670,20 +1666,38 @@ function insertTemplate() {
 }
 
 // ── Editor ──
+let lastCodeBeforePaste = '';
+
 function handleInput() {
+  lastCodeBeforePaste = (window.monacoEditor ? window.monacoEditor.getValue() : editor.value) || '';
   updateStats(); updateDetailedStats(); saveToLocalStorage();
 }
+
 function handlePaste() {
-    let cheatLogs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-    cheatLogs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Copy-Paste Block Detected', severity: 'MEDIUM' });
-    localStorage.setItem('cheatLogs', JSON.stringify(cheatLogs));
-    reportCheatToServer();
+  let cheatLogs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+  cheatLogs.push({ time: new Date().toLocaleTimeString(), student: (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student', activity: 'Copy-Paste Attempt Detected', severity: 'HIGH' });
+  localStorage.setItem('cheatLogs', JSON.stringify(cheatLogs));
+  
+  if (securityMode) {
+    playSecurityAlert();
+    violations++;
+    logToTerminal(`🚨 Security Violation: Code Paste Detected! (Infraction ${violations}/${MAX_VIOLATIONS})`, "warning");
+    reportCheatToServer(`Copy-Paste Violation Detected in Secure Mode (${violations}/${MAX_VIOLATIONS})`, "HIGH");
     
-    if(securityMode){
-      playSecurityAlert(); logToTerminal("🚨 Security: Code Paste Detected","warning");
-      violations++;
-      if(violations>=MAX_VIOLATIONS){isBlocked=true;document.body.classList.add('locked');document.getElementById('runBtn').disabled=true;openModal("Maximum paste violations reached. Editor Locked.");}
-    } else { logToTerminal("📋 Code pasted","info"); }
+    // Invert/revert the pasted code so candidate cannot keep unauthorized pasted code
+    if (lastCodeBeforePaste !== undefined) {
+      if (window.monacoEditor) window.monacoEditor.setValue(lastCodeBeforePaste);
+      else editor.value = lastCodeBeforePaste;
+    }
+
+    if (violations >= MAX_VIOLATIONS) {
+      handleAutoCutTermination("Maximum Copy-Paste Violations Reached (2/2)");
+    } else {
+      openModal(`⚠️ PROCTOR WARNING (Violation ${violations}/${MAX_VIOLATIONS}):\n\n🚨 CODE PASTE DETECTED!\n\nCopy-pasting code is strictly prohibited in Secure Mode.\n\n⚠️ IMPORTANT: A 2nd paste violation will IMMEDIATELY terminate your assessment session and disqualify you.`, false);
+    }
+  } else {
+    logToTerminal("📋 Code pasted", "info");
+  }
 }
 function updateStats() {
   const code=editor.value;
@@ -2262,39 +2276,44 @@ let isInternalModalOpen = false;
 function handleTabSwitchViolation(triggerType) {
   if (!securityMode || isBlocked || isInternalModalOpen || (Date.now() - modalCloseTimestamp < 2500)) return;
   const now = Date.now();
-  if (now - lastTabSwitchViolationTime < 6000) return; // Debounce rapid triggers
+  if (now - lastTabSwitchViolationTime < 5000) return; // Debounce rapid triggers
   lastTabSwitchViolationTime = now;
   
   playSecurityAlert();
   violations++;
   logToTerminal(`⚠️ SECURITY VIOLATION: ${triggerType} Detected! (Violation ${violations}/${MAX_VIOLATIONS})`, "error");
-  reportCheatToServer(`Security Violation: ${triggerType}`, "HIGH");
+  reportCheatToServer(`Security Violation: ${triggerType} (${violations}/${MAX_VIOLATIONS})`, "HIGH");
   showToast(`⚠️ PROCTOR ALERT: ${triggerType}!`, "error");
 
   if (violations >= MAX_VIOLATIONS) {
-    handleAutoCutTermination(`Maximum Tab Switch Violations Reached (${triggerType})`);
+    handleAutoCutTermination(`Maximum Tab Switch Violations Reached (${triggerType} - 2/2)`);
   } else {
-    openModal(`⚠️ ANTI-CHEAT WARNING (Infraction ${violations}/${MAX_VIOLATIONS}):\n\n${triggerType} was detected.\n\nYou must remain on this assessment tab in fullscreen mode.\n\n⚠️ Reaching ${MAX_VIOLATIONS} violations will lock your test session.`, false);
+    openModal(`⚠️ PROCTOR WARNING (Violation ${violations}/${MAX_VIOLATIONS}):\n\n🚨 ${triggerType.toUpperCase()} DETECTED!\n\nYou must remain on this assessment tab in full window mode.\n\n⚠️ IMPORTANT: A 2nd violation will IMMEDIATELY terminate your assessment and disqualify you.`, false);
   }
 }
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && securityMode && !isBlocked && !isInternalModalOpen && (Date.now() - modalCloseTimestamp >= 2500)) {
-    handleTabSwitchViolation("Tab Switch / Screen Minimized");
+    handleTabSwitchViolation("Tab Switch / Window Minimized");
   }
 });
 
-// Fullscreen exit notice
+// Immediate Fullscreen Exit Termination in Secure Mode
 document.addEventListener('fullscreenchange', () => {
-  if (securityMode && !isBlocked && !document.fullscreenElement) {
-    showToast("ℹ️ Note: Fullscreen mode is recommended during secure assessment.", "info");
+  if (securityMode && !isBlocked) {
+    if (!document.fullscreenElement) {
+      // If user exited fullscreen mode while in secure mode
+      if (Date.now() - secureModeActivatedTimestamp > 1500 && !isInternalModalOpen) {
+        handleAutoCutTermination("Exited Fullscreen / Full Window Mode during Secure Assessment");
+      }
+    }
   }
 });
 
 // ── AI Analysis Integration ──
 async function analyzeAI() {
   if (isBlocked) { showErrorEffect(); return; }
-  openTerminalPanel(); // Automatically generate and open terminal panel
+  openTerminalPanel();
   const btn = document.getElementById("aiBtn");
   btn.disabled = true;
   btn.textContent = "ANALYZING...";
@@ -2332,101 +2351,8 @@ Est. Space:      ${mockReport.spaceComplexity}
 }
 
 // ─────────────────────────────────────────────────────────
-// --- ACCURATE AI PROCTORING: MULTI-FACE, AUDIO & MOBILE PHONE ---
+// --- UNIFIED ANTI-CHEAT TERMINATION & CHEAT REPORTING ---
 // ─────────────────────────────────────────────────────────
-const webcamVideo = document.createElement('video');
-webcamVideo.id = "realWebcamFeed";
-webcamVideo.autoplay = true; 
-webcamVideo.muted = true;
-webcamVideo.playsInline = true;
-webcamVideo.style.cssText = "width: 175px; height: 135px; object-fit: cover; position: fixed; bottom: 20px; right: 20px; border-radius: 10px; border: 2px solid #3b82f6; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); background: #000;";
-document.body.appendChild(webcamVideo);
-
-// Live PIP Status Overlay on Webcam
-const proctorPipBadge = document.createElement('div');
-proctorPipBadge.id = "proctorPipBadge";
-proctorPipBadge.style.cssText = "position: fixed; bottom: 132px; right: 24px; z-index: 1001; background: rgba(0,0,0,0.85); color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.5); display: none; pointer-events: none; text-shadow: 0 0 6px #10b981; transition: all 0.2s ease;";
-proctorPipBadge.innerHTML = "🟢 AI PROCTOR: ACTIVE";
-document.body.appendChild(proctorPipBadge);
-
-let globalWebcamStream = null;
-let proctorStreamInterval = null;
-let proctorAnalysisInterval = null;
-let proctorAudioContext = null;
-let proctorAudioAnalyser = null;
-let proctorAudioSource = null;
-let audioCheckInterval = null;
-
-let blazeFaceModel = null;
-let isBlazeFaceLoading = false;
-let cocoSsdModel = null;
-let isCocoModelLoading = false;
-let lastMicLevel = 0;
-
-let multiFaceViolations = 0;
-let deviceViolations = 0;
-let voiceViolations = 0;
-let lastFaceAlertTime = 0;
-let lastDeviceAlertTime = 0;
-let lastVoiceAlertTime = 0;
-const MAX_PROCTOR_VIOLATIONS = 3;
-
-const proctorCanvas = document.createElement('canvas');
-proctorCanvas.width = 320;
-proctorCanvas.height = 240;
-
-function isSamePersonBox(b1, b2) {
-  const x1 = Math.max(b1[0], b2[0]);
-  const y1 = Math.max(b1[1], b2[1]);
-  const x2 = Math.min(b1[0] + b1[2], b2[0] + b2[2]);
-  const y2 = Math.min(b1[1] + b1[3], b2[1] + b2[3]);
-  const interW = Math.max(0, x2 - x1);
-  const interH = Math.max(0, y2 - y1);
-  const interArea = interW * interH;
-  const minArea = Math.min(b1[2] * b1[3], b2[2] * b2[3]);
-  const minW = Math.min(b1[2], b2[2]);
-  
-  // If boxes overlap by > 20% of smaller box, OR horizontal overlap is > 30% of width
-  if (minArea > 0 && (interArea / minArea) > 0.20) return true;
-  if (minW > 0 && (interW / minW) > 0.30) return true;
-  return false;
-}
-
-function ensureAudioContextActive() {
-  if (proctorAudioContext && proctorAudioContext.state === 'suspended') {
-    proctorAudioContext.resume().catch(() => {});
-  }
-}
-document.addEventListener('click', ensureAudioContextActive);
-document.addEventListener('keydown', ensureAudioContextActive);
-document.addEventListener('focus', ensureAudioContextActive);
-
-function loadAiProctorModel() {
-  if (window.blazeface && !blazeFaceModel && !isBlazeFaceLoading) {
-    isBlazeFaceLoading = true;
-    window.blazeface.load().then(m => {
-      blazeFaceModel = m;
-      isBlazeFaceLoading = false;
-      console.log("✅ TensorFlow BlazeFace AI Face Proctoring Engine loaded successfully");
-    }).catch(e => {
-      console.warn("BlazeFace loading error:", e);
-      isBlazeFaceLoading = false;
-    });
-  }
-  if (window.cocoSsd && !cocoSsdModel && !isCocoModelLoading) {
-    isCocoModelLoading = true;
-    window.cocoSsd.load().then(m => {
-      cocoSsdModel = m;
-      isCocoModelLoading = false;
-      console.log("✅ TensorFlow COCO-SSD AI Object Detector loaded successfully");
-    }).catch(e => {
-      console.warn("TensorFlow COCO-SSD loading fallback:", e);
-      isCocoModelLoading = false;
-    });
-  }
-}
-loadAiProctorModel();
-
 function reportCheatToServer(reason = 'General Security Violation', severity = 'HIGH') {
   try {
     let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
@@ -2453,373 +2379,11 @@ function handleAutoCutTermination(reason) {
   playSecurityAlert();
   reportCheatToServer(`AUTO-CUT: ${reason}`, 'CRITICAL');
   
-  openModal(`🚫 ASSESSMENT SESSION TERMINATED BY AI PROCTOR!\n\nReason: ${reason}\n\nYour code and submission have been frozen, and a cheating violation has been logged to your college and platform admin dashboard.\nRedirecting to dashboard...`, false);
+  openModal(`🚫 ASSESSMENT SESSION TERMINATED!\n\nReason: ${reason}\n\nYour code and submission have been frozen, and a critical violation has been logged to your college and platform admin dashboard.\nRedirecting to dashboard...`, false);
   
   setTimeout(() => {
-    stopWebcam();
     window.location.href = '/dashboard.html';
-  }, 4500);
-}
-
-function startWebcam() {
-  if (globalWebcamStream) return;
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    showToast("⚠️ Webcam not supported on this device/browser", "warning");
-    return;
-  }
-
-  loadAiProctorModel();
-
-  const handleStream = (stream) => {
-    globalWebcamStream = stream;
-    webcamVideo.srcObject = stream; 
-    webcamVideo.style.display = 'block';
-    proctorPipBadge.style.display = 'block';
-    localStorage.setItem('webcamActive', 'true'); 
-    
-    // Warm-up grace period: 7 seconds before activating proctor alerts
-    const sessionStartTime = Date.now();
-    let consecutiveMultiFaceFrames = 0;
-    let consecutiveDeviceFrames = 0;
-    let consecutiveVoiceFrames = 0;
-    let baselineNoiseFloor = 20;
-
-    // 1. Microphone Audio Proctoring Analyser (Continuous RMS + Vocal Formant Energy)
-    try {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      const audioTracks = stream.getAudioTracks();
-      if (AudioContextClass && audioTracks && audioTracks.length > 0) {
-        proctorAudioContext = new AudioContextClass();
-        ensureAudioContextActive();
-
-        proctorAudioSource = proctorAudioContext.createMediaStreamSource(stream);
-        proctorAudioAnalyser = proctorAudioContext.createAnalyser();
-        proctorAudioAnalyser.fftSize = 256;
-        proctorAudioAnalyser.smoothingTimeConstant = 0.5;
-        proctorAudioSource.connect(proctorAudioAnalyser);
-        
-        const audioFreqBuffer = new Uint8Array(proctorAudioAnalyser.frequencyBinCount);
-        const audioTimeBuffer = new Uint8Array(proctorAudioAnalyser.frequencyBinCount);
-        
-        audioCheckInterval = setInterval(() => {
-          if (!securityMode || isBlocked) return;
-          ensureAudioContextActive();
-          if (Date.now() - sessionStartTime < 7000) return; // 7s initial grace period
-
-          proctorAudioAnalyser.getByteFrequencyData(audioFreqBuffer);
-          proctorAudioAnalyser.getByteTimeDomainData(audioTimeBuffer);
-          
-          // Time Domain RMS
-          let sumSquares = 0;
-          for (let i = 0; i < audioTimeBuffer.length; i++) {
-            const norm = (audioTimeBuffer[i] - 128) / 128;
-            sumSquares += norm * norm;
-          }
-          const rms = Math.sqrt(sumSquares / audioTimeBuffer.length) * 100;
-
-          // Human Vocal Speech Formant Energy (300Hz - 2500Hz)
-          let sumSpeech = 0;
-          let maxSpeechBin = 0;
-          const sBin = Math.max(1, Math.floor(300 / (proctorAudioContext.sampleRate / 256)));
-          const eBin = Math.min(audioFreqBuffer.length - 1, Math.floor(2500 / (proctorAudioContext.sampleRate / 256)));
-          for (let i = sBin; i <= eBin; i++) {
-            const val = audioFreqBuffer[i] || 0;
-            sumSpeech += val;
-            if (val > maxSpeechBin) maxSpeechBin = val;
-          }
-          const avgSpeechEnergy = sumSpeech / (eBin - sBin + 1);
-
-          // Calibrate baseline ambient room noise floor
-          if (avgSpeechEnergy < baselineNoiseFloor) {
-            baselineNoiseFloor = Math.max(10, avgSpeechEnergy);
-          } else {
-            baselineNoiseFloor = (baselineNoiseFloor * 0.98) + (avgSpeechEnergy * 0.02);
-          }
-
-          lastMicLevel = Math.round(Math.min(100, Math.max(rms * 3.5, avgSpeechEnergy)));
-
-          // Strict Human speech threshold: Requires sustained loud vocal speaking > baseline + 40
-          const isLoudSpeech = (avgSpeechEnergy > (baselineNoiseFloor + 45) && avgSpeechEnergy > 55 && rms > 16.0);
-
-          if (isLoudSpeech) {
-            consecutiveVoiceFrames++;
-            if (consecutiveVoiceFrames >= 14) { // ~5.5s of continuous sustained talking
-              consecutiveVoiceFrames = 0;
-              const now = Date.now();
-              if (now - lastVoiceAlertTime > 18000) {
-                lastVoiceAlertTime = now;
-                voiceViolations++;
-                if (voiceViolations < MAX_PROCTOR_VIOLATIONS) {
-                  playSecurityAlert();
-                  reportCheatToServer("Sustained Voice/Speech Detected during Secure Assessment", "MEDIUM");
-                  showToast(`⚠️ PROCTOR WARNING: Voice/Speech detected! (${voiceViolations}/${MAX_PROCTOR_VIOLATIONS})`, "error");
-                  openModal(`⚠️ PROCTOR WARNING (Infraction ${voiceViolations}/${MAX_PROCTOR_VIOLATIONS}):\n\nSustained voice or talking was detected by your microphone.\nPlease ensure a quiet environment. Continued voice violations will terminate your assessment.`, false);
-                } else {
-                  handleAutoCutTermination("Multiple Voice/Speech Violations Detected by Microphone");
-                }
-              }
-            }
-          } else {
-            consecutiveVoiceFrames = Math.max(0, consecutiveVoiceFrames - 1);
-          }
-        }, 400);
-      }
-    } catch(e) {
-      console.warn("Audio proctoring not initialized:", e);
-    }
-
-    // 2. High-Accuracy AI Multi-Face (BlazeFace) & Mobile Device (COCO-SSD) Proctoring Engine
-    let isAnalyzingFrame = false;
-    proctorAnalysisInterval = setInterval(async () => {
-      if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended || !securityMode || isBlocked) return;
-      if (Date.now() - sessionStartTime < 7000) { // 7s initial camera warm-up
-        proctorPipBadge.style.color = '#38bdf8';
-        proctorPipBadge.style.borderColor = 'rgba(56, 189, 248, 0.5)';
-        proctorPipBadge.style.background = 'rgba(0,0,0,0.85)';
-        proctorPipBadge.innerHTML = `🟢 AI PROCTOR: CALIBRATING...`;
-        return;
-      }
-
-      if (isAnalyzingFrame) return;
-      isAnalyzingFrame = true;
-
-      try {
-        let isMultiFace = false;
-        let isDeviceDetected = false;
-        let detectedPersonCount = 1;
-
-        // Primary: BlazeFace specialized human landmark face detector
-        if (blazeFaceModel) {
-          try {
-            const predictions = await blazeFaceModel.estimateFaces(webcamVideo, false);
-            
-            // Filter high confidence real faces
-            const validFaces = (predictions || []).filter(f => {
-              const prob = Array.isArray(f.probability) ? f.probability[0] : (typeof f.probability === 'number' ? f.probability : 1.0);
-              if (prob < 0.88) return false;
-              const tl = f.topLeft, br = f.bottomRight;
-              const w = br[0] - tl[0];
-              const h = br[1] - tl[1];
-              return w >= 32 && h >= 32 && (w * h) >= 1000;
-            });
-
-            // Deduplicate overlapping detections of the same face
-            const distinctFaces = [];
-            for (let i = 0; i < validFaces.length; i++) {
-              const f = validFaces[i];
-              const tl = f.topLeft, br = f.bottomRight;
-              const cx = (tl[0] + br[0]) / 2;
-              const cy = (tl[1] + br[1]) / 2;
-              let isDup = false;
-              for (let j = 0; j < distinctFaces.length; j++) {
-                const ex = distinctFaces[j];
-                const eTl = ex.topLeft, eBr = ex.bottomRight;
-                const eCx = (eTl[0] + eBr[0]) / 2;
-                const eCy = (eTl[1] + eBr[1]) / 2;
-                if (Math.hypot(cx - eCx, cy - eCy) < 90) {
-                  isDup = true;
-                  break;
-                }
-              }
-              if (!isDup) distinctFaces.push(f);
-            }
-
-            detectedPersonCount = distinctFaces.length;
-
-            // Multiple faces ONLY if 2 completely separated faces exist (>110px apart)
-            if (distinctFaces.length >= 2) {
-              const f1 = distinctFaces[0], f2 = distinctFaces[1];
-              const cx1 = (f1.topLeft[0] + f1.bottomRight[0]) / 2;
-              const cx2 = (f2.topLeft[0] + f2.bottomRight[0]) / 2;
-              if (Math.abs(cx1 - cx2) > 110) {
-                isMultiFace = true;
-              }
-            }
-          } catch(err){}
-        } else if (cocoSsdModel) {
-          // Fallback to COCO-SSD with person bounding box merging
-          try {
-            const predictions = await cocoSsdModel.detect(webcamVideo);
-            const rawPersons = predictions.filter(p => {
-              if (p.class !== 'person' || p.score < 0.75) return false;
-              const bbox = p.bbox || [0,0,0,0];
-              return bbox[2] * bbox[3] >= 8000;
-            });
-            const uniquePersons = [];
-            for (let i = 0; i < rawPersons.length; i++) {
-              const p = rawPersons[i];
-              let isDup = false;
-              for (let j = 0; j < uniquePersons.length; j++) {
-                if (isSamePersonBox(p.bbox, uniquePersons[j].bbox)) { isDup = true; break; }
-              }
-              if (!isDup) uniquePersons.push(p);
-            }
-            detectedPersonCount = uniquePersons.length;
-            if (uniquePersons.length >= 2) {
-              const p1 = uniquePersons[0].bbox, p2 = uniquePersons[1].bbox;
-              const c1 = p1[0] + p1[2]/2, c2 = p2[0] + p2[2]/2;
-              if (Math.abs(c1 - c2) > 150 && uniquePersons[0].score >= 0.80 && uniquePersons[1].score >= 0.80) {
-                isMultiFace = true;
-              }
-            }
-          } catch(err){}
-        }
-
-        // Secondary: Strictly Handheld Mobile Phone Detection via COCO-SSD
-        if (cocoSsdModel) {
-          try {
-            const predictions = await cocoSsdModel.detect(webcamVideo);
-            const validPhones = predictions.filter(p => {
-              if (p.class !== 'cell phone' || p.score < 0.82) return false;
-              const bbox = p.bbox || [0,0,0,0];
-              const w = bbox[2], h = bbox[3];
-              const area = w * h;
-              // Strict handheld smartphone aspect ratio & size (excludes laptops/monitors)
-              const isPhoneDim = (w >= 35 && w <= 150 && h >= 55 && h <= 200 && area >= 2000 && area <= 26000);
-              const isPhoneRatio = (h / Math.max(1, w) >= 1.25 || w / Math.max(1, h) >= 1.25);
-              return isPhoneDim && isPhoneRatio;
-            });
-            if (validPhones.length > 0) isDeviceDetected = true;
-          } catch(err){}
-        }
-
-        const micStatusStr = lastMicLevel > 35 ? `🎙️ Mic: Speaking (${lastMicLevel}%)` : `🎙️ Mic: Clear (${lastMicLevel}%)`;
-
-        if (isMultiFace) {
-          consecutiveMultiFaceFrames++;
-          proctorPipBadge.style.color = '#ef4444';
-          proctorPipBadge.style.borderColor = '#ef4444';
-          proctorPipBadge.style.background = 'rgba(239, 68, 68, 0.25)';
-          proctorPipBadge.innerHTML = `🚨 MULTI-PERSON DETECTED (${detectedPersonCount}) | ${micStatusStr}`;
-
-          // Require 14 consecutive frames (~7.0s) of sustained multi-person presence
-          if (consecutiveMultiFaceFrames >= 14) {
-            consecutiveMultiFaceFrames = 0;
-            const now = Date.now();
-            if (now - lastFaceAlertTime > 18000) {
-              lastFaceAlertTime = now;
-              multiFaceViolations++;
-
-              if (multiFaceViolations < MAX_PROCTOR_VIOLATIONS) {
-                playSecurityAlert();
-                reportCheatToServer("Multiple Persons Detected in Assessment Camera View", "HIGH");
-                showToast(`⚠️ PROCTOR WARNING: Multiple candidates detected! (${multiFaceViolations}/${MAX_PROCTOR_VIOLATIONS})`, "error");
-                openModal(`⚠️ PROCTOR WARNING (Infraction ${multiFaceViolations}/${MAX_PROCTOR_VIOLATIONS}):\n\nMultiple people were detected in your camera frame.\n\nOnly the registered candidate is permitted during this assessment session. Reaching 3 violations will terminate your session.`, false);
-              } else {
-                handleAutoCutTermination("Multiple Candidates Detected in View");
-              }
-            }
-          }
-        } else if (isDeviceDetected) {
-          consecutiveDeviceFrames++;
-          proctorPipBadge.style.color = '#ef4444';
-          proctorPipBadge.style.borderColor = '#ef4444';
-          proctorPipBadge.style.background = 'rgba(239, 68, 68, 0.25)';
-          proctorPipBadge.innerHTML = `📱 MOBILE PHONE DETECTED | ${micStatusStr}`;
-
-          // Require 14 consecutive frames (~7.0s) of sustained phone presence
-          if (consecutiveDeviceFrames >= 14) {
-            consecutiveDeviceFrames = 0;
-            const now = Date.now();
-            if (now - lastDeviceAlertTime > 18000) {
-              lastDeviceAlertTime = now;
-              deviceViolations++;
-
-              if (deviceViolations < MAX_PROCTOR_VIOLATIONS) {
-                playSecurityAlert();
-                reportCheatToServer(`Mobile Phone Detected in Camera View`, "HIGH");
-                showToast(`⚠️ PROCTOR WARNING: Mobile phone in camera view! (${deviceViolations}/${MAX_PROCTOR_VIOLATIONS})`, "error");
-                openModal(`⚠️ PROCTOR WARNING (Infraction ${deviceViolations}/${MAX_PROCTOR_VIOLATIONS}):\n\nAn unauthorized mobile phone was detected in your camera view.\n\nPlease remove any mobile phones from the camera frame immediately.`, false);
-              } else {
-                handleAutoCutTermination(`Unauthorized Mobile Phone Detected in View`);
-              }
-            }
-          }
-        } else {
-          consecutiveMultiFaceFrames = Math.max(0, consecutiveMultiFaceFrames - 1);
-          consecutiveDeviceFrames = Math.max(0, consecutiveDeviceFrames - 1);
-          proctorPipBadge.style.color = '#10b981';
-          proctorPipBadge.style.borderColor = 'rgba(16,185,129,0.5)';
-          proctorPipBadge.style.background = 'rgba(0,0,0,0.85)';
-          if (detectedPersonCount === 0) {
-            proctorPipBadge.innerHTML = `⚠️ No Face Detected | ${micStatusStr}`;
-            proctorPipBadge.style.color = '#f59e0b';
-          } else {
-            proctorPipBadge.innerHTML = `🟢 1 Candidate (OK) | ${micStatusStr}`;
-          }
-        }
-      } catch(err) {
-      } finally {
-        isAnalyzingFrame = false;
-      }
-    }, 500);
-
-    // 3. Broadcast frames to Admin Live Proctoring Monitor
-    if (!proctorStreamInterval) {
-      proctorStreamInterval = setInterval(() => {
-        if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended) return;
-        try {
-          const ctx = proctorCanvas.getContext('2d');
-          ctx.drawImage(webcamVideo, 0, 0, 320, 240);
-          const dataUrl = proctorCanvas.toDataURL('image/jpeg', 0.5);
-          const user = (typeof KTAuth !== 'undefined' ? KTAuth.getUser() : {}) || {};
-          fetch('/api/proctor/stream-frame', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${typeof KTAuth !== 'undefined' ? KTAuth.getToken() : ''}` },
-            body: JSON.stringify({
-              userId: user.id || 1,
-              username: user.username || (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student',
-              fullName: user.fullName || user.username || 'Student',
-              frame: dataUrl,
-              violations: violations + multiFaceViolations + deviceViolations + voiceViolations,
-              securityMode: securityMode
-            })
-          }).catch(() => {});
-        } catch(err) {}
-      }, 1500);
-    }
-  };
-
-  // Attempt video + audio, fallback to video-only if microphone is absent
-  navigator.mediaDevices.getUserMedia({ 
-    video: { width: { ideal: 320 }, height: { ideal: 240 } }, 
-    audio: true 
-  })
-  .then(handleStream)
-  .catch(err => {
-    console.warn("Retrying with video-only constraints...", err);
-    navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 320 }, height: { ideal: 240 } } })
-      .then(handleStream)
-      .catch(e => {
-        console.error("Camera access failed:", e);
-        localStorage.setItem('webcamActive', 'false'); 
-        showToast("⚠️ Camera/Microphone access required for Secure Mode", "error");
-      });
-  });
-}
-
-function stopWebcam() {
-  if (proctorStreamInterval) { clearInterval(proctorStreamInterval); proctorStreamInterval = null; }
-  if (proctorAnalysisInterval) { clearInterval(proctorAnalysisInterval); proctorAnalysisInterval = null; }
-  if (audioCheckInterval) { clearInterval(audioCheckInterval); audioCheckInterval = null; }
-  if (proctorAudioContext) {
-    try { proctorAudioContext.close(); } catch(e){}
-    proctorAudioContext = null;
-  }
-  if (globalWebcamStream) {
-    globalWebcamStream.getTracks().forEach(track => track.stop());
-    globalWebcamStream = null;
-  }
-  webcamVideo.srcObject = null;
-  webcamVideo.style.display = 'none';
-  proctorPipBadge.style.display = 'none';
-  localStorage.setItem('webcamActive', 'false');
-  try {
-    const user = (typeof KTAuth !== 'undefined' ? KTAuth.getUser() : {}) || {};
-    if (user && user.id) {
-      fetch(`/api/proctor/stop-feed/${user.id}`, { method: 'POST', headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` } });
-    }
-  } catch(e) {}
+  }, 4000);
 }
 
 // ─────────────────────────────────────────────────────────
