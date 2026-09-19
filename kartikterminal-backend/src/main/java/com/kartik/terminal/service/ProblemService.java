@@ -82,25 +82,43 @@ public class ProblemService {
         List<TestCase> testCases = new ArrayList<>();
         if (request.getTestCases() != null && !request.getTestCases().isEmpty()) {
             for (TestCaseDTO tcDTO : request.getTestCases()) {
-                testCases.add(TestCase.builder()
-                        .problem(problem)
-                        .inputData(tcDTO.getInputData() != null ? tcDTO.getInputData() : "")
-                        .expectedOutput(tcDTO.getExpectedOutput() != null ? tcDTO.getExpectedOutput() : "")
-                        .isHidden(Boolean.TRUE.equals(tcDTO.getIsHidden()))
-                        .build());
+                String in = tcDTO.getInputData() != null ? tcDTO.getInputData().trim() : "";
+                String out = tcDTO.getExpectedOutput() != null ? tcDTO.getExpectedOutput().trim() : "";
+                if (!in.isEmpty() || !out.isEmpty()) {
+                    testCases.add(TestCase.builder()
+                            .problem(problem)
+                            .inputData(in)
+                            .expectedOutput(out)
+                            .isHidden(Boolean.TRUE.equals(tcDTO.getIsHidden()))
+                            .build());
+                }
             }
-        } else {
-            // Fallback default test cases with 1 public and 4 hidden test cases
-            testCases.add(TestCase.builder().problem(problem).inputData(request.getSampleInput()).expectedOutput(request.getSampleOutput()).isHidden(false).build());
-            for (int i = 1; i <= 4; i++) {
-                testCases.add(TestCase.builder().problem(problem).inputData("test_" + i).expectedOutput("out_" + i).isHidden(true).build());
+        }
+
+        // Guarantee at least 1 public sample and 4 distinct hidden test cases
+        long hiddenCount = testCases.stream().filter(t -> Boolean.TRUE.equals(t.getIsHidden())).count();
+        if (testCases.isEmpty() || hiddenCount < 4) {
+            if (testCases.stream().noneMatch(t -> !Boolean.TRUE.equals(t.getIsHidden()))) {
+                String sIn = request.getSampleInput() != null && !request.getSampleInput().isBlank() ? request.getSampleInput().trim() : "5\n1 2 3 4 5";
+                String sOut = request.getSampleOutput() != null && !request.getSampleOutput().isBlank() ? request.getSampleOutput().trim() : "10";
+                testCases.add(0, TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
+            }
+
+            int needed = (int) (4 - hiddenCount);
+            for (int i = 1; i <= needed; i++) {
+                String edgeIn = (i * 10) + "\n" + (i * 5);
+                String edgeOut = String.valueOf(i * 10 * 2);
+                testCases.add(TestCase.builder().problem(problem).inputData(edgeIn).expectedOutput(edgeOut).isHidden(true).build());
             }
         }
         problem.setTestCases(testCases);
 
         Problem saved = problemRepository.save(problem);
-        log.info("Problem assigned: ID={}, Title='{}', Scope={}, CreatedBy={}",
-                saved.getId(), saved.getTitle(), assignedInstitution != null ? assignedInstitution.getName() : "GLOBAL", currentUser.getUsername());
+        if (testCases != null && !testCases.isEmpty()) {
+            testCaseRepository.saveAll(testCases);
+        }
+        log.info("Problem assigned: ID={}, Title='{}', Scope={}, CreatedBy={}, TotalTests={}",
+                saved.getId(), saved.getTitle(), assignedInstitution != null ? assignedInstitution.getName() : "GLOBAL", currentUser.getUsername(), testCases.size());
 
         return mapToResponse(saved, currentUser);
     }
@@ -171,8 +189,8 @@ public class ProblemService {
         );
 
         String starter = "java".equalsIgnoreCase(lang) ?
-                "import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n            // Write your solution here\n            System.out.println(n * 2);\n        }\n    }\n}" :
-                "# Write your optimal solution here\nimport sys\n\ndef solve():\n    lines = sys.stdin.read().split()\n    if not lines: return\n    n = int(lines[0])\n    print(n * 2)\n\nif __name__ == '__main__':\n    solve()\n";
+                "import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n            // Complete your solution logic below:\n            System.out.println(n);\n        }\n    }\n}" :
+                "# Write your optimal solution here\nimport sys\n\ndef solve():\n    lines = sys.stdin.read().split()\n    if not lines: return\n    n = int(lines[0])\n    print(n)\n\nif __name__ == '__main__':\n    solve()\n";
 
         return Map.of(
             "title", fallbackTitle,
@@ -181,14 +199,14 @@ public class ProblemService {
             "points", 50,
             "tags", topic + ", DSA",
             "sampleInput", "5\n1 2 3 4 5",
-            "sampleOutput", "10",
+            "sampleOutput", "15",
             "starterCode", starter,
             "testCases", List.of(
-                Map.of("inputData", "5\n1 2 3 4 5", "expectedOutput", "10", "isHidden", false),
-                Map.of("inputData", "0\n0", "expectedOutput", "0", "isHidden", true),
-                Map.of("inputData", "10\n1 1 1 1 1 1 1 1 1 1", "expectedOutput", "20", "isHidden", true),
-                Map.of("inputData", "-5\n-1 -2 -3 -4 -5", "expectedOutput", "-10", "isHidden", true),
-                Map.of("inputData", "1000\n500", "expectedOutput", "2000", "isHidden", true)
+                Map.of("inputData", "5\n1 2 3 4 5", "expectedOutput", "15", "isHidden", false),
+                Map.of("inputData", "3\n10 20 30", "expectedOutput", "60", "isHidden", true),
+                Map.of("inputData", "1\n100", "expectedOutput", "100", "isHidden", true),
+                Map.of("inputData", "4\n-5 5 -10 10", "expectedOutput", "0", "isHidden", true),
+                Map.of("inputData", "6\n2 4 6 8 10 12", "expectedOutput", "42", "isHidden", true)
             )
         );
     }
@@ -269,9 +287,20 @@ public class ProblemService {
                 .orElseThrow(() -> new IllegalArgumentException("Problem not found with ID: " + problemId));
 
         List<TestCase> testCases = testCaseRepository.findByProblemOrderByIdAsc(problem);
-        if (testCases.isEmpty()) {
-            // If testCases relation was not populated directly in DB, fallback to problem.getTestCases()
+        if (testCases == null || testCases.isEmpty()) {
             testCases = problem.getTestCases();
+        }
+
+        // If no test cases exist, auto-create 1 sample + 4 hidden test cases
+        if (testCases == null || testCases.isEmpty()) {
+            testCases = new ArrayList<>();
+            String sIn = problem.getSampleInput() != null && !problem.getSampleInput().isBlank() ? problem.getSampleInput().trim() : "5\n1 2 3 4 5";
+            String sOut = problem.getSampleOutput() != null && !problem.getSampleOutput().isBlank() ? problem.getSampleOutput().trim() : "15";
+            testCases.add(TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
+            for (int i = 1; i <= 4; i++) {
+                testCases.add(TestCase.builder().problem(problem).inputData((i * 10) + "\n" + (i * 5)).expectedOutput(String.valueOf(i * 15)).isHidden(true).build());
+            }
+            testCaseRepository.saveAll(testCases);
         }
 
         int totalCases = testCases.size();
@@ -297,8 +326,10 @@ public class ProblemService {
             String expectedClean = tc.getExpectedOutput() != null ? tc.getExpectedOutput().trim().replace("\r\n", "\n") : "";
             String actualClean = execResult.output() != null ? execResult.output().trim().replace("\r\n", "\n") : "";
 
+            // Strict validation: Must exit code 0, have NO error, have non-empty expected, and match exactly
             boolean passed = execResult.exitCode() == 0 &&
-                             execResult.error().isEmpty() &&
+                             (execResult.error() == null || execResult.error().trim().isEmpty()) &&
+                             !expectedClean.isEmpty() &&
                              expectedClean.equals(actualClean);
 
             if (passed) {
@@ -321,8 +352,8 @@ public class ProblemService {
             results.add(r);
         }
 
-        // Verdict: Passed ONLY if ALL test cases (including all hidden test cases) pass
-        boolean isAllPassed = (totalCases > 0) && (passedCount == totalCases);
+        // Verdict: Passed ONLY if ALL test cases (including all 4 hidden test cases) pass
+        boolean isAllPassed = (totalCases > 0) && (hiddenTotal >= 4) && (passedCount == totalCases);
 
         int pointsToAward = 0;
         boolean alreadySolved = problemSubmissionRepository.existsByUserAndProblemAndIsSolvedTrue(user, problem);

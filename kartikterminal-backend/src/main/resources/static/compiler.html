@@ -2298,11 +2298,11 @@ function startWebcam() {
       console.warn("Audio proctoring not initialized:", e);
     }
 
-    // 2. High-Accuracy Multi-Face Centroid CV Detector
+    // 2. High-Accuracy Multi-Face & Mobile Device CV Proctoring Engine
     proctorAnalysisInterval = setInterval(() => {
       if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended || !securityMode || isBlocked) return;
-      // 6-second initial grace period on startup
-      if (Date.now() - sessionStartTime < 6000) return;
+      // 4-second initial grace period on startup
+      if (Date.now() - sessionStartTime < 4000) return;
 
       try {
         const ctx = proctorCanvas.getContext('2d');
@@ -2310,70 +2310,93 @@ function startWebcam() {
         const imgData = ctx.getImageData(0, 0, 320, 240);
         const data = imgData.data;
         
-        // Scan the upper head region (y from 15 to 160)
-        let leftHeadMass = 0;
-        let rightHeadMass = 0;
-        let centerHeadMass = 0;
-        let totalHeadMass = 0;
-        
-        for (let y = 15; y < 160; y += 4) {
-          for (let x = 10; x < 310; x += 4) {
+        let leftSkin = 0;
+        let rightSkin = 0;
+        let centerSkin = 0;
+        let totalSkin = 0;
+
+        let deviceBrightPixels = 0; // Glowing phone/tablet screen
+        let deviceChassisPixels = 0; // Handheld black electronic device body
+
+        for (let y = 20; y < 220; y += 4) {
+          for (let x = 12; x < 308; x += 4) {
             const idx = (y * 320 + x) * 4;
             const r = data[idx];
             const g = data[idx + 1];
             const b = data[idx + 2];
             
-            // Accurate skin/face luminance heuristic
-            const isFacePixel = (r > 105 && g > 55 && b > 30 && 
-                                r > g && g > b && 
-                                (r - g) >= 15 && (r - b) >= 20 &&
-                                Math.max(r, g, b) - Math.min(r, g, b) >= 20);
-            
-            if (isFacePixel) {
-              totalHeadMass++;
-              if (x < 110) leftHeadMass++;
-              else if (x > 210) rightHeadMass++;
-              else centerHeadMass++;
+            // 1. Skin tone detector (standard RGB envelope for diverse skin complexions)
+            const isSkin = (r > 60 && g > 35 && b > 20 && 
+                            r > g && g >= b && 
+                            (r - g) >= 8 && (r - b) >= 12 &&
+                            Math.max(r, g, b) - Math.min(r, g, b) >= 12);
+
+            if (isSkin) {
+              totalSkin++;
+              if (x < 105) leftSkin++;
+              else if (x > 215) rightSkin++;
+              else centerSkin++;
+            } else {
+              // 2. Mobile Phone / Electronic Device Detection
+              // A: Glowing illuminated screen
+              if (r > 190 && g > 190 && b > 190 && Math.abs(r - g) < 20 && Math.abs(g - b) < 20) {
+                deviceBrightPixels++;
+              }
+              // B: Dark rectangular handheld smartphone body in mid/lower area
+              else if (r < 30 && g < 30 && b < 30 && y > 60) {
+                deviceChassisPixels++;
+              }
             }
           }
         }
-        
-        // Multi-face condition: TWO DISTINCT SEPARATED HEADS
-        // Both left side and right side must each have significant head mass (>240 pixels)
-        // AND the total head area must be unusually large (>850 pixels), indicating 2 separate people.
-        const multiFaceDetected = (leftHeadMass > 240 && rightHeadMass > 240 && totalHeadMass > 850);
-        
-        if (multiFaceDetected) {
-          consecutiveMultiFaceFrames++;
+
+        // Multi-face condition: Main candidate in center + secondary face on left or right, or two candidates side-by-side
+        const isMultiFace = (centerSkin >= 40 && leftSkin >= 35) || 
+                            (centerSkin >= 40 && rightSkin >= 35) || 
+                            (leftSkin >= 35 && rightSkin >= 35) ||
+                            (totalSkin > 350 && (leftSkin >= 30 || rightSkin >= 30));
+
+        // Mobile Phone / Electronic Device condition
+        const isDeviceDetected = (deviceBrightPixels >= 32) || (deviceChassisPixels >= 50);
+
+        if (isMultiFace || isDeviceDetected) {
+          const isDevice = isDeviceDetected && !isMultiFace;
+          const violationLabel = isDevice ? "📱 ELECTRONIC DEVICE / PHONE DETECTED!" : "🚨 MULTI-FACE DETECTED!";
+          const violationDesc = isDevice ? "Unauthorized Mobile Phone / Electronic Device in Camera View" : "Multiple Faces / Secondary Person Detected";
+
           proctorPipBadge.style.color = '#ef4444';
           proctorPipBadge.style.borderColor = '#ef4444';
-          proctorPipBadge.innerHTML = "🚨 MULTI-FACE DETECTED!";
-          
-          // Require at least 4 consecutive frames (3.5+ seconds of simultaneous multi-person presence)
-          if (consecutiveMultiFaceFrames >= 4) {
+          proctorPipBadge.innerHTML = violationLabel;
+
+          if (isDevice) consecutiveDeviceFrames++;
+          if (isMultiFace) consecutiveMultiFaceFrames++;
+
+          // Require 2 consecutive positive detections (~1.2s) to prevent single-frame flickering
+          if (consecutiveMultiFaceFrames >= 2 || consecutiveDeviceFrames >= 2) {
             const now = Date.now();
-            if (now - lastFaceAlertTime > 12000) {
+            if (now - lastFaceAlertTime > 9000) {
               lastFaceAlertTime = now;
               multiFaceViolations++;
-              
+
               if (multiFaceViolations === 1) {
                 playSecurityAlert();
-                reportCheatToServer("Multiple Faces Detected in Camera Frame", "HIGH");
-                showToast("⚠️ PROCTOR WARNING: Multiple faces detected!", "error");
-                openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nMultiple people / faces were detected in front of the camera.\nOnly the candidate is permitted in camera frame.\n\n⚠️ IMPORTANT: If another person is detected again, your test session will be IMMEDIATELY CLOSED.");
+                reportCheatToServer(violationDesc, "HIGH");
+                showToast(`⚠️ PROCTOR WARNING: ${violationDesc}!`, "error");
+                openModal(`⚠️ PROCTOR WARNING (Violation 1/2):\n\n${violationLabel}\n${violationDesc}.\n\nCandidate must be alone and no mobile phones / electronic devices are permitted.\n\n⚠️ IMPORTANT: A 2nd violation will IMMEDIATELY TERMINATE your session and disqualify you.`);
               } else if (multiFaceViolations >= 2) {
-                handleAutoCutTermination("Multiple Faces / Unauthorized Secondary Person Detected");
+                handleAutoCutTermination(violationDesc);
               }
             }
           }
         } else {
           consecutiveMultiFaceFrames = Math.max(0, consecutiveMultiFaceFrames - 1);
+          consecutiveDeviceFrames = Math.max(0, consecutiveDeviceFrames - 1);
           proctorPipBadge.style.color = '#10b981';
           proctorPipBadge.style.borderColor = 'rgba(16,185,129,0.5)';
           proctorPipBadge.innerHTML = `🟢 AI PROCTOR: 1 Candidate (OK) | Mic: Clear`;
         }
       } catch(err) {}
-    }, 800);
+    }, 600);
 
     // 3. Broadcast frames to Admin Live Proctoring Monitor
     if (!proctorStreamInterval) {
@@ -2610,13 +2633,25 @@ async function runProblemSampleTests() {
     if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
       headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
     }
-    const res = await fetch('/compiler/run', {
+    const res = await fetch('/api/compiler/run', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({ code: code, language: lang, stdin: sampleIn })
     });
-    const data = await res.json();
-    const actualOut = (data.output || '').trim();
+
+    let actualOut = '';
+    let executionTime = '0ms';
+    const contentType = res.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      actualOut = (data.output || data.error || '').trim();
+      executionTime = data.executionTime || '0ms';
+    } else {
+      const text = await res.text();
+      actualOut = text.trim();
+    }
+
     const isPass = actualOut === sampleExpected;
 
     if (resultsArea) {
@@ -2624,7 +2659,7 @@ async function runProblemSampleTests() {
         <div style="background:${isPass ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border:1px solid ${isPass ? '#10b981' : '#ef4444'}; border-radius:8px; padding:10px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <span style="font-weight:700; font-size:12px; color:${isPass ? '#10b981' : '#ef4444'};">${isPass ? '✅ SAMPLE TEST PASSED' : '❌ SAMPLE TEST FAILED'}</span>
-            <span style="font-size:10.5px; color:var(--text-muted); font-family:monospace;">${data.executionTime || '0ms'}</span>
+            <span style="font-size:10.5px; color:var(--text-muted); font-family:monospace;">${executionTime}</span>
           </div>
           <div style="font-size:11px; margin-bottom:4px; color:var(--text-muted);"><strong>Expected:</strong> <code style="color:#e2e8f0;">${escapeHtml(sampleExpected)}</code></div>
           <div style="font-size:11px; color:var(--text-muted);"><strong>Your Output:</strong> <code style="color:${isPass ? '#10b981' : '#ef4444'};">${escapeHtml(actualOut)}</code></div>
