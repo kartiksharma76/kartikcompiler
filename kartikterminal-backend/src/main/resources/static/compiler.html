@@ -1966,6 +1966,11 @@ async function runCode() {
         pList.innerHTML = `<div style="color: #10b981;">✓ No syntax or compilation problems detected in the current workspace.</div>`;
       }
     }
+    
+    // If user is solving an assigned problem statement, automatically test against sample test cases
+    if (currentProblem && typeof runProblemSampleTests === 'function') {
+      try { runProblemSampleTests(); } catch(e){}
+    }
   } catch(err){
     showErrorEffect();
     term.innerHTML+=`<div class="term-line term-output-err">❌ Execution Network Error: ${escapeHtml(err.message)}</div>`;
@@ -2211,11 +2216,7 @@ function startWebcam() {
     return;
   }
 
-  navigator.mediaDevices.getUserMedia({ 
-    video: { width: { ideal: 320 }, height: { ideal: 240 } }, 
-    audio: true 
-  })
-  .then(stream => { 
+  const handleStream = (stream) => {
     globalWebcamStream = stream;
     webcamVideo.srcObject = stream; 
     webcamVideo.style.display = 'block';
@@ -2224,17 +2225,26 @@ function startWebcam() {
     
     const sessionStartTime = Date.now();
     let consecutiveMultiFaceFrames = 0;
+    let consecutiveDeviceFrames = 0;
     let consecutiveVoiceFrames = 0;
     let baselineNoiseFloor = 40;
 
     // 1. Microphone Audio Proctoring Analyser (Speech vs Ambient Noise)
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (AudioContextClass) {
+      const audioTracks = stream.getAudioTracks();
+      if (AudioContextClass && audioTracks && audioTracks.length > 0) {
         proctorAudioContext = new AudioContextClass();
-        if (proctorAudioContext.state === 'suspended') {
-          proctorAudioContext.resume();
-        }
+        
+        // Auto-resume audio context on user interaction if suspended
+        const resumeAudio = () => {
+          if (proctorAudioContext && proctorAudioContext.state === 'suspended') {
+            proctorAudioContext.resume().catch(() => {});
+          }
+        };
+        document.addEventListener('click', resumeAudio, { once: true });
+        document.addEventListener('keydown', resumeAudio, { once: true });
+
         proctorAudioSource = proctorAudioContext.createMediaStreamSource(stream);
         proctorAudioAnalyser = proctorAudioContext.createAnalyser();
         proctorAudioAnalyser.fftSize = 512;
@@ -2245,38 +2255,37 @@ function startWebcam() {
         
         audioCheckInterval = setInterval(() => {
           if (!securityMode || isBlocked) return;
-          // 6-second initial grace period on startup
-          if (Date.now() - sessionStartTime < 6000) return;
+          if (Date.now() - sessionStartTime < 3500) return;
 
           proctorAudioAnalyser.getByteFrequencyData(audioBuffer);
           
-          // Formant speech frequencies (400Hz - 2200Hz -> bins 15 to 65)
+          // Formant speech frequencies (300Hz - 2500Hz -> bins 12 to 70)
           let sum = 0;
           let maxVal = 0;
-          for (let i = 15; i <= 65; i++) {
+          for (let i = 12; i <= 70; i++) {
             const val = audioBuffer[i] || 0;
             sum += val;
             if (val > maxVal) maxVal = val;
           }
-          let avgSpeechEnergy = sum / 51;
+          let avgSpeechEnergy = sum / 59;
 
-          // Adapt baseline noise floor
+          // Adapt baseline noise floor smoothly
           if (avgSpeechEnergy < baselineNoiseFloor) {
-            baselineNoiseFloor = Math.max(25, avgSpeechEnergy);
+            baselineNoiseFloor = Math.max(20, avgSpeechEnergy);
           } else {
-            baselineNoiseFloor = (baselineNoiseFloor * 0.98) + (avgSpeechEnergy * 0.02);
+            baselineNoiseFloor = (baselineNoiseFloor * 0.96) + (avgSpeechEnergy * 0.04);
           }
           
-          // True vocal speech threshold (must exceed baseline noise by substantial margin and be above 125)
-          const isLoudSpeech = (avgSpeechEnergy > Math.max(125, baselineNoiseFloor + 45)) && (maxVal > 150);
+          // Responsive speech detection: candidate speaking or someone whispering
+          const isLoudSpeech = (avgSpeechEnergy > Math.max(55, baselineNoiseFloor + 22)) && (maxVal > 75);
 
           if (isLoudSpeech) {
             consecutiveVoiceFrames++;
-            // Must be sustained speech for over 4.5 seconds (9 consecutive frames)
-            if (consecutiveVoiceFrames >= 9) {
+            // 3 consecutive frames (~1.2 seconds of talking)
+            if (consecutiveVoiceFrames >= 3) {
               consecutiveVoiceFrames = 0;
               const now = Date.now();
-              if (now - lastVoiceAlertTime > 12000) {
+              if (now - lastVoiceAlertTime > 8000) {
                 lastVoiceAlertTime = now;
                 voiceViolations++;
                 if (voiceViolations === 1) {
@@ -2292,7 +2301,7 @@ function startWebcam() {
           } else {
             consecutiveVoiceFrames = Math.max(0, consecutiveVoiceFrames - 1);
           }
-        }, 500);
+        }, 400);
       }
     } catch(e) {
       console.warn("Audio proctoring not initialized:", e);
@@ -2301,8 +2310,7 @@ function startWebcam() {
     // 2. High-Accuracy Multi-Face & Mobile Device CV Proctoring Engine
     proctorAnalysisInterval = setInterval(() => {
       if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended || !securityMode || isBlocked) return;
-      // 4-second initial grace period on startup
-      if (Date.now() - sessionStartTime < 4000) return;
+      if (Date.now() - sessionStartTime < 3500) return;
 
       try {
         const ctx = proctorCanvas.getContext('2d');
@@ -2318,32 +2326,31 @@ function startWebcam() {
         let deviceBrightPixels = 0; // Glowing phone/tablet screen
         let deviceChassisPixels = 0; // Handheld black electronic device body
 
-        for (let y = 20; y < 220; y += 4) {
-          for (let x = 12; x < 308; x += 4) {
+        for (let y = 15; y < 225; y += 4) {
+          for (let x = 10; x < 310; x += 4) {
             const idx = (y * 320 + x) * 4;
             const r = data[idx];
             const g = data[idx + 1];
             const b = data[idx + 2];
             
             // 1. Skin tone detector (standard RGB envelope for diverse skin complexions)
-            const isSkin = (r > 60 && g > 35 && b > 20 && 
-                            r > g && g >= b && 
-                            (r - g) >= 8 && (r - b) >= 12 &&
-                            Math.max(r, g, b) - Math.min(r, g, b) >= 12);
+            const isSkin = (r > 50 && g > 30 && b > 15 && 
+                            r > g && (r - b) >= 10 &&
+                            Math.max(r, g, b) - Math.min(r, g, b) >= 10);
 
             if (isSkin) {
               totalSkin++;
-              if (x < 105) leftSkin++;
-              else if (x > 215) rightSkin++;
+              if (x < 110) leftSkin++;
+              else if (x > 210) rightSkin++;
               else centerSkin++;
             } else {
               // 2. Mobile Phone / Electronic Device Detection
               // A: Glowing illuminated screen
-              if (r > 190 && g > 190 && b > 190 && Math.abs(r - g) < 20 && Math.abs(g - b) < 20) {
+              if (r > 180 && g > 180 && b > 180 && Math.abs(r - g) < 22 && Math.abs(g - b) < 22) {
                 deviceBrightPixels++;
               }
               // B: Dark rectangular handheld smartphone body in mid/lower area
-              else if (r < 30 && g < 30 && b < 30 && y > 60) {
+              else if (r < 35 && g < 35 && b < 35 && y > 45) {
                 deviceChassisPixels++;
               }
             }
@@ -2351,13 +2358,13 @@ function startWebcam() {
         }
 
         // Multi-face condition: Main candidate in center + secondary face on left or right, or two candidates side-by-side
-        const isMultiFace = (centerSkin >= 40 && leftSkin >= 35) || 
-                            (centerSkin >= 40 && rightSkin >= 35) || 
-                            (leftSkin >= 35 && rightSkin >= 35) ||
-                            (totalSkin > 350 && (leftSkin >= 30 || rightSkin >= 30));
+        const isMultiFace = (centerSkin >= 35 && leftSkin >= 28) || 
+                            (centerSkin >= 35 && rightSkin >= 28) || 
+                            (leftSkin >= 28 && rightSkin >= 28) ||
+                            (totalSkin > 300 && (leftSkin >= 25 || rightSkin >= 25));
 
         // Mobile Phone / Electronic Device condition
-        const isDeviceDetected = (deviceBrightPixels >= 32) || (deviceChassisPixels >= 50);
+        const isDeviceDetected = (deviceBrightPixels >= 25) || (deviceChassisPixels >= 40);
 
         if (isMultiFace || isDeviceDetected) {
           const isDevice = isDeviceDetected && !isMultiFace;
@@ -2371,10 +2378,10 @@ function startWebcam() {
           if (isDevice) consecutiveDeviceFrames++;
           if (isMultiFace) consecutiveMultiFaceFrames++;
 
-          // Require 2 consecutive positive detections (~1.2s) to prevent single-frame flickering
+          // Require 2 consecutive positive detections (~1.0s) to prevent single-frame flickering
           if (consecutiveMultiFaceFrames >= 2 || consecutiveDeviceFrames >= 2) {
             const now = Date.now();
-            if (now - lastFaceAlertTime > 9000) {
+            if (now - lastFaceAlertTime > 8000) {
               lastFaceAlertTime = now;
               multiFaceViolations++;
 
@@ -2396,7 +2403,7 @@ function startWebcam() {
           proctorPipBadge.innerHTML = `🟢 AI PROCTOR: 1 Candidate (OK) | Mic: Clear`;
         }
       } catch(err) {}
-    }, 600);
+    }, 500);
 
     // 3. Broadcast frames to Admin Live Proctoring Monitor
     if (!proctorStreamInterval) {
@@ -2422,11 +2429,23 @@ function startWebcam() {
         } catch(err) {}
       }, 1500);
     }
+  };
+
+  // Attempt video + audio, fallback to video-only if microphone is absent
+  navigator.mediaDevices.getUserMedia({ 
+    video: { width: { ideal: 320 }, height: { ideal: 240 } }, 
+    audio: true 
   })
-  .catch(err => { 
-    console.error("Webcam/Mic access error", err); 
-    localStorage.setItem('webcamActive', 'false'); 
-    showToast("⚠️ Camera/Microphone access required for Secure Mode", "error");
+  .then(handleStream)
+  .catch(err => {
+    console.warn("Retrying with video-only constraints...", err);
+    navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 320 }, height: { ideal: 240 } } })
+      .then(handleStream)
+      .catch(e => {
+        console.error("Camera access failed:", e);
+        localStorage.setItem('webcamActive', 'false'); 
+        showToast("⚠️ Camera/Microphone access required for Secure Mode", "error");
+      });
   });
 }
 
@@ -2530,7 +2549,13 @@ async function loadProblemFromQuery() {
       return;
     }
 
-    const prob = await res.json();
+    const text = await res.text();
+    let prob = null;
+    try { prob = text ? JSON.parse(text) : null; } catch(e){}
+    if (!prob) {
+      showToast("Problem payload could not be parsed", "error");
+      return;
+    }
     currentProblem = prob;
 
     // Title
@@ -2639,17 +2664,18 @@ async function runProblemSampleTests() {
       body: JSON.stringify({ code: code, language: lang, stdin: sampleIn })
     });
 
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch(e){}
+
     let actualOut = '';
     let executionTime = '0ms';
-    const contentType = res.headers.get('content-type') || '';
 
-    if (contentType.includes('application/json')) {
-      const data = await res.json();
-      actualOut = (data.output || data.error || '').trim();
+    if (data && typeof data === 'object') {
+      actualOut = (data.output !== undefined ? data.output : (data.error || '')).trim();
       executionTime = data.executionTime || '0ms';
     } else {
-      const text = await res.text();
-      actualOut = text.trim();
+      actualOut = (text || '').trim();
     }
 
     const isPass = actualOut === sampleExpected;
@@ -2662,7 +2688,7 @@ async function runProblemSampleTests() {
             <span style="font-size:10.5px; color:var(--text-muted); font-family:monospace;">${executionTime}</span>
           </div>
           <div style="font-size:11px; margin-bottom:4px; color:var(--text-muted);"><strong>Expected:</strong> <code style="color:#e2e8f0;">${escapeHtml(sampleExpected)}</code></div>
-          <div style="font-size:11px; color:var(--text-muted);"><strong>Your Output:</strong> <code style="color:${isPass ? '#10b981' : '#ef4444'};">${escapeHtml(actualOut)}</code></div>
+          <div style="font-size:11px; color:var(--text-muted);"><strong>Your Output:</strong> <code style="${isPass ? 'color:#10b981;' : 'color:#ef4444;'}">${escapeHtml(actualOut)}</code></div>
         </div>
       `;
     }
@@ -2708,7 +2734,10 @@ async function submitProblemGrader() {
       body: JSON.stringify({ code: code, language: lang })
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    let data = {};
+    try { data = text ? JSON.parse(text) : {}; } catch(e){ data = { message: text }; }
+
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
@@ -2756,11 +2785,10 @@ async function submitProblemGrader() {
 
     if (data.isSolved) {
       createConfetti();
-      showToast(`🏆 Congratulations! +${data.pointsEarned || 50} Points Credited!`, "success");
-      showPointsPopup(data.pointsEarned || 50);
+      showToast(`🏆 Congratulations! +${data.pointsAwarded || data.pointsEarned || 50} Points Credited!`, "success");
+      showPointsPopup(data.pointsAwarded || data.pointsEarned || 50);
       loadUserPoints();
     } else {
-      showToast(`Passed ${data.passedCount}/${data.totalCount} test cases. Fix remaining edge cases!`, "warning");
     }
 
   } catch (err) {
