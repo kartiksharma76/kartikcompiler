@@ -10,6 +10,7 @@
 
 <!-- Real-time AI Proctoring Computer Vision & Object Detection Models -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -2356,6 +2357,8 @@ let proctorAudioAnalyser = null;
 let proctorAudioSource = null;
 let audioCheckInterval = null;
 
+let blazeFaceModel = null;
+let isBlazeFaceLoading = false;
 let cocoSsdModel = null;
 let isCocoModelLoading = false;
 let lastMicLevel = 0;
@@ -2399,12 +2402,23 @@ document.addEventListener('keydown', ensureAudioContextActive);
 document.addEventListener('focus', ensureAudioContextActive);
 
 function loadAiProctorModel() {
+  if (window.blazeface && !blazeFaceModel && !isBlazeFaceLoading) {
+    isBlazeFaceLoading = true;
+    window.blazeface.load().then(m => {
+      blazeFaceModel = m;
+      isBlazeFaceLoading = false;
+      console.log("✅ TensorFlow BlazeFace AI Face Proctoring Engine loaded successfully");
+    }).catch(e => {
+      console.warn("BlazeFace loading error:", e);
+      isBlazeFaceLoading = false;
+    });
+  }
   if (window.cocoSsd && !cocoSsdModel && !isCocoModelLoading) {
     isCocoModelLoading = true;
     window.cocoSsd.load().then(m => {
       cocoSsdModel = m;
       isCocoModelLoading = false;
-      console.log("✅ TensorFlow COCO-SSD AI Proctoring Engine loaded successfully");
+      console.log("✅ TensorFlow COCO-SSD AI Object Detector loaded successfully");
     }).catch(e => {
       console.warn("TensorFlow COCO-SSD loading fallback:", e);
       isCocoModelLoading = false;
@@ -2525,14 +2539,14 @@ function startWebcam() {
           lastMicLevel = Math.round(Math.min(100, Math.max(rms * 3.5, avgSpeechEnergy)));
 
           // Strict Human speech threshold: Requires sustained loud vocal speaking > baseline + 40
-          const isLoudSpeech = (avgSpeechEnergy > (baselineNoiseFloor + 40) && avgSpeechEnergy > 50 && rms > 15.0);
+          const isLoudSpeech = (avgSpeechEnergy > (baselineNoiseFloor + 45) && avgSpeechEnergy > 55 && rms > 16.0);
 
           if (isLoudSpeech) {
             consecutiveVoiceFrames++;
-            if (consecutiveVoiceFrames >= 10) { // ~4.0s of continuous sustained talking
+            if (consecutiveVoiceFrames >= 14) { // ~5.5s of continuous sustained talking
               consecutiveVoiceFrames = 0;
               const now = Date.now();
-              if (now - lastVoiceAlertTime > 15000) {
+              if (now - lastVoiceAlertTime > 18000) {
                 lastVoiceAlertTime = now;
                 voiceViolations++;
                 if (voiceViolations < MAX_PROCTOR_VIOLATIONS) {
@@ -2554,7 +2568,7 @@ function startWebcam() {
       console.warn("Audio proctoring not initialized:", e);
     }
 
-    // 2. High-Accuracy AI Multi-Face & Mobile Device Proctoring Engine with IoS Deduplication
+    // 2. High-Accuracy AI Multi-Face (BlazeFace) & Mobile Device (COCO-SSD) Proctoring Engine
     let isAnalyzingFrame = false;
     proctorAnalysisInterval = setInterval(async () => {
       if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended || !securityMode || isBlocked) return;
@@ -2574,65 +2588,99 @@ function startWebcam() {
         let isDeviceDetected = false;
         let detectedPersonCount = 1;
 
-        // Use TensorFlow COCO-SSD Object Detection Model
-        if (cocoSsdModel) {
+        // Primary: BlazeFace specialized human landmark face detector
+        if (blazeFaceModel) {
           try {
-            const predictions = await cocoSsdModel.detect(webcamVideo);
+            const predictions = await blazeFaceModel.estimateFaces(webcamVideo, false);
             
-            // 1. High-confidence person candidates
-            const rawPersons = predictions.filter(p => {
-              if (p.class !== 'person' || p.score < 0.65) return false;
-              const bbox = p.bbox || [0,0,0,0];
-              const area = bbox[2] * bbox[3];
-              return area >= 5000; // Ignore tiny background artifacts
+            // Filter high confidence real faces
+            const validFaces = (predictions || []).filter(f => {
+              const prob = Array.isArray(f.probability) ? f.probability[0] : (typeof f.probability === 'number' ? f.probability : 1.0);
+              if (prob < 0.88) return false;
+              const tl = f.topLeft, br = f.bottomRight;
+              const w = br[0] - tl[0];
+              const h = br[1] - tl[1];
+              return w >= 32 && h >= 32 && (w * h) >= 1000;
             });
 
-            // Deduplicate multiple detections of the SAME person using Non-Maximum Suppression
-            const uniquePersons = [];
-            for (let i = 0; i < rawPersons.length; i++) {
-              const p = rawPersons[i];
-              let isDuplicate = false;
-              for (let j = 0; j < uniquePersons.length; j++) {
-                const existing = uniquePersons[j];
-                if (isSamePersonBox(p.bbox, existing.bbox)) {
-                  isDuplicate = true;
+            // Deduplicate overlapping detections of the same face
+            const distinctFaces = [];
+            for (let i = 0; i < validFaces.length; i++) {
+              const f = validFaces[i];
+              const tl = f.topLeft, br = f.bottomRight;
+              const cx = (tl[0] + br[0]) / 2;
+              const cy = (tl[1] + br[1]) / 2;
+              let isDup = false;
+              for (let j = 0; j < distinctFaces.length; j++) {
+                const ex = distinctFaces[j];
+                const eTl = ex.topLeft, eBr = ex.bottomRight;
+                const eCx = (eTl[0] + eBr[0]) / 2;
+                const eCy = (eTl[1] + eBr[1]) / 2;
+                if (Math.hypot(cx - eCx, cy - eCy) < 90) {
+                  isDup = true;
                   break;
                 }
               }
-              if (!isDuplicate) {
-                uniquePersons.push(p);
-              }
+              if (!isDup) distinctFaces.push(f);
             }
 
-            detectedPersonCount = uniquePersons.length;
+            detectedPersonCount = distinctFaces.length;
 
-            // Genuine Multi-Person Condition: At least 2 distinct, non-overlapping people with wide separation
-            if (uniquePersons.length >= 2) {
-              const p1 = uniquePersons[0].bbox, p2 = uniquePersons[1].bbox;
-              const center1 = p1[0] + p1[2]/2;
-              const center2 = p2[0] + p2[2]/2;
-              // Both centers must be distinctly separated by at least 110px and both scores high
-              if (Math.abs(center1 - center2) > 110 && uniquePersons[0].score >= 0.70 && uniquePersons[1].score >= 0.70) {
+            // Multiple faces ONLY if 2 completely separated faces exist (>110px apart)
+            if (distinctFaces.length >= 2) {
+              const f1 = distinctFaces[0], f2 = distinctFaces[1];
+              const cx1 = (f1.topLeft[0] + f1.bottomRight[0]) / 2;
+              const cx2 = (f2.topLeft[0] + f2.bottomRight[0]) / 2;
+              if (Math.abs(cx1 - cx2) > 110) {
                 isMultiFace = true;
               }
             }
+          } catch(err){}
+        } else if (cocoSsdModel) {
+          // Fallback to COCO-SSD with person bounding box merging
+          try {
+            const predictions = await cocoSsdModel.detect(webcamVideo);
+            const rawPersons = predictions.filter(p => {
+              if (p.class !== 'person' || p.score < 0.75) return false;
+              const bbox = p.bbox || [0,0,0,0];
+              return bbox[2] * bbox[3] >= 8000;
+            });
+            const uniquePersons = [];
+            for (let i = 0; i < rawPersons.length; i++) {
+              const p = rawPersons[i];
+              let isDup = false;
+              for (let j = 0; j < uniquePersons.length; j++) {
+                if (isSamePersonBox(p.bbox, uniquePersons[j].bbox)) { isDup = true; break; }
+              }
+              if (!isDup) uniquePersons.push(p);
+            }
+            detectedPersonCount = uniquePersons.length;
+            if (uniquePersons.length >= 2) {
+              const p1 = uniquePersons[0].bbox, p2 = uniquePersons[1].bbox;
+              const c1 = p1[0] + p1[2]/2, c2 = p2[0] + p2[2]/2;
+              if (Math.abs(c1 - c2) > 150 && uniquePersons[0].score >= 0.80 && uniquePersons[1].score >= 0.80) {
+                isMultiFace = true;
+              }
+            }
+          } catch(err){}
+        }
 
-            // 2. Strict Mobile Phone Detection (ONLY cell phone, NEVER laptop/computer)
+        // Secondary: Strictly Handheld Mobile Phone Detection via COCO-SSD
+        if (cocoSsdModel) {
+          try {
+            const predictions = await cocoSsdModel.detect(webcamVideo);
             const validPhones = predictions.filter(p => {
-              if (p.class !== 'cell phone' || p.score < 0.78) return false;
+              if (p.class !== 'cell phone' || p.score < 0.82) return false;
               const bbox = p.bbox || [0,0,0,0];
               const w = bbox[2], h = bbox[3];
               const area = w * h;
-              // Must have realistic smartphone handheld dimensions and aspect ratio
-              const isPhoneDim = (w >= 30 && w <= 160 && h >= 50 && h <= 220 && area >= 1500 && area <= 28000);
-              const isPhoneRatio = (h / Math.max(1, w) >= 1.2 || w / Math.max(1, h) >= 1.2);
+              // Strict handheld smartphone aspect ratio & size (excludes laptops/monitors)
+              const isPhoneDim = (w >= 35 && w <= 150 && h >= 55 && h <= 200 && area >= 2000 && area <= 26000);
+              const isPhoneRatio = (h / Math.max(1, w) >= 1.25 || w / Math.max(1, h) >= 1.25);
               return isPhoneDim && isPhoneRatio;
             });
-
-            if (validPhones.length > 0) {
-              isDeviceDetected = true;
-            }
-          } catch (err) {}
+            if (validPhones.length > 0) isDeviceDetected = true;
+          } catch(err){}
         }
 
         const micStatusStr = lastMicLevel > 35 ? `🎙️ Mic: Speaking (${lastMicLevel}%)` : `🎙️ Mic: Clear (${lastMicLevel}%)`;
@@ -2644,11 +2692,11 @@ function startWebcam() {
           proctorPipBadge.style.background = 'rgba(239, 68, 68, 0.25)';
           proctorPipBadge.innerHTML = `🚨 MULTI-PERSON DETECTED (${detectedPersonCount}) | ${micStatusStr}`;
 
-          // Require 10 consecutive frames (~5.0s) of sustained multi-person presence
-          if (consecutiveMultiFaceFrames >= 10) {
+          // Require 14 consecutive frames (~7.0s) of sustained multi-person presence
+          if (consecutiveMultiFaceFrames >= 14) {
             consecutiveMultiFaceFrames = 0;
             const now = Date.now();
-            if (now - lastFaceAlertTime > 15000) {
+            if (now - lastFaceAlertTime > 18000) {
               lastFaceAlertTime = now;
               multiFaceViolations++;
 
@@ -2669,11 +2717,11 @@ function startWebcam() {
           proctorPipBadge.style.background = 'rgba(239, 68, 68, 0.25)';
           proctorPipBadge.innerHTML = `📱 MOBILE PHONE DETECTED | ${micStatusStr}`;
 
-          // Require 10 consecutive frames (~5.0s) of sustained phone presence
-          if (consecutiveDeviceFrames >= 10) {
+          // Require 14 consecutive frames (~7.0s) of sustained phone presence
+          if (consecutiveDeviceFrames >= 14) {
             consecutiveDeviceFrames = 0;
             const now = Date.now();
-            if (now - lastDeviceAlertTime > 15000) {
+            if (now - lastDeviceAlertTime > 18000) {
               lastDeviceAlertTime = now;
               deviceViolations++;
 
