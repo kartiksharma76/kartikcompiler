@@ -1239,6 +1239,10 @@ nav {
           <div class="module-icon">📑</div>
           <div>Exam & Contest Hub</div>
         </div>
+        <div class="module-item" id="menu-assignments" onclick="switchTab('assignments')">
+          <div class="module-icon">📋</div>
+          <div>Problem Statements & Assignments</div>
+        </div>
         <div class="module-item" id="menu-teams" onclick="switchTab('teams')">
           <div class="module-icon">👥</div>
           <div>Team Formations</div>
@@ -1955,6 +1959,97 @@ async function renderTab() {
       </div>
     `;
     fetchExams();
+  }
+
+  // ==============================================================
+  // 4B. PROBLEM STATEMENTS & ASSIGNMENTS STUDIO (ADMIN & COLLEGE SCOPED)
+  // ==============================================================
+  else if (currentTab === 'assignments') {
+    main.innerHTML = `
+      <div class="tab-header">
+        <div class="tab-header-left">
+          <div class="tab-icon-box">📋</div>
+          <div>
+            <div class="tab-title">Problem Statements & Assignments Studio</div>
+            <div class="tab-subtitle">Assign challenges to students with AI auto-generation, secure proctoring & 4 hidden test cases.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#6366f1); border:none;" onclick="openAiProblemModal()">✨ AI Problem Generator</button>
+          <button class="btn-primary" onclick="openAssignProblemModal()">+ Assign New Problem</button>
+        </div>
+      </div>
+
+      <!-- Metric Stats Row -->
+      <div class="bento-grid" style="margin-bottom:16px;">
+        <div class="bento-card col-3" style="display:flex; align-items:center; gap:12px;">
+          <div class="tab-icon-box" style="width:38px; height:38px; font-size:16px; background:rgba(99,102,241,0.2); border-color:rgba(99,102,241,0.3);">📋</div>
+          <div>
+            <div style="font-size:10px; color:var(--text-dim);">Total Problems</div>
+            <div style="font-size:18px; font-weight:800; color:#fff; font-family:var(--font-mono);" id="statTotalProblems">0</div>
+            <div style="font-size:9.5px; color:var(--text-dim);">Assigned across cohorts</div>
+          </div>
+        </div>
+        <div class="bento-card col-3" style="display:flex; align-items:center; gap:12px;">
+          <div class="tab-icon-box" style="width:38px; height:38px; font-size:16px; background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.3);">🌍</div>
+          <div>
+            <div style="font-size:10px; color:var(--text-dim);">Global Assignments</div>
+            <div style="font-size:18px; font-weight:800; color:#34d399; font-family:var(--font-mono);" id="statGlobalProblems">0</div>
+            <div style="font-size:9.5px; color:var(--text-dim);">Visible to all students</div>
+          </div>
+        </div>
+        <div class="bento-card col-3" style="display:flex; align-items:center; gap:12px;">
+          <div class="tab-icon-box" style="width:38px; height:38px; font-size:16px; background:rgba(245,158,11,0.2); border-color:rgba(245,158,11,0.3);">🏫</div>
+          <div>
+            <div style="font-size:10px; color:var(--text-dim);">College Assignments</div>
+            <div style="font-size:18px; font-weight:800; color:#fbbf24; font-family:var(--font-mono);" id="statCollegeProblems">0</div>
+            <div style="font-size:9.5px; color:var(--text-dim);">Exclusive to college cohort</div>
+          </div>
+        </div>
+        <div class="bento-card col-3" style="display:flex; align-items:center; gap:12px;">
+          <div class="tab-icon-box" style="width:38px; height:38px; font-size:16px; background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3);">🛡️</div>
+          <div>
+            <div style="font-size:10px; color:var(--text-dim);">Hidden Test Suite</div>
+            <div style="font-size:18px; font-weight:800; color:#f87171; font-family:var(--font-mono);" id="statHiddenTestCases">0</div>
+            <div style="font-size:9.5px; color:var(--text-dim);">4 Hidden Cases / problem</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem List Container -->
+      <div class="bento-card col-12" style="padding:18px 22px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="font-size:13px; font-weight:700; color:#fff;">ASSIGNED PROBLEM STATEMENTS</span>
+            <span id="problemsCountBadge" style="font-size:11px; padding:2px 8px; border-radius:12px; background:rgba(99,102,241,0.2); color:#a5b4fc; font-weight:700;">0 Problems</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="probSearchInput" oninput="filterAdminProblems()" placeholder="Search title or tag..." class="form-input" style="padding:6px 12px; font-size:12px; width:200px;">
+            <select id="probDiffFilter" onchange="filterAdminProblems()" class="form-input" style="padding:6px 10px; font-size:12px;">
+              <option value="ALL">All Difficulties</option>
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
+            </select>
+            <select id="probScopeFilter" onchange="filterAdminProblems()" class="form-input" style="padding:6px 10px; font-size:12px;">
+              <option value="ALL">All Scopes</option>
+              <option value="GLOBAL">Global Platform</option>
+              <option value="COLLEGE">College Scoped</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="adminProblemsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px;">
+          <div style="color:var(--text-dim); font-size:13px;">Loading problems...</div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <div>© 2024 KartikTerminal Enterprise. All rights reserved.</div>
+        <div>Crafted with ❤️ for Education</div>
+      </div>
+    `;
+    fetchAdminProblems();
   }
 
   // ==============================================================
@@ -6443,6 +6538,335 @@ async function checkPendingCollegesNotification() {
   } catch(e) {}
 }
 
+// ==============================================================
+// PROBLEM STATEMENTS & ASSIGNMENTS STUDIO JS
+// ==============================================================
+let adminProblemsData = [];
+
+async function fetchAdminProblems() {
+  const grid = document.getElementById('adminProblemsGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="color:var(--text-dim); font-size:13px;">Loading problems...</div>';
+
+  try {
+    const res = await fetch('/api/problems', {
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if (!res.ok) throw new Error('Failed to load problems');
+    adminProblemsData = await res.json();
+
+    // Update stats
+    let total = adminProblemsData.length;
+    let global = adminProblemsData.filter(p => p.isGlobal).length;
+    let college = total - global;
+    let hiddenCases = adminProblemsData.reduce((acc, p) => acc + (p.hiddenTestCasesCount || 4), 0);
+
+    const elTotal = document.getElementById('statTotalProblems');
+    if (elTotal) elTotal.textContent = total;
+    const elGlobal = document.getElementById('statGlobalProblems');
+    if (elGlobal) elGlobal.textContent = global;
+    const elCollege = document.getElementById('statCollegeProblems');
+    if (elCollege) elCollege.textContent = college;
+    const elHidden = document.getElementById('statHiddenTestCases');
+    if (elHidden) elHidden.textContent = hiddenCases;
+    const elBadge = document.getElementById('problemsCountBadge');
+    if (elBadge) elBadge.textContent = `${total} Problem${total === 1 ? '' : 's'}`;
+
+    renderAdminProblems(adminProblemsData);
+  } catch (e) {
+    grid.innerHTML = `<div class="empty-state-box"><div class="empty-icon-glow">⚠️</div><div style="font-size:14px; font-weight:700; color:#fff;">Could not load problems: ${e.message}</div></div>`;
+  }
+}
+
+function renderAdminProblems(list) {
+  const grid = document.getElementById('adminProblemsGrid');
+  if (!grid) return;
+
+  if (!list || list.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 40px; text-align:center; background:rgba(255,255,255,0.02); border:1px dashed var(--border); border-radius:14px;">
+        <div style="font-size:32px; margin-bottom:10px;">📋</div>
+        <div style="font-size:15px; font-weight:700; color:#fff;">No problem statements assigned yet.</div>
+        <div style="font-size:12px; color:var(--text-dim); margin-top:4px; max-width:400px; margin-left:auto; margin-right:auto;">
+          Click "+ Assign New Problem" or "✨ AI Problem Generator" above to assign problem statements with 4 hidden test cases.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = list.map(p => {
+    const diffColor = p.difficulty === 'EASY' ? '#34d399' : (p.difficulty === 'HARD' ? '#f87171' : '#fbbf24');
+    const diffBg = p.difficulty === 'EASY' ? 'rgba(16,185,129,0.15)' : (p.difficulty === 'HARD' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)');
+    const scopeBadge = p.isGlobal ?
+      `<span style="background:rgba(16,185,129,0.15); color:#34d399; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.3);">🌍 Global Assignment</span>` :
+      `<span style="background:rgba(99,102,241,0.15); color:#a5b4fc; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:6px; border:1px solid rgba(99,102,241,0.3);">🏫 ${p.institutionName || 'College Cohort'}</span>`;
+
+    return `
+      <div style="background:linear-gradient(135deg, rgba(15,23,42,0.6), rgba(30,41,59,0.4)); border:1px solid var(--border); border-radius:14px; padding:18px; display:flex; flex-direction:column; justify-content:space-between; gap:12px; transition:all 0.2s ease; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+              <span style="background:${diffBg}; color:${diffColor}; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; font-family:var(--font-mono);">${p.difficulty || 'MEDIUM'}</span>
+              <span style="background:rgba(255,255,255,0.06); color:#e2e8f0; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:4px;">⭐ ${p.points || 50} pts</span>
+            </div>
+            ${scopeBadge}
+          </div>
+
+          <div style="font-size:15px; font-weight:800; color:#fff; margin-bottom:6px; line-height:1.3;">${p.title}</div>
+          <div style="font-size:11.5px; color:var(--text-dim); line-height:1.5; max-height:48px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+            ${(p.description || '').replace(/[#*`_]/g, '')}
+          </div>
+        </div>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-dim); margin-bottom:10px;">
+            <span>🛡️ ${p.totalTestCasesCount || 5} Tests (${p.hiddenTestCasesCount || 4} Hidden)</span>
+            <span>By @${p.createdByUsername || 'Admin'}</span>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <a href="/compiler.html?problemId=${p.id}&secure=true" target="_blank" class="btn-primary" style="flex:1; text-align:center; text-decoration:none; padding:6px 10px; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:5px; background:linear-gradient(135deg,#3b82f6,#2563eb);">
+              <span>⚡</span> Open in Secure Editor
+            </a>
+            <button onclick="deleteAdminProblem(${p.id})" class="btn-secondary" style="padding:6px 10px; font-size:12px; color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Delete Problem">🗑️</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterAdminProblems() {
+  const query = (document.getElementById('probSearchInput')?.value || '').toLowerCase().trim();
+  const diff = document.getElementById('probDiffFilter')?.value || 'ALL';
+  const scope = document.getElementById('probScopeFilter')?.value || 'ALL';
+
+  let filtered = adminProblemsData.filter(p => {
+    const matchesQuery = !query || (p.title && p.title.toLowerCase().includes(query)) || (p.tags && p.tags.toLowerCase().includes(query));
+    const matchesDiff = diff === 'ALL' || p.difficulty === diff;
+    const matchesScope = scope === 'ALL' || (scope === 'GLOBAL' && p.isGlobal) || (scope === 'COLLEGE' && !p.isGlobal);
+    return matchesQuery && matchesDiff && matchesScope;
+  });
+
+  renderAdminProblems(filtered);
+}
+
+// Problem Assignment Modal
+function openAssignProblemModal() {
+  document.getElementById('paTitle').value = '';
+  document.getElementById('paDifficulty').value = 'MEDIUM';
+  document.getElementById('paPoints').value = '50';
+  document.getElementById('paTags').value = 'Arrays, DSA';
+  document.getElementById('paDescription').value = '';
+  document.getElementById('paSampleInput').value = '';
+  document.getElementById('paSampleOutput').value = '';
+  document.getElementById('paStarterCode').value = '';
+  
+  // Seed default 1 public + 4 hidden test case rows
+  const tbody = document.getElementById('paTestCasesBody');
+  tbody.innerHTML = '';
+  addTestCaseRow('', '', false); // Sample public
+  addTestCaseRow('', '', true);  // Hidden 1
+  addTestCaseRow('', '', true);  // Hidden 2
+  addTestCaseRow('', '', true);  // Hidden 3
+  addTestCaseRow('', '', true);  // Hidden 4
+
+  document.getElementById('problemAssignmentModal').style.display = 'flex';
+}
+
+function closeAssignProblemModal() {
+  document.getElementById('problemAssignmentModal').style.display = 'none';
+}
+
+function addTestCaseRow(inputVal = '', outputVal = '', isHiddenVal = true) {
+  const tbody = document.getElementById('paTestCasesBody');
+  if (!tbody) return;
+  const count = tbody.children.length + 1;
+  const tr = document.createElement('tr');
+  tr.style.cssText = 'border-bottom:1px solid rgba(255,255,255,0.06);';
+  tr.innerHTML = `
+    <td style="padding:8px 6px; font-size:11.5px; color:#94a3b8; font-family:var(--font-mono);">${count}</td>
+    <td style="padding:8px 6px;">
+      <textarea class="form-input tc-input" style="width:100%; box-sizing:border-box; padding:6px; font-size:11.5px; font-family:var(--font-mono); height:46px; resize:none;" placeholder="Input data...">${inputVal}</textarea>
+    </td>
+    <td style="padding:8px 6px;">
+      <textarea class="form-input tc-output" style="width:100%; box-sizing:border-box; padding:6px; font-size:11.5px; font-family:var(--font-mono); height:46px; resize:none;" placeholder="Expected output...">${outputVal}</textarea>
+    </td>
+    <td style="padding:8px 6px; text-align:center;">
+      <select class="form-input tc-hidden" style="padding:4px 6px; font-size:11px;">
+        <option value="true" ${isHiddenVal ? 'selected' : ''}>🔒 Hidden (Grading)</option>
+        <option value="false" ${!isHiddenVal ? 'selected' : ''}>👁️ Public (Sample)</option>
+      </select>
+    </td>
+    <td style="padding:8px 6px; text-align:center;">
+      <button type="button" onclick="removeTestCaseRow(this)" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px;">✕</button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function removeTestCaseRow(btn) {
+  const row = btn.closest('tr');
+  if (row) row.remove();
+}
+
+async function submitAssignProblemForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('paSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving Problem...';
+
+  const title = document.getElementById('paTitle').value.trim();
+  const diff = document.getElementById('paDifficulty').value;
+  const points = parseInt(document.getElementById('paPoints').value) || 50;
+  const tags = document.getElementById('paTags').value.trim();
+  const desc = document.getElementById('paDescription').value.trim();
+  const sampleIn = document.getElementById('paSampleInput').value;
+  const sampleOut = document.getElementById('paSampleOutput').value;
+  const starter = document.getElementById('paStarterCode').value;
+  const assignGlobally = document.getElementById('paAssignGlobal').value === 'true';
+
+  // Harvest test cases
+  const rows = document.querySelectorAll('#paTestCasesBody tr');
+  const testCases = [];
+  rows.forEach(r => {
+    const input = r.querySelector('.tc-input').value;
+    const output = r.querySelector('.tc-output').value;
+    const isHidden = r.querySelector('.tc-hidden').value === 'true';
+    if (input.trim() || output.trim()) {
+      testCases.push({ inputData: input, expectedOutput: output, isHidden: isHidden });
+    }
+  });
+
+  const payload = {
+    title: title,
+    description: desc,
+    difficulty: diff,
+    points: points,
+    tags: tags,
+    sampleInput: sampleIn,
+    sampleOutput: sampleOut,
+    starterCode: starter,
+    assignGlobally: assignGlobally,
+    testCases: testCases
+  };
+
+  try {
+    const res = await fetch('/api/problems/assign', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KTAuth.getToken()}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to save problem');
+
+    alert('🎉 Problem Statement assigned successfully with 4 hidden test cases!');
+    closeAssignProblemModal();
+    fetchAdminProblems();
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Assign Problem Statement';
+  }
+}
+
+async function deleteAdminProblem(id) {
+  if (!confirm('Are you sure you want to delete this problem statement and all associated student submissions?')) return;
+  try {
+    const res = await fetch(`/api/problems/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
+    if (res.ok) {
+      alert('Problem statement removed.');
+      fetchAdminProblems();
+    } else {
+      const data = await res.json();
+      alert('Error: ' + (data.message || 'Failed to delete'));
+    }
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+// AI Problem Generator
+function openAiProblemModal() {
+  document.getElementById('aiProbTopic').value = '';
+  document.getElementById('aiProblemModal').style.display = 'flex';
+}
+
+function closeAiProblemModal() {
+  document.getElementById('aiProblemModal').style.display = 'none';
+}
+
+async function generateAiProblemForForm() {
+  const topic = document.getElementById('aiProbTopic').value.trim();
+  const diff = document.getElementById('aiProbDifficulty').value;
+  const lang = document.getElementById('aiProbLang').value;
+  const btn = document.getElementById('aiProbGenBtn');
+  const spinner = document.getElementById('aiProbSpinner');
+
+  if (!topic) {
+    alert('Please enter a topic or concept for the problem statement.');
+    return;
+  }
+
+  btn.disabled = true;
+  spinner.style.display = 'block';
+
+  try {
+    const res = await fetch('/api/problems/ai-generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KTAuth.getToken()}`
+      },
+      body: JSON.stringify({ topic, difficulty: diff, language: lang })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'AI Generation Failed');
+
+    closeAiProblemModal();
+    openAssignProblemModal();
+
+    // Fill the assignment form with AI output
+    document.getElementById('paTitle').value = data.title || ('Algorithm: ' + topic);
+    document.getElementById('paDifficulty').value = data.difficulty || diff;
+    document.getElementById('paPoints').value = data.points || 50;
+    document.getElementById('paTags').value = data.tags || (topic + ', DSA');
+    document.getElementById('paDescription').value = data.description || '';
+    document.getElementById('paSampleInput').value = data.sampleInput || '';
+    document.getElementById('paSampleOutput').value = data.sampleOutput || '';
+    document.getElementById('paStarterCode').value = data.starterCode || '';
+
+    // Fill test cases
+    const tbody = document.getElementById('paTestCasesBody');
+    tbody.innerHTML = '';
+    if (data.testCases && data.testCases.length > 0) {
+      data.testCases.forEach(tc => {
+        addTestCaseRow(tc.inputData || '', tc.expectedOutput || '', Boolean(tc.isHidden));
+      });
+    } else {
+      addTestCaseRow(data.sampleInput || '', data.sampleOutput || '', false);
+      for (let i = 1; i <= 4; i++) {
+        addTestCaseRow('test_' + i, 'out_' + i, true);
+      }
+    }
+  } catch (e) {
+    alert('❌ AI Generation failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
 // Initial Page Render
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -6459,6 +6883,157 @@ window.onload = () => {
 <!-- ============================================================== -->
 <!-- MODALS HTML STRUCTURE IN COLLEGE ERP -->
 <!-- ============================================================== -->
+
+<!-- Problem Assignment Modal -->
+<div id="problemAssignmentModal" style="display:none; position:fixed; inset:0; z-index:1005; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+  <div style="background:#0b0f19; border:1px solid rgba(99,102,241,0.4); border-radius:18px; width:100%; max-width:850px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.9); overflow:hidden;">
+    <div style="padding:16px 22px; background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(15,23,42,0.8)); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:20px;">📋</span>
+        <div>
+          <div style="font-size:15px; font-weight:800; color:#fff;">Assign Problem Statement</div>
+          <div style="font-size:11px; color:#cbd5e1;">Configure problem description, constraints, and 4 hidden test cases for secure sandbox grading.</div>
+        </div>
+      </div>
+      <button onclick="closeAssignProblemModal()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+
+    <form onsubmit="submitAssignProblemForm(event)" style="padding:20px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:14px;">
+      <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:12px;">
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">PROBLEM TITLE</label>
+          <input type="text" id="paTitle" class="form-input" placeholder="e.g. 1. Two Sum Optimized" required>
+        </div>
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">DIFFICULTY</label>
+          <select id="paDifficulty" class="form-input">
+            <option value="EASY">EASY</option>
+            <option value="MEDIUM" selected>MEDIUM</option>
+            <option value="HARD">HARD</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">POINTS</label>
+          <input type="number" id="paPoints" class="form-input" value="50" min="10" step="5" required>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">TAGS (Comma separated)</label>
+          <input type="text" id="paTags" class="form-input" placeholder="e.g. Arrays, Hash Table, Dynamic Programming">
+        </div>
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">ASSIGNMENT AUDIENCE SCOPE</label>
+          <select id="paAssignGlobal" class="form-input">
+            <option value="true">🌍 Global Assignment (All Students)</option>
+            <option value="false">🏫 College Cohort Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">PROBLEM DESCRIPTION & CONSTRAINTS (Markdown supported)</label>
+        <textarea id="paDescription" class="form-input" style="height:120px; font-family:'JetBrains Mono',monospace; font-size:12px; resize:vertical;" placeholder="Detailed problem statement, constraints, input/output specifications..." required></textarea>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">SAMPLE INPUT</label>
+          <textarea id="paSampleInput" class="form-input" style="height:60px; font-family:'JetBrains Mono',monospace; font-size:12px; resize:none;" placeholder="e.g. 5&#10;1 2 3 4 5"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">EXPECTED SAMPLE OUTPUT</label>
+          <textarea id="paSampleOutput" class="form-input" style="height:60px; font-family:'JetBrains Mono',monospace; font-size:12px; resize:none;" placeholder="e.g. 10"></textarea>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">STARTER CODE TEMPLATE (Optional)</label>
+        <textarea id="paStarterCode" class="form-input" style="height:70px; font-family:'JetBrains Mono',monospace; font-size:12px; resize:vertical;" placeholder="public class Solution { public static void main(String[] args) { ... } }"></textarea>
+      </div>
+
+      <!-- Test Cases Manager Table -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-size:11px; font-weight:700; color:#34d399;">🛡️ TEST CASES (Public Sample + 4 Hidden Test Cases Required)</label>
+          <button type="button" onclick="addTestCaseRow()" class="btn-secondary" style="padding:3px 8px; font-size:11px;">+ Add Test Case</button>
+        </div>
+        <table style="width:100%; border-collapse:collapse; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+          <thead>
+            <tr style="background:rgba(255,255,255,0.04); font-size:10.5px; color:#94a3b8; text-align:left;">
+              <th style="padding:6px; width:30px;">#</th>
+              <th style="padding:6px;">INPUT DATA</th>
+              <th style="padding:6px;">EXPECTED OUTPUT</th>
+              <th style="padding:6px; width:130px; text-align:center;">TYPE</th>
+              <th style="padding:6px; width:40px; text-align:center;">DEL</th>
+            </tr>
+          </thead>
+          <tbody id="paTestCasesBody">
+            <!-- Dynamic Test Case Rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+        <button type="button" onclick="closeAssignProblemModal()" class="btn-secondary" style="padding:8px 16px; font-size:12px;">Cancel</button>
+        <button type="submit" id="paSubmitBtn" class="btn-primary" style="padding:8px 20px; font-size:12px; font-weight:700;">Assign Problem Statement</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- AI Problem Generator Modal -->
+<div id="aiProblemModal" style="display:none; position:fixed; inset:0; z-index:1006; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0b0f19; border:1.5px solid rgba(139,92,246,0.4); border-radius:18px; width:100%; max-width:520px; box-shadow:0 25px 60px rgba(139,92,246,0.25); overflow:hidden;">
+    <div style="padding:18px 22px; background:linear-gradient(135deg, rgba(139,92,246,0.2), rgba(15,23,42,0.8)); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:22px;">✨</span>
+        <div>
+          <div style="font-size:15px; font-weight:800; color:#fff;">AI Problem Generator (Llama / Gemini)</div>
+          <div style="font-size:11px; color:#cbd5e1;">Auto-craft problem statements, constraints, and 4 hidden edge-case tests.</div>
+        </div>
+      </div>
+      <button onclick="closeAiProblemModal()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+
+    <div style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">TOPIC / ALGORITHM / CONCEPT</label>
+        <input type="text" id="aiProbTopic" class="form-input" placeholder="e.g. Two Pointers Palindrome, Dijkstra Shortest Path, Binary Search">
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">DIFFICULTY</label>
+          <select id="aiProbDifficulty" class="form-input">
+            <option value="EASY">EASY</option>
+            <option value="MEDIUM" selected>MEDIUM</option>
+            <option value="HARD">HARD</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">TARGET LANGUAGE</label>
+          <select id="aiProbLang" class="form-input">
+            <option value="Java" selected>Java</option>
+            <option value="Python">Python</option>
+            <option value="C++">C++</option>
+            <option value="JavaScript">JavaScript</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="aiProbSpinner" style="display:none; text-align:center; padding:10px; color:#a78bfa; font-size:12px;">
+        <div class="spinner" style="display:inline-block; margin-right:6px;"></div> Generating problem statement & 4 hidden test cases with AI...
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
+        <button type="button" onclick="closeAiProblemModal()" class="btn-secondary" style="padding:8px 16px; font-size:12px;">Cancel</button>
+        <button type="button" id="aiProbGenBtn" onclick="generateAiProblemForForm()" class="btn-primary" style="padding:8px 18px; font-size:12px; background:linear-gradient(135deg,#8b5cf6,#6366f1); border:none; font-weight:700;">✨ Generate & Populate Form</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- 1. College Performance & Details Modal -->
 <div id="collegeDetailsModal" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(3,7,18,0.85); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:20px;">

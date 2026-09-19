@@ -133,6 +133,68 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
 .search-match { background: var(--search-match); border-radius: 2px; }
 .search-match.active { background: var(--accent); box-shadow: 0 0 0 2px var(--border-focus); }
 
+/* ── Split Problem Statement Drawer & Workspace Layout ── */
+.workspace-split-wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  gap: 0;
+}
+.problem-drawer {
+  width: 440px;
+  min-width: 320px;
+  max-width: 580px;
+  height: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lux);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 30;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.problem-drawer.collapsed {
+  display: none !important;
+}
+.problem-drawer-header {
+  padding: 12px 16px;
+  background: var(--bg-editor);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.problem-drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.problem-drawer-footer {
+  padding: 12px 16px;
+  background: var(--bg-editor);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+}
+.editor-workbench-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* ── Resizable Splitter (Horizontal for Bottom Terminal) ── */
 .panel-resizer {
   height: 8px;
@@ -665,6 +727,9 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
       <option value="bash">Bash / Shell</option>
     </select>
     <!-- auth.js injects user avatar + menu widget here -->
+    <button id="problemToggleNavBtn" class="icon-btn" onclick="toggleProblemPanel()" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.35); color: #60a5fa; font-weight: 700; padding: 6px 12px; gap:6px;" title="Toggle Split Problem Statement Drawer">
+      <span>📋</span> Problem Statement
+    </button>
     <button id="collegeBtn" class="run-btn" style="background: #10b981;" onclick="window.location.href='/college.html'">🎓 COLLEGE ERP</button>
     <button id="aiBtn" class="run-btn" style="background: #8b5cf6;" onclick="analyzeAI()">🧠 AI ANALYSIS</button>
     <button id="runBtn" class="run-btn" onclick="runCode()">DEPLOY & RUN</button>
@@ -672,9 +737,86 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
 </nav>
 
 <div class="main-container">
-  <div class="editor-section" id="editorSection">
-    <div class="tab-bar">
-      <div class="tab" id="file-name">Main.java</div>
+  <div class="workspace-split-wrapper">
+    <!-- Left Split: Problem Statement Drawer -->
+    <aside class="problem-drawer collapsed" id="problemDrawerPanel">
+      <!-- Problem Header -->
+      <div class="problem-drawer-header">
+        <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+          <span style="font-size:16px;">📋</span>
+          <span style="font-size:13px; font-weight:800; color:#fff; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" id="probViewTitle">Problem Statement</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
+          <span id="probViewStatusBadge" style="display:none; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:rgba(16,185,129,0.2); color:#34d399;">✅ SOLVED</span>
+          <button onclick="toggleProblemPanel()" class="icon-btn" style="padding:2px 6px; font-size:11px;" title="Collapse Panel">✕</button>
+        </div>
+      </div>
+
+      <!-- Problem Meta Badges -->
+      <div style="padding:10px 16px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <span id="probViewDifficulty" style="background:rgba(245,158,11,0.15); color:#fbbf24; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; font-family:var(--font-mono);">MEDIUM</span>
+          <span id="probViewPoints" style="background:rgba(59,130,246,0.15); color:#60a5fa; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:4px;">⭐ 50 pts</span>
+        </div>
+        <span id="probViewScope" style="background:rgba(16,185,129,0.15); color:#34d399; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;">🌍 Global Platform</span>
+      </div>
+
+      <!-- Scrollable Problem Description & Inputs -->
+      <div class="problem-drawer-content" id="probViewContent">
+        <!-- Description -->
+        <div>
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">Problem Statement</div>
+          <div id="probViewDescription" style="font-size:12.5px; line-height:1.6; color:#cbd5e1; white-space:pre-wrap;">Loading problem description...</div>
+        </div>
+
+        <!-- Sample Input & Output -->
+        <div id="probViewSamplesSection" style="display:flex; flex-direction:column; gap:8px;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-size:10.5px; font-weight:700; color:#94a3b8;">SAMPLE INPUT</span>
+              <button onclick="copySampleInputToStdin()" class="icon-btn" style="padding:1px 6px; font-size:10px;">📋 Copy to Stdin</button>
+            </div>
+            <pre id="probViewSampleInput" style="background:#02040a; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#38bdf8; max-height:80px; overflow-y:auto;"></pre>
+          </div>
+          <div>
+            <div style="font-size:10.5px; font-weight:700; color:#94a3b8; margin-bottom:4px;">EXPECTED SAMPLE OUTPUT</div>
+            <pre id="probViewSampleOutput" style="background:#02040a; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#34d399; max-height:80px; overflow-y:auto;"></pre>
+          </div>
+        </div>
+
+        <!-- Test Cases Suite Status -->
+        <div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:8px; padding:10px;">
+          <div style="font-size:11px; font-weight:700; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+            <span>🛡️ Test Suite</span>
+            <span id="probTestsSummary" style="font-size:10.5px; color:#a5b4fc;">1 Public Sample + 4 Hidden Cases</span>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+            To be marked as Passed and earn points, your code must successfully pass all 4 hidden edge-case tests.
+          </div>
+        </div>
+
+        <!-- Test Results Drawer Area -->
+        <div id="probTestResultsArea" style="display:none; margin-top:4px;">
+          <!-- Dynamic Results Injection -->
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="problem-drawer-footer">
+        <button onclick="runProblemSampleTests()" class="btn-secondary" style="flex:1; padding:8px; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:4px;">
+          <span>▶️</span> Run Sample Tests
+        </button>
+        <button onclick="submitProblemGrader()" class="btn-primary" id="probSubmitGraderBtn" style="flex:1; padding:8px; font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; background:linear-gradient(135deg,#10b981,#059669);">
+          <span>🚀</span> Submit & Check 4 Hidden Tests
+        </button>
+      </div>
+    </aside>
+
+    <!-- Right Split: Code Editor & Terminal Workbench -->
+    <div class="editor-workbench-wrapper" id="editorWorkbenchWrapper">
+      <div class="editor-section" id="editorSection">
+        <div class="tab-bar">
+          <div class="tab" id="file-name">Main.java</div>
       <div class="editor-stats">
         <div class="autosave-indicator" title="Auto-saved to local session">
           <div class="autosave-dot"></div>
@@ -857,7 +999,9 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
 
     </div>
   </aside>
-</div>
+    </div> <!-- close editor-workbench-wrapper -->
+  </div> <!-- close workspace-split-wrapper -->
+</div> <!-- close main-container -->
 
 <footer class="system-status-bar">
   <div class="status-item">
@@ -1973,68 +2117,243 @@ Est. Space:      ${mockReport.spaceComplexity}
 
 
 // --- REAL ANTI-CHEAT PROCTORING & ANALYSIS ---
+// --- REAL ANTI-CHEAT PROCTORING & MULTI-FACE / AUDIO ANALYSIS ---
 const webcamVideo = document.createElement('video');
 webcamVideo.id = "realWebcamFeed";
 webcamVideo.autoplay = true; webcamVideo.muted = true;
-webcamVideo.style.cssText = "width: 150px; position: fixed; bottom: 20px; right: 20px; border-radius: 8px; border: 2px solid #ef4444; z-index: 1000; display: none; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);";
+webcamVideo.style.cssText = "width: 170px; height: 130px; object-fit: cover; position: fixed; bottom: 20px; right: 20px; border-radius: 10px; border: 2px solid #ef4444; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); background: #000;";
 document.body.appendChild(webcamVideo);
+
+// Live PIP Status Overlay on Webcam
+const proctorPipBadge = document.createElement('div');
+proctorPipBadge.id = "proctorPipBadge";
+proctorPipBadge.style.cssText = "position: fixed; bottom: 125px; right: 25px; z-index: 1001; background: rgba(0,0,0,0.85); color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.4); display: none; pointer-events: none;";
+proctorPipBadge.innerHTML = "🟢 AI PROCTOR: ACTIVE";
+document.body.appendChild(proctorPipBadge);
 
 let globalWebcamStream = null;
 let proctorStreamInterval = null;
+let proctorAnalysisInterval = null;
+let proctorAudioContext = null;
+let proctorAudioAnalyser = null;
+let proctorAudioSource = null;
+let audioCheckInterval = null;
+
+let multiFaceViolations = 0;
+let voiceViolations = 0;
+let lastFaceAlertTime = 0;
+let lastVoiceAlertTime = 0;
+
 const proctorCanvas = document.createElement('canvas');
 proctorCanvas.width = 320;
 proctorCanvas.height = 240;
 
-function reportCheatToServer() {
+function reportCheatToServer(reason = 'General Security Violation', severity = 'HIGH') {
   try {
-    fetch('/api/dashboard/log-cheat', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
-    });
+    let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+    logs.push({ time: new Date().toLocaleTimeString(), student: KTAuth.getUsername() || 'Student', activity: reason, severity: severity });
+    localStorage.setItem('cheatLogs', JSON.stringify(logs));
+
+    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+      fetch('/api/dashboard/log-cheat', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${KTAuth.getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason, severity: severity })
+      }).catch(e => console.error(e));
+    }
   } catch(e) {}
+}
+
+function handleAutoCutTermination(reason) {
+  isBlocked = true;
+  document.body.classList.add('locked');
+  if (document.getElementById('runBtn')) document.getElementById('runBtn').disabled = true;
+  if (document.getElementById('aiBtn')) document.getElementById('aiBtn').disabled = true;
+  if (document.getElementById('probSubmitGraderBtn')) document.getElementById('probSubmitGraderBtn').disabled = true;
+  
+  playSecurityAlert();
+  reportCheatToServer(`AUTO-CUT: ${reason}`, 'CRITICAL');
+  
+  openModal(`🚫 SESSION TERMINATED BY AI PROCTOR!\n\nReason: ${reason}\n\nYour code and submission have been frozen, and a cheating violation has been logged to your college and platform admin dashboard.\nRedirecting to dashboard...`);
+  
+  setTimeout(() => {
+    stopWebcam();
+    window.location.href = '/dashboard.html';
+  }, 4000);
 }
 
 function startWebcam() {
   if (globalWebcamStream) return;
-  navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
-    .then(stream => { 
-      globalWebcamStream = stream;
-      webcamVideo.srcObject = stream; 
-      webcamVideo.style.display = 'block';
-      localStorage.setItem('webcamActive', 'true'); 
-      
-      // Real-time broadcast frame snapshots to Admin Live Monitor
-      if (!proctorStreamInterval) {
-        proctorStreamInterval = setInterval(() => {
-          if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended) return;
-          try {
-            const ctx = proctorCanvas.getContext('2d');
-            ctx.drawImage(webcamVideo, 0, 0, 320, 240);
-            const dataUrl = proctorCanvas.toDataURL('image/jpeg', 0.5);
-            const user = KTAuth.getUser() || {};
-            fetch('/api/proctor/stream-frame', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
-              body: JSON.stringify({
-                userId: user.id || 1,
-                username: user.username || KTAuth.getUsername() || 'Student',
-                fullName: user.fullName || user.username || 'Student',
-                frame: dataUrl,
-                violations: violations || 0,
-                securityMode: securityMode
-              })
-            }).catch(() => {});
-          } catch(err) {}
-        }, 1500);
+  navigator.mediaDevices.getUserMedia({ 
+    video: { width: { ideal: 320 }, height: { ideal: 240 } }, 
+    audio: true 
+  })
+  .then(stream => { 
+    globalWebcamStream = stream;
+    webcamVideo.srcObject = stream; 
+    webcamVideo.style.display = 'block';
+    proctorPipBadge.style.display = 'block';
+    localStorage.setItem('webcamActive', 'true'); 
+    
+    // 1. Microphone Audio Proctoring Analyser
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        proctorAudioContext = new AudioContextClass();
+        if (proctorAudioContext.state === 'suspended') {
+          proctorAudioContext.resume();
+        }
+        proctorAudioSource = proctorAudioContext.createMediaStreamSource(stream);
+        proctorAudioAnalyser = proctorAudioContext.createAnalyser();
+        proctorAudioAnalyser.fftSize = 512;
+        proctorAudioSource.connect(proctorAudioAnalyser);
+        
+        const audioBuffer = new Uint8Array(proctorAudioAnalyser.frequencyBinCount);
+        let continuousLoudFrames = 0;
+        
+        audioCheckInterval = setInterval(() => {
+          if (!securityMode || isBlocked) return;
+          proctorAudioAnalyser.getByteFrequencyData(audioBuffer);
+          
+          // Compute average audio energy in speech frequencies (300Hz - 3400Hz)
+          let sum = 0;
+          for (let i = 10; i < 80; i++) {
+            sum += audioBuffer[i] || 0;
+          }
+          let avgEnergy = sum / 70;
+          
+          // Voice threshold detection
+          if (avgEnergy > 58) {
+            continuousLoudFrames++;
+            if (continuousLoudFrames >= 4) { // Sustained speech detected
+              const now = Date.now();
+              if (now - lastVoiceAlertTime > 8000) {
+                lastVoiceAlertTime = now;
+                voiceViolations++;
+                if (voiceViolations === 1) {
+                  playSecurityAlert();
+                  reportCheatToServer("Speech/Background Voice Detected during Secure Exam", "MEDIUM");
+                  showToast("⚠️ PROCTOR WARNING: Voice/Talking detected! Please remain completely silent.", "error");
+                  openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nBackground voice or talking was detected by the microphone.\nPlease ensure a quiet testing environment. Another voice violation will terminate your session.");
+                } else if (voiceViolations >= 2) {
+                  handleAutoCutTermination("Multiple Voice/Speech Violations Detected");
+                }
+              }
+            }
+          } else {
+            continuousLoudFrames = Math.max(0, continuousLoudFrames - 1);
+          }
+        }, 500);
       }
-    })
-    .catch(err => { console.error("Webcam denied", err); localStorage.setItem('webcamActive', 'false'); });
+    } catch(e) {
+      console.warn("Audio proctoring not supported in this browser:", e);
+    }
+
+    // 2. Real-time Multi-Face Computer Vision Detector on Canvas Frames
+    proctorAnalysisInterval = setInterval(() => {
+      if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended || !securityMode || isBlocked) return;
+      try {
+        const ctx = proctorCanvas.getContext('2d');
+        ctx.drawImage(webcamVideo, 0, 0, 320, 240);
+        const imgData = ctx.getImageData(0, 0, 320, 240);
+        const data = imgData.data;
+        
+        // Multi-region skin & face centroid density analysis
+        let leftRegionSkin = 0;
+        let rightRegionSkin = 0;
+        let centerRegionSkin = 0;
+        let totalSkinPixels = 0;
+        
+        for (let i = 0; i < data.length; i += 16) { // Sample every 4th pixel
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          
+          // Normalized skin color classification (RGB / YCbCr heuristic)
+          const isSkin = (r > 95 && g > 40 && b > 20 && 
+                          Math.max(r, g, b) - Math.min(r, g, b) > 15 && 
+                          Math.abs(r - g) > 15 && r > g && r > b);
+          
+          if (isSkin) {
+            totalSkinPixels++;
+            const pixelIdx = i / 4;
+            const x = pixelIdx % 320;
+            if (x < 110) leftRegionSkin++;
+            else if (x > 210) rightRegionSkin++;
+            else centerRegionSkin++;
+          }
+        }
+        
+        // Check for multiple distinct face clusters simultaneously active on distinct sides
+        const multiFaceCondition = (leftRegionSkin > 280 && rightRegionSkin > 280) || 
+                                   (totalSkinPixels > 2400 && (leftRegionSkin > 250 || rightRegionSkin > 250));
+        
+        if (multiFaceCondition) {
+          proctorPipBadge.style.color = '#ef4444';
+          proctorPipBadge.style.borderColor = '#ef4444';
+          proctorPipBadge.innerHTML = "🚨 MULTI-FACE DETECTED!";
+          
+          const now = Date.now();
+          if (now - lastFaceAlertTime > 8000) {
+            lastFaceAlertTime = now;
+            multiFaceViolations++;
+            
+            if (multiFaceViolations === 1) {
+              playSecurityAlert();
+              reportCheatToServer("Multiple Faces Detected in Camera Feed", "HIGH");
+              showToast("⚠️ PROCTOR WARNING: Multiple faces detected!", "error");
+              openModal("⚠️ PROCTOR WARNING (Violation 1/2):\n\nMultiple people / faces detected in front of the camera!\nOnly the registered student is permitted in camera frame.\n\n⚠️ IMPORTANT: If another face is detected again, your test session will be IMMEDIATELY CLOSED & marked as Disqualified.");
+            } else if (multiFaceViolations >= 2) {
+              handleAutoCutTermination("Multiple Faces / Unauthorized Secondary Person Detected");
+            }
+          }
+        } else {
+          proctorPipBadge.style.color = '#10b981';
+          proctorPipBadge.style.borderColor = 'rgba(16,185,129,0.4)';
+          proctorPipBadge.innerHTML = `🟢 AI PROCTOR: 1 Face (${totalSkinPixels > 100 ? 'OK' : 'Searching'})`;
+        }
+      } catch(err) {}
+    }, 1000);
+
+    // 3. Broadcast frames to Admin Live Proctoring Monitor
+    if (!proctorStreamInterval) {
+      proctorStreamInterval = setInterval(() => {
+        if (!globalWebcamStream || webcamVideo.paused || webcamVideo.ended) return;
+        try {
+          const ctx = proctorCanvas.getContext('2d');
+          ctx.drawImage(webcamVideo, 0, 0, 320, 240);
+          const dataUrl = proctorCanvas.toDataURL('image/jpeg', 0.5);
+          const user = KTAuth.getUser() || {};
+          fetch('/api/proctor/stream-frame', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+            body: JSON.stringify({
+              userId: user.id || 1,
+              username: user.username || KTAuth.getUsername() || 'Student',
+              fullName: user.fullName || user.username || 'Student',
+              frame: dataUrl,
+              violations: violations + multiFaceViolations + voiceViolations,
+              securityMode: securityMode
+            })
+          }).catch(() => {});
+        } catch(err) {}
+      }, 1500);
+    }
+  })
+  .catch(err => { 
+    console.error("Webcam/Mic access denied", err); 
+    localStorage.setItem('webcamActive', 'false'); 
+    showToast("⚠️ Camera/Microphone access required for Secure Mode", "error");
+  });
 }
 
 function stopWebcam() {
-  if (proctorStreamInterval) {
-    clearInterval(proctorStreamInterval);
-    proctorStreamInterval = null;
+  if (proctorStreamInterval) { clearInterval(proctorStreamInterval); proctorStreamInterval = null; }
+  if (proctorAnalysisInterval) { clearInterval(proctorAnalysisInterval); proctorAnalysisInterval = null; }
+  if (audioCheckInterval) { clearInterval(audioCheckInterval); audioCheckInterval = null; }
+  if (proctorAudioContext) {
+    try { proctorAudioContext.close(); } catch(e){}
+    proctorAudioContext = null;
   }
   if (globalWebcamStream) {
     globalWebcamStream.getTracks().forEach(track => track.stop());
@@ -2042,6 +2361,7 @@ function stopWebcam() {
   }
   webcamVideo.srcObject = null;
   webcamVideo.style.display = 'none';
+  proctorPipBadge.style.display = 'none';
   localStorage.setItem('webcamActive', 'false');
   try {
     const user = KTAuth.getUser() || {};
@@ -2051,65 +2371,268 @@ function stopWebcam() {
   } catch(e) {}
 }
 
-// Start webcam if security mode is on by default
-if (typeof securityMode !== 'undefined' && securityMode) {
-    startWebcam();
+// ─────────────────────────────────────────────────────────
+// ⚡ PROBLEM DRAWER, SAMPLE RUNNER & 4 HIDDEN TEST CASES GRADER
+// ─────────────────────────────────────────────────────────
+let currentProblem = null;
+
+function toggleProblemDrawer() {
+  const drawer = document.getElementById('problemDrawer');
+  const toggleBtn = document.getElementById('problemToggleBtn');
+  if (!drawer) return;
+  const isHidden = drawer.style.display === 'none' || drawer.classList.contains('collapsed');
+  if (isHidden) {
+    drawer.style.display = 'flex';
+    drawer.classList.remove('collapsed');
+    if (toggleBtn) { toggleBtn.style.background = 'rgba(99,102,241,0.3)'; toggleBtn.style.borderColor = '#6366f1'; }
+  } else {
+    drawer.style.display = 'none';
+    drawer.classList.add('collapsed');
+    if (toggleBtn) { toggleBtn.style.background = 'rgba(99,102,241,0.12)'; toggleBtn.style.borderColor = 'rgba(99,102,241,0.3)'; }
+  }
+  if (window.monacoEditor) {
+    setTimeout(() => window.monacoEditor.layout(), 180);
+  }
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden && securityMode && !isBlocked) {
-    let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-    logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Switched Tab', severity: 'HIGH' });
-    localStorage.setItem('cheatLogs', JSON.stringify(logs));
-    reportCheatToServer();
-    showToast("⚠️ Warning: Tab switching detected!", "error");
-    violations++;
-    if (violations >= MAX_VIOLATIONS) {
-      isBlocked = true; document.body.classList.add('locked'); document.getElementById('runBtn').disabled = true;
-      openModal("Maximum anti-cheat violations reached. Exam Locked.");
-    }
+async function loadProblemFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const problemId = params.get('problemId') || params.get('problem');
+  const requireSecure = params.get('secure') === 'true';
+
+  if (requireSecure && !securityMode) {
+    toggleSecurity();
   }
-});
 
-// Advanced Anti-Cheat Additions
-document.addEventListener('contextmenu', (e) => {
-    if (securityMode) { e.preventDefault(); showToast("Right-click disabled in Secure Mode", "error"); }
-});
+  if (!problemId) return;
 
-window.addEventListener('blur', () => {
-    if (securityMode && !isBlocked && document.activeElement !== document.getElementById('monaco-container')) {
-        let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-        logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Window Focus Lost', severity: 'HIGH' });
-        localStorage.setItem('cheatLogs', JSON.stringify(logs));
-        reportCheatToServer();
+  try {
+    const drawer = document.getElementById('problemDrawer');
+    if (drawer) {
+      drawer.style.display = 'flex';
+      drawer.classList.remove('collapsed');
     }
-});
+    const probBtn = document.getElementById('problemToggleBtn');
+    if (probBtn) probBtn.style.display = 'inline-flex';
 
-document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && securityMode) {
-        let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-        logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: 'Exited Fullscreen', severity: 'HIGH' });
-        localStorage.setItem('cheatLogs', JSON.stringify(logs));
-        reportCheatToServer();
-        showToast("⚠️ Exited Fullscreen Mode!", "error");
-    }
-});
+    const res = await fetch(`/api/problems/${problemId}`, {
+      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}` }
+    });
 
-document.addEventListener('keydown', (e) => {
-    if (securityMode) {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
-            e.preventDefault();
-            let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-            logs.push({ time: new Date().toLocaleTimeString(), student: 'Student (Local)', activity: `Blocked Shortcut (Ctrl+${e.key.toUpperCase()})`, severity: 'MEDIUM' });
-            localStorage.setItem('cheatLogs', JSON.stringify(logs));
-            reportCheatToServer();
-            showToast(`Keyboard shortcut disabled in Secure Mode`, "error");
-        }
+    if (!res.ok) {
+      showToast("Could not load problem details", "error");
+      return;
     }
-});
+
+    const prob = await res.json();
+    currentProblem = prob;
+
+    // Render Drawer Details
+    document.getElementById('probTitle').innerText = prob.title || 'Untitled Problem';
+    
+    // Difficulty
+    const diffBadge = document.getElementById('probDifficultyBadge');
+    diffBadge.innerText = prob.difficulty || 'MEDIUM';
+    if (prob.difficulty === 'EASY') {
+      diffBadge.style.background = 'rgba(16,185,129,0.2)'; diffBadge.style.color = '#10b981';
+    } else if (prob.difficulty === 'HARD') {
+      diffBadge.style.background = 'rgba(239,68,68,0.2)'; diffBadge.style.color = '#ef4444';
+    } else {
+      diffBadge.style.background = 'rgba(245,158,11,0.2)'; diffBadge.style.color = '#f59e0b';
+    }
+
+    // Scope Badge
+    const scopeBadge = document.getElementById('probScopeBadge');
+    if (prob.institution) {
+      scopeBadge.innerText = `🎓 ${prob.institution}`;
+      scopeBadge.style.background = 'rgba(139,92,246,0.2)';
+      scopeBadge.style.color = '#c4b5fd';
+    } else {
+      scopeBadge.innerText = '🌐 Global Platform Assignment';
+      scopeBadge.style.background = 'rgba(59,130,246,0.2)';
+      scopeBadge.style.color = '#93c5fd';
+    }
+
+    // Points
+    document.getElementById('probPointsBadge').innerText = `⭐ ${prob.points || 50} pts`;
+
+    // Content Fields
+    document.getElementById('probDescription').innerText = prob.description || 'No description provided.';
+    
+    // Input / Output Formats
+    if (prob.inputFormat) {
+      document.getElementById('probInputFormatBox').style.display = 'block';
+      document.getElementById('probInputFormat').innerText = prob.inputFormat;
+    }
+    if (prob.outputFormat) {
+      document.getElementById('probOutputFormatBox').style.display = 'block';
+      document.getElementById('probOutputFormat').innerText = prob.outputFormat;
+    }
+    if (prob.constraints) {
+      document.getElementById('probConstraintsBox').style.display = 'block';
+      document.getElementById('probConstraints').innerText = prob.constraints;
+    }
+
+    // Samples
+    if (prob.sampleInput) document.getElementById('probSampleInput').innerText = prob.sampleInput;
+    if (prob.sampleOutput) document.getElementById('probSampleOutput').innerText = prob.sampleOutput;
+
+    // Load Starter Code into Monaco Editor
+    if (prob.starterCode && window.monacoEditor) {
+      window.monacoEditor.setValue(prob.starterCode);
+    }
+
+    // Pre-populate Stdin panel with sample input
+    const stdinEl = document.getElementById('stdin');
+    if (stdinEl && prob.sampleInput) {
+      stdinEl.value = prob.sampleInput;
+    }
+
+    showToast(`Loaded problem: ${prob.title}`, "success");
+    if (window.monacoEditor) setTimeout(() => window.monacoEditor.layout(), 200);
+
+  } catch (err) {
+    console.error("Error loading problem:", err);
+    showToast("Failed to load problem statement", "error");
+  }
+}
+
+async function runProblemSampleTests() {
+  if (!currentProblem) {
+    showToast("No problem loaded to test against", "warning");
+    return;
+  }
+  const code = (window.monacoEditor ? window.monacoEditor.getValue() : editor.value) || '';
+  const lang = document.getElementById('language').value || 'java';
+  const sampleIn = currentProblem.sampleInput || '';
+  const sampleExpected = (currentProblem.sampleOutput || '').trim();
+
+  const resultsCard = document.getElementById('probResultsCard');
+  const resultsArea = document.getElementById('probResultsArea');
+  resultsCard.style.display = 'block';
+  resultsArea.innerHTML = `<div style="color:var(--text-muted); font-size:12px;">⏳ Running code against sample test cases...</div>`;
+
+  try {
+    const res = await fetch('/compiler/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      body: JSON.stringify({ code: code, language: lang, stdin: sampleIn })
+    });
+    const data = await res.json();
+    const actualOut = (data.output || '').trim();
+    const isPass = actualOut === sampleExpected;
+
+    resultsArea.innerHTML = `
+      <div style="background:${isPass ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border:1px solid ${isPass ? '#10b981' : '#ef4444'}; border-radius:8px; padding:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span style="font-weight:700; font-size:12px; color:${isPass ? '#10b981' : '#ef4444'};">${isPass ? '✅ SAMPLE TEST PASSED' : '❌ SAMPLE TEST FAILED'}</span>
+          <span style="font-size:10.5px; color:var(--text-muted); font-family:monospace;">${data.executionTime || '0ms'}</span>
+        </div>
+        <div style="font-size:11px; margin-bottom:4px; color:var(--text-muted);"><strong>Expected:</strong> <code style="color:#e2e8f0;">${escapeHtml(sampleExpected)}</code></div>
+        <div style="font-size:11px; color:var(--text-muted);"><strong>Your Output:</strong> <code style="color:${isPass ? '#10b981' : '#ef4444'};">${escapeHtml(actualOut)}</code></div>
+      </div>
+    `;
+
+    if (isPass) {
+      showToast("Sample tests passed! Ready to Submit & verify 4 Hidden Cases.", "success");
+    } else {
+      showToast("Sample test failed. Check your logic and output formatting.", "error");
+    }
+  } catch (e) {
+    resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Execution error: ${e.message}</div>`;
+  }
+}
+
+async function submitProblemGrader() {
+  if (!currentProblem) {
+    showToast("No active problem statement found to grade", "warning");
+    return;
+  }
+  const code = (window.monacoEditor ? window.monacoEditor.getValue() : editor.value) || '';
+  const lang = document.getElementById('language').value || 'java';
+
+  const btn = document.getElementById('probSubmitGraderBtn');
+  const resultsCard = document.getElementById('probResultsCard');
+  const resultsArea = document.getElementById('probResultsArea');
+  
+  btn.disabled = true;
+  btn.innerHTML = `<span>⏳</span> Evaluating 4 Hidden Tests...`;
+  resultsCard.style.display = 'block';
+  resultsArea.innerHTML = `<div style="color:#60a5fa; font-size:12px; font-weight:600;">🔒 Sandboxing code & executing against all 4 hidden test cases in parallel...</div>`;
+
+  try {
+    const res = await fetch(`/api/problems/${currentProblem.id}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KTAuth.getToken()}` },
+      body: JSON.stringify({ code: code, language: lang })
+    });
+
+    const data = await res.json();
+    btn.disabled = false;
+    btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
+
+    if (!res.ok) {
+      resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Submission failed: ${data.message || 'Error'}</div>`;
+      showToast(data.message || "Grading error", "error");
+      return;
+    }
+
+    let resultsHtml = `
+      <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${data.isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${data.isSolved ? '#10b981' : '#ef4444'};">
+        <div style="font-weight:800; font-size:13px; color:${data.isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
+          ${data.isSolved ? '🎉 ACCEPTED — ALL TEST CASES PASSED!' : '❌ NOT ACCEPTED — TEST CASES FAILED'}
+        </div>
+        <div style="font-size:11.5px; color:var(--text-main); line-height:1.5;">
+          ${data.message}<br>
+          <strong>Total Passed:</strong> ${data.passedCount} / ${data.totalCount} (🔒 Hidden: ${data.hiddenPassed}/${data.hiddenTotal}) • <strong>Time:</strong> ${data.executionTimeMs}ms
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+    `;
+
+    if (data.results && data.results.length > 0) {
+      data.results.forEach((t, i) => {
+        const isHidden = t.isHidden;
+        const passed = t.passed;
+        resultsHtml += `
+          <div style="background:rgba(0,0,0,0.3); border:1px solid ${passed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}; border-radius:6px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span>${passed ? '✅' : '❌'}</span>
+              <span style="font-size:11.5px; font-weight:600; color:${passed ? '#10b981' : '#ef4444'};">
+                ${isHidden ? `🔒 Hidden Test Case #${i + 1}` : `Sample Test Case #${i + 1}`}
+              </span>
+            </div>
+            <span style="font-size:10px; color:var(--text-muted); font-family:monospace;">${t.executionTimeMs || 0}ms</span>
+          </div>
+        `;
+      });
+    }
+
+    resultsHtml += `</div>`;
+    resultsArea.innerHTML = resultsHtml;
+
+    if (data.isSolved) {
+      createConfetti();
+      showToast(`🏆 Congratulations! +${data.pointsEarned || 50} Points Credited!`, "success");
+      showPointsPopup(data.pointsEarned || 50);
+      loadUserPoints();
+    } else {
+      showToast(`Passed ${data.passedCount}/${data.totalCount} test cases. Fix remaining edge cases!`, "warning");
+    }
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
+    resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Grading exception: ${err.message}</div>`;
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
 
 function realAnalyzeCode(code) {
-  // Real static analysis
   let timeComplexity = "O(1)";
   if (/for\s*\(.*?\)\s*\{[\s\S]*?for\s*\(.*?\)/.test(code) || /while\s*\(.*?\)\s*\{[\s\S]*?for\s*\(.*?\)/.test(code)) timeComplexity = "O(N²)";
   else if (/for\s*\(.*?\)/.test(code) || /while\s*\(.*?\)/.test(code)) timeComplexity = "O(N)";
@@ -2138,6 +2661,10 @@ require(['vs/editor/editor.main'], function() {
     });
     window.monacoEditor.onDidChangeModelContent(() => { handleInput(); });
     window.monacoEditor.onDidPaste(() => { handlePaste(); });
+
+    // Load problem from URL query if ?problemId= is supplied
+    loadProblemFromQuery();
+    loadUserPoints();
 });
 
 // Mobile Action Helpers

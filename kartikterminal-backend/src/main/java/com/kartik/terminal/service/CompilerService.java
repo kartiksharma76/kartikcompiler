@@ -111,7 +111,10 @@ public class CompilerService {
     }
 
     // ========== SANDBOX EXECUTION ==========
-    private ExecutionResult runCodeInSandbox(CodeRequest request) {
+    public record RawExecutionResult(String output, String error, int exitCode, long executionTimeMs) {}
+
+    public RawExecutionResult runRawSandbox(String language, String code, String input) {
+        long start = System.currentTimeMillis();
         String sessionId = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
         Path workDir = null;
 
@@ -119,31 +122,38 @@ public class CompilerService {
             workDir = Files.createTempDirectory(Path.of(tempDir), "run_" + sessionId + "_");
             workDir.toFile().setWritable(true);
 
-            return switch (request.getLanguage().toLowerCase()) {
-                case "java"       -> runJava(workDir, request.getCode(), request.getInput());
-                case "python", "py" -> runPython(workDir, request.getCode(), request.getInput());
-                case "cpp", "c++" -> runCpp(workDir, request.getCode(), request.getInput());
-                case "c"          -> runC(workDir, request.getCode(), request.getInput());
-                case "js", "node" -> runNode(workDir, request.getCode(), request.getInput());
-                case "go", "golang" -> runGo(workDir, request.getCode(), request.getInput());
-                case "mysql", "sql" -> runMySql(request.getCode());
-                case "ts", "typescript" -> runTypeScript(workDir, request.getCode(), request.getInput());
-                case "rust", "rs" -> runRust(workDir, request.getCode(), request.getInput());
-                case "php"        -> runPhp(workDir, request.getCode(), request.getInput());
-                case "ruby", "rb" -> runRuby(workDir, request.getCode(), request.getInput());
-                case "bash", "sh" -> runBash(workDir, request.getCode(), request.getInput());
-                default           -> new ExecutionResult("", "Unsupported language: " + request.getLanguage(), 1);
+            ExecutionResult res = switch (language != null ? language.toLowerCase() : "java") {
+                case "java"       -> runJava(workDir, code, input);
+                case "python", "py" -> runPython(workDir, code, input);
+                case "cpp", "c++" -> runCpp(workDir, code, input);
+                case "c"          -> runC(workDir, code, input);
+                case "js", "node" -> runNode(workDir, code, input);
+                case "go", "golang" -> runGo(workDir, code, input);
+                case "mysql", "sql" -> runMySql(code);
+                case "ts", "typescript" -> runTypeScript(workDir, code, input);
+                case "rust", "rs" -> runRust(workDir, code, input);
+                case "php"        -> runPhp(workDir, code, input);
+                case "ruby", "rb" -> runRuby(workDir, code, input);
+                case "bash", "sh" -> runBash(workDir, code, input);
+                default           -> new ExecutionResult("", "Unsupported language: " + language, 1);
             };
+            long duration = System.currentTimeMillis() - start;
+            return new RawExecutionResult(res.output, res.error, res.exitCode, duration);
 
         } catch (IOException e) {
             log.error("Failed to create temp directory", e);
-            return new ExecutionResult("", "Internal server error: " + e.getMessage(), 1);
+            long duration = System.currentTimeMillis() - start;
+            return new RawExecutionResult("", "Internal server error: " + e.getMessage(), 1, duration);
         } finally {
-            // Clean up temp files
             if (workDir != null) {
                 deleteDirectory(workDir.toFile());
             }
         }
+    }
+
+    private ExecutionResult runCodeInSandbox(CodeRequest request) {
+        RawExecutionResult raw = runRawSandbox(request.getLanguage(), request.getCode(), request.getInput());
+        return new ExecutionResult(raw.output(), raw.error(), raw.exitCode());
     }
 
     // ========== JAVA ==========

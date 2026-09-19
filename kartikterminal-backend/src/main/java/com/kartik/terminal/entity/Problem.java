@@ -1,5 +1,6 @@
 package com.kartik.terminal.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Problem {
 
     @Id
@@ -35,6 +37,23 @@ public class Problem {
 
     @Column
     private String tags;
+
+    @Column(columnDefinition = "TEXT")
+    private String sampleInput;
+
+    @Column(columnDefinition = "TEXT")
+    private String sampleOutput;
+
+    @Column(columnDefinition = "TEXT")
+    private String starterCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "institution_id")
+    private Institution institution; // null = Global Platform Assignment, otherwise College specific
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id")
+    private User createdBy;
 
     @OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
