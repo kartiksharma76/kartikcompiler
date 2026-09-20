@@ -1487,7 +1487,7 @@ async function loadAssignedProblems() {
           <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
             <div style="display:flex; align-items:center; gap:6px;">
               ${solvedBadge}
-              <span style="font-size: 11px; color: var(--text-muted);">🛡️ ${p.totalTestCasesCount || 5} Tests (${p.hiddenTestCasesCount || 4} Hidden)</span>
+              <span style="font-size: 11px; color: var(--text-muted);">🛡️ ${p.totalTestCasesCount || 3} Tests (${p.hiddenTestCasesCount || 2} Hidden)</span>
             </div>
             <a href="/compiler.html?problemId=${p.id}&secure=true" class="btn-card-action" style="padding: 6px 14px; font-size: 12px; border-color: rgba(59,130,246,0.5); color: #60a5fa; background: rgba(59,130,246,0.1); text-decoration: none; display: flex; align-items: center; gap: 5px;" title="Solve in Secure Sandbox with Camera & Microphone Proctoring">
               <span>⚡</span> Solve

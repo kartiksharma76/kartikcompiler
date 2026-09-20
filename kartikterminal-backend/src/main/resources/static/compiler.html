@@ -673,12 +673,165 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
   font-size: 10px;
   color: var(--text-muted);
 }
+
+/* Live Proctoring Camera & Microphone Surveillance Widget */
+.proctoring-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 220px;
+  background: rgba(10, 14, 26, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(239, 68, 68, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(239, 68, 68, 0.25);
+  z-index: 9999;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-sans);
+}
+.proctoring-widget.good-standing {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(16, 185, 129, 0.25);
+}
+.proctor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.proctor-status-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #f87171;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono);
+}
+.proctor-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: proctorPulse 1.5s infinite;
+}
+@keyframes proctorPulse {
+  0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.proctor-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.proctor-video-container {
+  position: relative;
+  width: 100%;
+  height: 135px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.proctor-video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.proctor-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #090d16;
+  text-align: center;
+  padding: 10px;
+}
+.proctor-overlay-name {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.proctor-audio-meter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.proctor-mic-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+}
+.proctor-audio-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.proctor-audio-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #10b981 0%, #fbbf24 70%, #ef4444 100%);
+  border-radius: 3px;
+  transition: width 0.08s ease-out;
+}
 </style>
 </head>
 <body>
 <canvas id="confettiCanvas"></canvas>
 <div id="errorFlash"></div>
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- Live Proctoring Camera & Microphone Stream Widget (Active in Secure Mode) -->
+<div id="proctoringWidget" class="proctoring-widget" style="display:none;">
+  <div class="proctor-header">
+    <div class="proctor-status-tag">
+      <span class="proctor-pulse-dot"></span>
+      <span id="proctorStatusText">PROCTOR LIVE</span>
+    </div>
+    <div class="proctor-controls">
+      <span id="proctorMicStatus" title="Microphone Active">🎙️</span>
+      <span id="proctorCamStatus" title="Camera Active">📹</span>
+    </div>
+  </div>
+  <div class="proctor-video-container">
+    <video id="proctorVideo" autoplay playsinline muted></video>
+    <div id="proctorCamPlaceholder" class="proctor-placeholder" style="display:none;">
+      <div style="font-size:22px; margin-bottom:2px;">📷</div>
+      <div style="font-size:10.5px; color:#f87171; font-weight:700;">Camera Connecting...</div>
+    </div>
+    <div class="proctor-overlay-name" id="proctorStudentName">Candidate</div>
+  </div>
+  <div class="proctor-audio-meter-wrap" title="Real-time Microphone Activity Monitor">
+    <div class="proctor-mic-label">MIC</div>
+    <div class="proctor-audio-track">
+      <div class="proctor-audio-bar" id="proctorAudioBar"></div>
+    </div>
+  </div>
+</div>
 
 <nav class="navbar navbar-mobile-header">
   <div class="brand">KARTIKTERMINAL</div>
@@ -727,7 +880,7 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
       <option value="bash">Bash / Shell</option>
     </select>
     <!-- auth.js injects user avatar + menu widget here -->
-    <button id="problemToggleNavBtn" class="icon-btn" onclick="toggleProblemPanel()" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.35); color: #60a5fa; font-weight: 700; padding: 6px 12px; gap:6px;" title="Toggle Split Problem Statement Drawer">
+    <button id="problemToggleNavBtn" class="icon-btn" onclick="toggleProblemPanel()" style="display:none; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.35); color: #60a5fa; font-weight: 700; padding: 6px 12px; gap:6px;" title="Toggle Split Problem Statement Drawer">
       <span>📋</span> Problem Statement
     </button>
     <button id="collegeBtn" class="run-btn" style="background: #10b981;" onclick="window.location.href='/college.html'">🎓 COLLEGE ERP</button>
@@ -788,10 +941,10 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
         <div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:8px; padding:10px;">
           <div style="font-size:11px; font-weight:700; color:#fff; display:flex; justify-content:space-between; align-items:center;">
             <span>🛡️ Test Suite</span>
-            <span id="probTestsSummary" style="font-size:10.5px; color:#a5b4fc;">1 Public Sample + 4 Hidden Cases</span>
+            <span id="probTestsSummary" style="font-size:10.5px; color:#a5b4fc;">1 Public Sample + 2 Hidden Cases</span>
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
-            To be marked as Passed and earn points, your code must successfully pass all 4 hidden edge-case tests.
+            To be marked as Passed and earn points, your code must successfully pass all 2 hidden edge-case tests.
           </div>
         </div>
 
@@ -807,7 +960,7 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
           <span>▶️</span> Run Sample Tests
         </button>
         <button onclick="submitProblemGrader()" class="btn-primary" id="probSubmitGraderBtn" style="flex:1; padding:8px; font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; background:linear-gradient(135deg,#10b981,#059669);">
-          <span>🚀</span> Submit & Check 4 Hidden Tests
+          <span>🚀</span> Submit & Check 2 Hidden Tests
         </button>
       </div>
     </aside>
@@ -1538,10 +1691,130 @@ function handleKeydown(e) {
   if(e.key==='Escape'){closeShortcuts();closeGoToLine();if(securityModal.classList.contains('active'))closeModal();historyList.classList.remove('active');snippetsPanel.classList.remove('active');statsPanel.classList.remove('active');if(searchBar.style.display!=='none')toggleSearch();}
 }
 
-// ── Security ──
+// ── Security & Live WebRTC Proctoring ──
 let securityMode=false, violations=0, isBlocked=false;
 const MAX_VIOLATIONS=2;
 let secureModeActivatedTimestamp = 0;
+
+let proctorMediaStream = null;
+let proctorAudioContext = null;
+let proctorAudioAnalyser = null;
+let proctorAudioAnimFrame = null;
+
+async function startProctoringMedia() {
+  const widget = document.getElementById('proctoringWidget');
+  const video = document.getElementById('proctorVideo');
+  const placeholder = document.getElementById('proctorCamPlaceholder');
+  const nameEl = document.getElementById('proctorStudentName');
+  
+  if (nameEl && typeof KTAuth !== 'undefined') {
+    nameEl.textContent = KTAuth.getUsername() || 'Candidate';
+  }
+  
+  if (widget) {
+    widget.style.display = 'block';
+  }
+
+  try {
+    const constraints = {
+      video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        facingMode: "user"
+      },
+      audio: true
+    };
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error("WebRTC Camera / Microphone API is not supported in this browser.");
+    }
+
+    proctorMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    
+    if (video) {
+      video.srcObject = proctorMediaStream;
+      video.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+      try { await video.play(); } catch(e){}
+    }
+
+    // Initialize Web Audio API for Real-time Mic Activity Visualizer
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        proctorAudioContext = new AudioContextClass();
+        if (proctorAudioContext.state === 'suspended') {
+          await proctorAudioContext.resume();
+        }
+        const audioSource = proctorAudioContext.createMediaStreamSource(proctorMediaStream);
+        proctorAudioAnalyser = proctorAudioContext.createAnalyser();
+        proctorAudioAnalyser.fftSize = 64;
+        audioSource.connect(proctorAudioAnalyser);
+
+        const dataArray = new Uint8Array(proctorAudioAnalyser.frequencyBinCount);
+        const audioBar = document.getElementById('proctorAudioBar');
+
+        function updateAudioLevel() {
+          if (!proctorAudioAnalyser || !securityMode) return;
+          proctorAudioAnalyser.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          let avg = sum / dataArray.length;
+          let percent = Math.min(100, Math.round((avg / 128) * 100));
+          if (audioBar) {
+            audioBar.style.width = `${percent}%`;
+          }
+          proctorAudioAnimFrame = requestAnimationFrame(updateAudioLevel);
+        }
+        updateAudioLevel();
+      }
+    } catch(audioErr) {
+      console.warn("Audio meter setup warning:", audioErr);
+    }
+
+    if (widget) widget.classList.add('good-standing');
+    logToTerminal("📹 Camera and 🎙️ Microphone initialized for Secure Sandbox", "success");
+    showToast("📹 Camera & Microphone connected for Proctoring", "success");
+
+  } catch (err) {
+    console.error("Proctoring media access failed:", err);
+    if (placeholder) {
+      placeholder.style.display = 'flex';
+      placeholder.innerHTML = `
+        <div style="font-size:22px; margin-bottom:2px;">⚠️</div>
+        <div style="font-size:10.5px; color:#ef4444; font-weight:700;">Camera/Mic Denied</div>
+        <div style="font-size:9px; color:#94a3b8; margin-top:2px;">Please allow permissions in browser</div>
+      `;
+    }
+    showToast("⚠️ Camera & Microphone permission required for Secure Mode!", "error");
+    logToTerminal(`⚠️ Camera/Mic Notice: ${err.message}`, "warning");
+  }
+}
+
+function stopProctoringMedia() {
+  if (proctorMediaStream) {
+    proctorMediaStream.getTracks().forEach(track => {
+      try { track.stop(); } catch(e){}
+    });
+    proctorMediaStream = null;
+  }
+  if (proctorAudioAnimFrame) {
+    cancelAnimationFrame(proctorAudioAnimFrame);
+    proctorAudioAnimFrame = null;
+  }
+  if (proctorAudioContext) {
+    try { proctorAudioContext.close(); } catch(e){}
+    proctorAudioContext = null;
+  }
+  const video = document.getElementById('proctorVideo');
+  if (video) video.srcObject = null;
+  const widget = document.getElementById('proctoringWidget');
+  if (widget) widget.style.display = 'none';
+  const audioBar = document.getElementById('proctorAudioBar');
+  if (audioBar) audioBar.style.width = '0%';
+}
 
 function toggleSecurity(forceState) {
   if (isBlocked) {
@@ -1569,12 +1842,14 @@ function toggleSecurity(forceState) {
   
   if (securityMode) {
     secureModeActivatedTimestamp = Date.now();
+    startProctoringMedia();
     try { 
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(() => {}); 
       }
     } catch (e) {}
   } else {
+    stopProctoringMedia();
     try { 
       if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen().catch(() => {}); 
@@ -1949,8 +2224,8 @@ async function runCode() {
   const term = document.getElementById('terminal');
   const btn = document.getElementById("runBtn");
 
-  // 1. Validation: Block execution if code is incomplete / unwritten default template in Problem or Secure Mode
-  if (currentProblem || securityMode) {
+  // 1. Validation: Block execution if code is incomplete / unwritten default template when problem statement is active
+  if (currentProblem) {
     if (isCodeIncomplete(code, lang)) {
       showErrorEffect();
       showToast("❌ Code is incomplete! Please write your solution logic.", "error");
@@ -2005,9 +2280,9 @@ async function runCode() {
   term.scrollTop = term.scrollHeight;
 
   try {
-    // 2. If problem statement is loaded, auto-run Sample + 4 Hidden Test Cases
+    // 2. If problem statement is loaded, auto-run Sample + 2 Hidden Test Cases
     if (currentProblem && currentProblem.id) {
-      term.innerHTML += `<div class="term-line" style="color:#60a5fa;">⚡ [AUTO-GRADER] Sandboxing code & executing against Sample + 4 Hidden Test Cases...</div>`;
+      term.innerHTML += `<div class="term-line" style="color:#60a5fa;">⚡ [AUTO-GRADER] Sandboxing code & executing against Sample + 2 Hidden Test Cases...</div>`;
       term.scrollTop = term.scrollHeight;
 
       let headers = { 'Content-Type': 'application/json' };
@@ -2047,7 +2322,7 @@ async function runCode() {
             ❌ TEST EXECUTION FAILED: Solution did NOT pass all test cases!
           </div>
           <div class="term-line" style="color:#fca5a5;">
-            • Total Passed: ${gradeData.passedCount || 0}/${gradeData.totalCount || 5} (${gradeData.hiddenPassed || 0}/${gradeData.hiddenTotal || 4} Hidden Cases Passed)
+            • Total Passed: ${gradeData.passedCount || 0}/${gradeData.totalCount || 3} (${gradeData.hiddenPassed || 0}/${gradeData.hiddenTotal || 2} Hidden Cases Passed)
           </div>
           <div class="term-line" style="color:#f87171; font-weight:600;">
             • ⚠️ Failed at: ${failedTestDetail || 'Output Mismatch / Execution Error'}
@@ -2526,7 +2801,7 @@ async function loadProblemFromQuery() {
     // Tests summary
     const testsSumEl = document.getElementById('probTestsSummary');
     if (testsSumEl) {
-      const hiddenCount = prob.hiddenTestCasesCount || (prob.testCases ? prob.testCases.filter(t => t.isHidden).length : 4);
+      const hiddenCount = prob.hiddenTestCasesCount || (prob.testCases ? prob.testCases.filter(t => t.isHidden).length : 2);
       testsSumEl.innerText = `1 Sample + ${hiddenCount} Hidden Cases`;
     }
 
@@ -2607,7 +2882,7 @@ async function runProblemSampleTests() {
     }
 
     if (isPass) {
-      showToast("Sample tests passed! Ready to Submit & verify 4 Hidden Cases.", "success");
+      showToast("Sample tests passed! Ready to Submit & verify 2 Hidden Cases.", "success");
     } else {
       showToast("Sample test failed. Check your logic and output formatting.", "error");
     }
@@ -2629,11 +2904,11 @@ async function submitProblemGrader() {
   
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<span>⏳</span> Evaluating 4 Hidden Tests...`;
+    btn.innerHTML = `<span>⏳</span> Evaluating 2 Hidden Tests...`;
   }
   if (resultsArea) {
     resultsArea.style.display = 'block';
-    resultsArea.innerHTML = `<div style="color:#60a5fa; font-size:12px; font-weight:600;">🔒 Sandboxing code & executing against all 4 hidden test cases in parallel...</div>`;
+    resultsArea.innerHTML = `<div style="color:#60a5fa; font-size:12px; font-weight:600;">🔒 Sandboxing code & executing against hidden test cases in parallel...</div>`;
   }
 
   try {
@@ -2653,7 +2928,7 @@ async function submitProblemGrader() {
 
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
+      btn.innerHTML = `<span>🚀</span> Submit & Check 2 Hidden Tests`;
     }
 
     if (!res.ok) {

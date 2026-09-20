@@ -6663,14 +6663,12 @@ function openAssignProblemModal() {
   document.getElementById('paSampleOutput').value = '';
   document.getElementById('paStarterCode').value = '';
   
-  // Seed default 1 public + 4 hidden test case rows
+  // Seed default 1 public + 2 hidden test case rows
   const tbody = document.getElementById('paTestCasesBody');
   tbody.innerHTML = '';
   addTestCaseRow('', '', false); // Sample public
   addTestCaseRow('', '', true);  // Hidden 1
   addTestCaseRow('', '', true);  // Hidden 2
-  addTestCaseRow('', '', true);  // Hidden 3
-  addTestCaseRow('', '', true);  // Hidden 4
 
   document.getElementById('problemAssignmentModal').style.display = 'flex';
 }
@@ -6765,7 +6763,7 @@ async function submitAssignProblemForm(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to save problem');
 
-    alert('🎉 Problem Statement assigned successfully with 4 hidden test cases!');
+    alert('🎉 Problem Statement assigned successfully with 2 hidden test cases!');
     closeAssignProblemModal();
     fetchAdminProblems();
   } catch (err) {
@@ -6855,7 +6853,7 @@ async function generateAiProblemForForm() {
       });
     } else {
       addTestCaseRow(data.sampleInput || '', data.sampleOutput || '', false);
-      for (let i = 1; i <= 4; i++) {
+      for (let i = 1; i <= 2; i++) {
         addTestCaseRow('test_' + i, 'out_' + i, true);
       }
     }

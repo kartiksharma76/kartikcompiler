@@ -78,7 +78,7 @@ public class ProblemService {
                 .createdBy(currentUser)
                 .build();
 
-        // Process Test Cases (Ensure at least sample tests + 4 hidden test cases)
+        // Process Test Cases (1 public sample + 2 hidden test cases)
         List<TestCase> testCases = new ArrayList<>();
         if (request.getTestCases() != null && !request.getTestCases().isEmpty()) {
             for (TestCaseDTO tcDTO : request.getTestCases()) {
@@ -95,21 +95,13 @@ public class ProblemService {
             }
         }
 
-        // Guarantee at least 1 public sample and 4 distinct hidden test cases
-        long hiddenCount = testCases.stream().filter(t -> Boolean.TRUE.equals(t.getIsHidden())).count();
-        if (testCases.isEmpty() || hiddenCount < 4) {
-            if (testCases.stream().noneMatch(t -> !Boolean.TRUE.equals(t.getIsHidden()))) {
-                String sIn = request.getSampleInput() != null && !request.getSampleInput().isBlank() ? request.getSampleInput().trim() : "5\n1 2 3 4 5";
-                String sOut = request.getSampleOutput() != null && !request.getSampleOutput().isBlank() ? request.getSampleOutput().trim() : "10";
-                testCases.add(0, TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
-            }
-
-            int needed = (int) (4 - hiddenCount);
-            for (int i = 1; i <= needed; i++) {
-                String edgeIn = (i * 10) + "\n" + (i * 5);
-                String edgeOut = String.valueOf(i * 10 * 2);
-                testCases.add(TestCase.builder().problem(problem).inputData(edgeIn).expectedOutput(edgeOut).isHidden(true).build());
-            }
+        // If no test cases were provided, seed 1 public sample and 2 hidden test cases
+        if (testCases.isEmpty()) {
+            String sIn = request.getSampleInput() != null && !request.getSampleInput().isBlank() ? request.getSampleInput().trim() : "5\n1 2 3 4 5";
+            String sOut = request.getSampleOutput() != null && !request.getSampleOutput().isBlank() ? request.getSampleOutput().trim() : "15";
+            testCases.add(TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
+            testCases.add(TestCase.builder().problem(problem).inputData("3\n10 20 30").expectedOutput("60").isHidden(true).build());
+            testCases.add(TestCase.builder().problem(problem).inputData("4\n-5 5 -10 10").expectedOutput("0").isHidden(true).build());
         }
         problem.setTestCases(testCases);
 
@@ -124,7 +116,7 @@ public class ProblemService {
     }
 
     // ──────────────────────────────────────────────────────────
-    // 2. AI Problem & 4 Hidden Test Cases Generator
+    // 2. AI Problem & 2 Hidden Test Cases Generator
     // ──────────────────────────────────────────────────────────
     public Map<String, Object> generateAiProblem(AiGenerateProblemRequest req) {
         String topic = req.getTopic() != null && !req.getTopic().isBlank() ? req.getTopic() : "Array & Hashing Optimization";
@@ -147,12 +139,10 @@ public class ProblemService {
             "  \"testCases\": [\n" +
             "    {\"inputData\": \"Sample input 1\", \"expectedOutput\": \"Sample output 1\", \"isHidden\": false},\n" +
             "    {\"inputData\": \"Hidden edge case input 1\", \"expectedOutput\": \"Expected output 1\", \"isHidden\": true},\n" +
-            "    {\"inputData\": \"Hidden large input 2\", \"expectedOutput\": \"Expected output 2\", \"isHidden\": true},\n" +
-            "    {\"inputData\": \"Hidden boundary condition input 3\", \"expectedOutput\": \"Expected output 3\", \"isHidden\": true},\n" +
-            "    {\"inputData\": \"Hidden stress test input 4\", \"expectedOutput\": \"Expected output 4\", \"isHidden\": true}\n" +
+            "    {\"inputData\": \"Hidden edge case input 2\", \"expectedOutput\": \"Expected output 2\", \"isHidden\": true}\n" +
             "  ]\n" +
             "}\n" +
-            "CRITICAL: Ensure exactly 1 public sample test case (isHidden: false) and AT LEAST 4 robust hidden test cases (isHidden: true) covering edge cases, large numbers, duplicates, and zeros.",
+            "CRITICAL: Ensure exactly 1 public sample test case (isHidden: false) and 2 robust hidden test cases (isHidden: true) covering edge cases and boundary conditions.",
             topic, difficulty, language, difficulty, language
         );
 
@@ -171,7 +161,7 @@ public class ProblemService {
             log.warn("Failed to parse AI JSON response for problem generation, using fallback template: {}", e.getMessage());
         }
 
-        // High quality fallback problem structure with 1 public + 4 hidden test cases
+        // High quality fallback problem structure with 1 public + 2 hidden test cases
         String fallbackTitle = "Optimum " + topic + " Solver";
         String fallbackDesc = String.format(
             "### Problem Statement\n" +
@@ -204,9 +194,7 @@ public class ProblemService {
             "testCases", List.of(
                 Map.of("inputData", "5\n1 2 3 4 5", "expectedOutput", "15", "isHidden", false),
                 Map.of("inputData", "3\n10 20 30", "expectedOutput", "60", "isHidden", true),
-                Map.of("inputData", "1\n100", "expectedOutput", "100", "isHidden", true),
-                Map.of("inputData", "4\n-5 5 -10 10", "expectedOutput", "0", "isHidden", true),
-                Map.of("inputData", "6\n2 4 6 8 10 12", "expectedOutput", "42", "isHidden", true)
+                Map.of("inputData", "4\n-5 5 -10 10", "expectedOutput", "0", "isHidden", true)
             )
         );
     }
@@ -272,7 +260,7 @@ public class ProblemService {
     }
 
     // ──────────────────────────────────────────────────────────
-    // 5. Submit Problem Solution & Grade against 4 Hidden Test Cases
+    // 5. Submit Problem Solution & Grade against 2 Hidden Test Cases
     // ──────────────────────────────────────────────────────────
     @Transactional
     public ProblemSubmissionResponse submitSolution(Long problemId, ProblemSubmissionRequest request, User user) {
@@ -291,15 +279,14 @@ public class ProblemService {
             testCases = problem.getTestCases();
         }
 
-        // If no test cases exist, auto-create 1 sample + 4 hidden test cases
+        // If no test cases exist, auto-create 1 sample + 2 hidden test cases
         if (testCases == null || testCases.isEmpty()) {
             testCases = new ArrayList<>();
             String sIn = problem.getSampleInput() != null && !problem.getSampleInput().isBlank() ? problem.getSampleInput().trim() : "5\n1 2 3 4 5";
             String sOut = problem.getSampleOutput() != null && !problem.getSampleOutput().isBlank() ? problem.getSampleOutput().trim() : "15";
             testCases.add(TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
-            for (int i = 1; i <= 4; i++) {
-                testCases.add(TestCase.builder().problem(problem).inputData((i * 10) + "\n" + (i * 5)).expectedOutput(String.valueOf(i * 15)).isHidden(true).build());
-            }
+            testCases.add(TestCase.builder().problem(problem).inputData("3\n10 20 30").expectedOutput("60").isHidden(true).build());
+            testCases.add(TestCase.builder().problem(problem).inputData("4\n-5 5 -10 10").expectedOutput("0").isHidden(true).build());
             testCaseRepository.saveAll(testCases);
         }
 
@@ -325,6 +312,10 @@ public class ProblemService {
 
             String expectedClean = tc.getExpectedOutput() != null ? tc.getExpectedOutput().trim().replace("\r\n", "\n") : "";
             String actualClean = execResult.output() != null ? execResult.output().trim().replace("\r\n", "\n") : "";
+
+            // Normalize whitespace between lines and trim
+            expectedClean = expectedClean.lines().map(String::stripTrailing).collect(Collectors.joining("\n")).trim();
+            actualClean = actualClean.lines().map(String::stripTrailing).collect(Collectors.joining("\n")).trim();
 
             // Strict validation: Must exit code 0, have NO error, have non-empty expected, and match exactly
             boolean passed = execResult.exitCode() == 0 &&
@@ -352,8 +343,8 @@ public class ProblemService {
             results.add(r);
         }
 
-        // Verdict: Passed ONLY if ALL test cases (including all 4 hidden test cases) pass
-        boolean isAllPassed = (totalCases > 0) && (hiddenTotal >= 4) && (passedCount == totalCases);
+        // Verdict: Passed ONLY if ALL test cases pass
+        boolean isAllPassed = (totalCases > 0) && (passedCount == totalCases);
 
         int pointsToAward = 0;
         boolean alreadySolved = problemSubmissionRepository.existsByUserAndProblemAndIsSolvedTrue(user, problem);
