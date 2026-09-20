@@ -155,62 +155,111 @@ public class ProblemService {
             String json = cleanJson(raw);
             JsonNode root = objectMapper.readTree(json);
             if (root.isObject() && root.has("title") && root.has("description")) {
-                return objectMapper.convertValue(root, Map.class);
+                Map<String, Object> map = objectMapper.convertValue(root, Map.class);
+                if (map.get("testCases") != null) {
+                    return map;
+                }
             }
         } catch (Exception e) {
-            log.warn("Failed to parse AI JSON response for problem generation, using fallback template: {}", e.getMessage());
+            log.warn("Failed to parse AI JSON response for problem generation (raw length={}), using diverse dynamic generator: {}", 
+                raw != null ? raw.length() : 0, e.getMessage());
         }
 
-        // High quality fallback problem structure with 1 public + 2 hidden test cases
-        String fallbackTitle = "Optimum " + topic + " Solver";
-        String fallbackDesc = String.format(
-            "### Problem Statement\n" +
-            "You are given an input sequence representing data for **%s**.\n" +
-            "Design an optimal algorithm to process the input and compute the required result.\n\n" +
-            "### Constraints\n" +
-            "- 1 <= N <= 10^5\n" +
-            "- Time Limit: 2.0s\n" +
-            "- Memory Limit: 128MB\n\n" +
-            "### Input Format\n" +
-            "First line contains integer N, followed by elements on subsequent lines.\n\n" +
-            "### Output Format\n" +
-            "Print the computed result value on a single line.",
-            topic
-        );
+        // Diverse dynamic problem generator covering multiple algorithms to prevent repetition
+        long seed = System.currentTimeMillis() % 6;
+        String title;
+        String desc;
+        String sampleIn;
+        String sampleOut;
+        List<Map<String, Object>> tcs;
+
+        if (seed == 0 || topic.toLowerCase().contains("array") || topic.toLowerCase().contains("sum")) {
+            title = "Two Sum Target Finder";
+            desc = "### Problem Statement\nGiven an array of integers `nums` and an integer `target`, find whether two distinct numbers add up to `target`. Print `YES` if such a pair exists, otherwise print `NO`.\n\n### Constraints\n- 2 <= N <= 10^5\n- -10^9 <= nums[i], target <= 10^9\n\n### Input Format\n- First line: integer `N` (number of elements) and integer `target`\n- Second line: `N` space-separated integers\n\n### Output Format\nPrint `YES` or `NO`.";
+            sampleIn = "4 9\n2 7 11 15";
+            sampleOut = "YES";
+            tcs = List.of(
+                Map.of("inputData", "4 9\n2 7 11 15", "expectedOutput", "YES", "isHidden", false),
+                Map.of("inputData", "3 6\n3 2 4", "expectedOutput", "YES", "isHidden", true),
+                Map.of("inputData", "4 20\n1 2 3 4", "expectedOutput", "NO", "isHidden", true)
+            );
+        } else if (seed == 1 || topic.toLowerCase().contains("string") || topic.toLowerCase().contains("palindrome")) {
+            title = "Palindrome String Verifier";
+            desc = "### Problem Statement\nGiven a string `S`, determine if it is a palindrome considering only alphanumeric characters and ignoring cases. Print `true` if it is a palindrome, else `false`.\n\n### Constraints\n- 1 <= |S| <= 10^5\n\n### Input Format\nSingle line containing string `S`.\n\n### Output Format\nPrint `true` or `false`.";
+            sampleIn = "racecar";
+            sampleOut = "true";
+            tcs = List.of(
+                Map.of("inputData", "racecar", "expectedOutput", "true", "isHidden", false),
+                Map.of("inputData", "hello", "expectedOutput", "false", "isHidden", true),
+                Map.of("inputData", "madam", "expectedOutput", "true", "isHidden", true)
+            );
+        } else if (seed == 2 || topic.toLowerCase().contains("max") || topic.toLowerCase().contains("subarray")) {
+            title = "Maximum Subarray Sum (Kadane)";
+            desc = "### Problem Statement\nGiven an integer array `nums`, find the contiguous subarray which has the largest sum and return its sum.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^4 <= nums[i] <= 10^4\n\n### Input Format\nFirst line contains integer `N`. Second line contains `N` integers.\n\n### Output Format\nPrint the maximum subarray sum.";
+            sampleIn = "5\n-2 1 -3 4 -1";
+            sampleOut = "4";
+            tcs = List.of(
+                Map.of("inputData", "5\n-2 1 -3 4 -1", "expectedOutput", "4", "isHidden", false),
+                Map.of("inputData", "4\n1 2 3 4", "expectedOutput", "10", "isHidden", true),
+                Map.of("inputData", "3\n-5 -2 -3", "expectedOutput", "-2", "isHidden", true)
+            );
+        } else if (seed == 3 || topic.toLowerCase().contains("search") || topic.toLowerCase().contains("binary")) {
+            title = "Binary Search Index Locator";
+            desc = "### Problem Statement\nGiven a sorted array of `N` distinct integers and a target value `K`, return the 0-based index if the target is found. If not, return `-1`.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^9 <= nums[i], K <= 10^9\n\n### Input Format\nFirst line: `N` and `K`\nSecond line: `N` sorted integers\n\n### Output Format\nPrint target index or -1.";
+            sampleIn = "5 9\n-1 0 3 5 9";
+            sampleOut = "4";
+            tcs = List.of(
+                Map.of("inputData", "5 9\n-1 0 3 5 9", "expectedOutput", "4", "isHidden", false),
+                Map.of("inputData", "4 2\n1 3 5 6", "expectedOutput", "-1", "isHidden", true),
+                Map.of("inputData", "1 10\n10", "expectedOutput", "0", "isHidden", true)
+            );
+        } else if (seed == 4 || topic.toLowerCase().contains("hash") || topic.toLowerCase().contains("duplicate")) {
+            title = "Find Duplicate Number in Array";
+            desc = "### Problem Statement\nGiven an array containing `N` numbers, determine if any value appears at least twice in the array. Print `true` if any value appears at least twice, and `false` if every element is distinct.\n\n### Constraints\n- 1 <= N <= 10^5\n\n### Input Format\nFirst line contains integer `N`, second line contains `N` integers.\n\n### Output Format\nPrint `true` or `false`.";
+            sampleIn = "4\n1 2 3 1";
+            sampleOut = "true";
+            tcs = List.of(
+                Map.of("inputData", "4\n1 2 3 1", "expectedOutput", "true", "isHidden", false),
+                Map.of("inputData", "4\n1 2 3 4", "expectedOutput", "false", "isHidden", true),
+                Map.of("inputData", "3\n5 5 5", "expectedOutput", "true", "isHidden", true)
+            );
+        } else {
+            title = "Reverse Array In-Place";
+            desc = "### Problem Statement\nGiven an array of `N` integers, print the elements in reversed order separated by spaces.\n\n### Constraints\n- 1 <= N <= 10^5\n\n### Input Format\nFirst line: integer `N`\nSecond line: `N` integers\n\n### Output Format\nPrint reversed integers on a single line.";
+            sampleIn = "4\n1 2 3 4";
+            sampleOut = "4 3 2 1";
+            tcs = List.of(
+                Map.of("inputData", "4\n1 2 3 4", "expectedOutput", "4 3 2 1", "isHidden", false),
+                Map.of("inputData", "3\n10 20 30", "expectedOutput", "30 20 10", "isHidden", true),
+                Map.of("inputData", "1\n99", "expectedOutput", "99", "isHidden", true)
+            );
+        }
 
         String starter = "java".equalsIgnoreCase(lang) ?
                 "import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n            // Complete your solution logic below:\n            System.out.println(n);\n        }\n    }\n}" :
                 "# Write your optimal solution here\nimport sys\n\ndef solve():\n    lines = sys.stdin.read().split()\n    if not lines: return\n    n = int(lines[0])\n    print(n)\n\nif __name__ == '__main__':\n    solve()\n";
 
         return Map.of(
-            "title", fallbackTitle,
-            "description", fallbackDesc,
+            "title", title,
+            "description", desc,
             "difficulty", diff,
             "points", 50,
             "tags", topic + ", DSA",
-            "sampleInput", "5\n1 2 3 4 5",
-            "sampleOutput", "15",
+            "sampleInput", sampleIn,
+            "sampleOutput", sampleOut,
             "starterCode", starter,
-            "testCases", List.of(
-                Map.of("inputData", "5\n1 2 3 4 5", "expectedOutput", "15", "isHidden", false),
-                Map.of("inputData", "3\n10 20 30", "expectedOutput", "60", "isHidden", true),
-                Map.of("inputData", "4\n-5 5 -10 10", "expectedOutput", "0", "isHidden", true)
-            )
+            "testCases", tcs
         );
     }
 
     private String cleanJson(String raw) {
-        if (raw == null) return "{}";
-        String trimmed = raw.trim();
-        if (trimmed.startsWith("```json")) {
-            trimmed = trimmed.substring(7);
-        } else if (trimmed.startsWith("```")) {
-            trimmed = trimmed.substring(3);
+        if (raw == null || raw.isBlank()) return "{}";
+        int firstBrace = raw.indexOf('{');
+        int lastBrace = raw.lastIndexOf('}');
+        if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
+            return raw.substring(firstBrace, lastBrace + 1).trim();
         }
-        if (trimmed.endsWith("```")) {
-            trimmed = trimmed.substring(0, trimmed.length() - 3);
-        }
-        return trimmed.trim();
+        return raw.trim();
     }
 
     // ──────────────────────────────────────────────────────────

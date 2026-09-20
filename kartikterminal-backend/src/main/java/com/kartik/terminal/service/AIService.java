@@ -52,7 +52,7 @@ public class AIService {
     }
 
     /**
-     * Generalized method to call NVIDIA NIM API.
+     * Generalized method to call NVIDIA NIM API with model fallback and dynamic temperature.
      */
     public String callNvidiaAI(String prompt) {
         if (nvidiaApiKey == null || nvidiaApiKey.isEmpty()) {
@@ -60,37 +60,45 @@ public class AIService {
             return getDefaultFallbackResponse(prompt);
         }
 
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(nvidiaApiKey);
+        List<String> modelsToTry = List.of(
+            modelName != null && !modelName.isBlank() ? modelName : "meta/llama-3.3-70b-instruct",
+            "meta/llama-3.1-8b-instruct",
+            "meta/llama-3.2-3b-instruct",
+            "meta/llama-3.2-11b-vision-instruct"
+        );
 
-            Map<String, Object> message = new HashMap<>();
-            message.put("role", "user");
-            message.put("content", prompt);
+        for (String m : modelsToTry) {
+            try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setBearerAuth(nvidiaApiKey);
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", modelName != null && !modelName.isBlank() ? modelName : "meta/llama-3.2-11b-vision-instruct");
-            requestBody.put("messages", List.of(message));
-            requestBody.put("max_tokens", 1024);
-            requestBody.put("temperature", 0.2);
+                Map<String, Object> message = new HashMap<>();
+                message.put("role", "user");
+                message.put("content", prompt);
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("model", m);
+                requestBody.put("messages", List.of(message));
+                requestBody.put("max_tokens", 1024);
+                requestBody.put("temperature", 0.7);
 
-            String response = restTemplate.postForObject(NVIDIA_API_URL, entity, String.class);
-            JsonNode rootNode = objectMapper.readTree(response);
-            
-            return rootNode.path("choices").get(0)
-                           .path("message")
-                           .path("content").asText();
-        } catch (Exception e) {
-            log.error("Failed to call NVIDIA NIM API", e);
-            if (e instanceof org.springframework.web.client.HttpStatusCodeException) {
-                org.springframework.web.client.HttpStatusCodeException httpEx = (org.springframework.web.client.HttpStatusCodeException) e;
-                return "API ERROR " + httpEx.getStatusCode() + ": " + httpEx.getResponseBodyAsString();
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+                String response = restTemplate.postForObject(NVIDIA_API_URL, entity, String.class);
+                JsonNode rootNode = objectMapper.readTree(response);
+                
+                String content = rootNode.path("choices").get(0)
+                               .path("message")
+                               .path("content").asText();
+                if (content != null && !content.isBlank()) {
+                    return content;
+                }
+            } catch (Exception e) {
+                log.warn("NVIDIA NIM model {} failed: {}. Trying fallback model...", m, e.getMessage());
             }
-            return "ERROR: AI generation failed. " + e.getMessage();
         }
+        return getDefaultFallbackResponse(prompt);
     }
 
     private String getDefaultFallbackResponse(String prompt) {

@@ -8,6 +8,10 @@
 <!-- ✅ STEP 1: Load auth.js FIRST — redirects to login.html if not authenticated -->
 <script src="/auth.js"></script>
 
+<!-- AI Computer Vision & Object/Face Detection Engine for Secure Mode Proctoring -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/responsive.css">
 <style>
@@ -679,27 +683,27 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 220px;
-  background: rgba(10, 14, 26, 0.95);
-  backdrop-filter: blur(12px);
+  width: 230px;
+  background: rgba(10, 14, 26, 0.96);
+  backdrop-filter: blur(14px);
   border: 1.5px solid rgba(239, 68, 68, 0.5);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(239, 68, 68, 0.25);
   z-index: 9999;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-sans);
 }
 .proctoring-widget.good-standing {
-  border-color: rgba(16, 185, 129, 0.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 18px rgba(16, 185, 129, 0.25);
 }
 .proctor-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 6px 10px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .proctor-status-tag {
@@ -733,7 +737,7 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
 .proctor-video-container {
   position: relative;
   width: 100%;
-  height: 135px;
+  height: 140px;
   background: #000;
   display: flex;
   align-items: center;
@@ -756,12 +760,31 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
   background: #090d16;
   text-align: center;
   padding: 10px;
+  z-index: 2;
+}
+.proctor-warning-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  text-align: center;
+  z-index: 5;
+  animation: alertFlash 1s infinite alternate;
+}
+@keyframes alertFlash {
+  0% { background: rgba(239, 68, 68, 0.95); }
+  100% { background: rgba(185, 28, 28, 0.95); }
 }
 .proctor-overlay-name {
   position: absolute;
   bottom: 6px;
   left: 8px;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
   padding: 2px 6px;
   border-radius: 4px;
@@ -769,6 +792,7 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
   font-weight: 700;
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 3;
 }
 .proctor-audio-meter-wrap {
   display: flex;
@@ -804,6 +828,7 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
 <canvas id="confettiCanvas"></canvas>
 <div id="errorFlash"></div>
 <div class="toast-container" id="toastContainer"></div>
+<canvas id="proctorHiddenCanvas" width="320" height="240" style="display:none;"></canvas>
 
 <!-- Live Proctoring Camera & Microphone Stream Widget (Active in Secure Mode) -->
 <div id="proctoringWidget" class="proctoring-widget" style="display:none;">
@@ -813,15 +838,18 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
       <span id="proctorStatusText">PROCTOR LIVE</span>
     </div>
     <div class="proctor-controls">
+      <span id="proctorAiDetectionTag" style="font-size:9.5px; font-weight:800; color:#34d399; background:rgba(16,185,129,0.2); padding:1px 6px; border-radius:4px;">AI SURVEILLANCE</span>
       <span id="proctorMicStatus" title="Microphone Active">🎙️</span>
       <span id="proctorCamStatus" title="Camera Active">📹</span>
     </div>
   </div>
   <div class="proctor-video-container">
+    <div id="proctorWarningBanner" class="proctor-warning-banner" style="display:none;">⚠️ NO FACE DETECTED</div>
     <video id="proctorVideo" autoplay playsinline muted></video>
     <div id="proctorCamPlaceholder" class="proctor-placeholder" style="display:none;">
       <div style="font-size:22px; margin-bottom:2px;">📷</div>
       <div style="font-size:10.5px; color:#f87171; font-weight:700;">Camera Connecting...</div>
+      <button onclick="startProctoringMedia(true)" style="background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; border:none; padding:4px 10px; font-size:10px; font-weight:700; border-radius:4px; margin-top:6px; cursor:pointer;">▶ Allow Camera & Mic</button>
     </div>
     <div class="proctor-overlay-name" id="proctorStudentName">Candidate</div>
   </div>
@@ -1691,7 +1719,7 @@ function handleKeydown(e) {
   if(e.key==='Escape'){closeShortcuts();closeGoToLine();if(securityModal.classList.contains('active'))closeModal();historyList.classList.remove('active');snippetsPanel.classList.remove('active');statsPanel.classList.remove('active');if(searchBar.style.display!=='none')toggleSearch();}
 }
 
-// ── Security & Live WebRTC Proctoring ──
+// ── Security & Live WebRTC Proctoring with AI Surveillance ──
 let securityMode=false, violations=0, isBlocked=false;
 const MAX_VIOLATIONS=2;
 let secureModeActivatedTimestamp = 0;
@@ -1700,8 +1728,200 @@ let proctorMediaStream = null;
 let proctorAudioContext = null;
 let proctorAudioAnalyser = null;
 let proctorAudioAnimFrame = null;
+let proctorAiModel = null;
+let isProctorAiLoading = false;
+let proctorVisionTimer = null;
+let proctorFrameStreamTimer = null;
+let noFaceDetectionCounter = 0;
+let sustainedVoiceDuration = 0;
+let lastProctorViolationTimes = {};
 
-async function startProctoringMedia() {
+async function initProctorAiModel() {
+  if (proctorAiModel) return proctorAiModel;
+  if (isProctorAiLoading) return null;
+  if (typeof cocoSsd === 'undefined') {
+    console.warn("TensorFlow COCO-SSD library not available yet.");
+    return null;
+  }
+  try {
+    isProctorAiLoading = true;
+    const tag = document.getElementById('proctorAiDetectionTag');
+    if (tag) {
+      tag.innerText = "INITIALIZING AI...";
+      tag.style.color = "#fbbf24";
+    }
+    proctorAiModel = await cocoSsd.load();
+    if (tag) {
+      tag.innerText = "AI SURVEILLANCE";
+      tag.style.color = "#34d399";
+    }
+    logToTerminal("🧠 AI Proctoring Model (COCO-SSD / TensorFlow.js) Loaded Successfully", "success");
+    return proctorAiModel;
+  } catch (err) {
+    console.error("Failed to load COCO-SSD proctor AI model:", err);
+    return null;
+  } finally {
+    isProctorAiLoading = false;
+  }
+}
+
+function showProctorWarningBanner(text, lockDurationMs = 3500) {
+  const banner = document.getElementById('proctorWarningBanner');
+  const widget = document.getElementById('proctoringWidget');
+  if (!banner) return;
+  banner.innerText = text;
+  banner.style.display = 'block';
+  banner.dataset.lock = 'true';
+  if (widget) widget.classList.remove('good-standing');
+
+  if (banner._timer) clearTimeout(banner._timer);
+  banner._timer = setTimeout(() => {
+    delete banner.dataset.lock;
+    banner.style.display = 'none';
+    if (widget && !isBlocked) widget.classList.add('good-standing');
+  }, lockDurationMs);
+}
+
+function sendFrameToProctorBackend() {
+  if (!securityMode || !proctorMediaStream) return;
+  try {
+    const video = document.getElementById('proctorVideo');
+    const canvas = document.getElementById('proctorHiddenCanvas');
+    if (!video || !canvas || video.readyState < 2) return;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const frameData = canvas.toDataURL('image/jpeg', 0.45);
+
+    let userId = 1;
+    let username = 'Candidate';
+    let fullName = 'Candidate';
+
+    if (typeof KTAuth !== 'undefined') {
+      if (KTAuth.getUserId && KTAuth.getUserId()) userId = KTAuth.getUserId();
+      else if (localStorage.getItem('kt_userid')) userId = localStorage.getItem('kt_userid');
+      if (KTAuth.getUsername && KTAuth.getUsername()) username = KTAuth.getUsername();
+      if (KTAuth.getFullName && KTAuth.getFullName()) fullName = KTAuth.getFullName();
+    }
+
+    fetch('/api/proctor/stream-frame', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(typeof KTAuth !== 'undefined' && KTAuth.getToken() ? { 'Authorization': `Bearer ${KTAuth.getToken()}` } : {})
+      },
+      body: JSON.stringify({
+        userId: Number(userId) || 1,
+        username: username,
+        fullName: fullName,
+        frame: frameData,
+        violations: violations,
+        securityMode: true
+      })
+    }).catch(() => {});
+  } catch (e) {
+    console.warn("Proctor frame upload error:", e);
+  }
+}
+
+function handleProctorViolation(type, severity = 'HIGH') {
+  if (!securityMode || isBlocked || isInternalModalOpen) return;
+  const now = Date.now();
+  const lastTime = lastProctorViolationTimes[type] || 0;
+  if (now - lastTime < 6000) return; // Debounce same violation
+  lastProctorViolationTimes[type] = now;
+
+  playSecurityAlert();
+  violations++;
+  logToTerminal(`🚨 AI PROCTOR VIOLATION: ${type}! (Infraction ${violations}/${MAX_VIOLATIONS})`, "warning");
+  reportCheatToServer(`AI Proctor Violation: ${type} (${violations}/${MAX_VIOLATIONS})`, severity);
+  showToast(`⚠️ PROCTOR WARNING: ${type}!`, "error");
+
+  // Send immediate snapshot to proctoring backend
+  sendFrameToProctorBackend();
+
+  if (violations >= MAX_VIOLATIONS) {
+    handleAutoCutTermination(`Maximum Anti-Cheat Violations Reached (${type} - 2/2)`);
+  } else {
+    openModal(`⚠️ PROCTOR WARNING (Violation ${violations}/${MAX_VIOLATIONS}):\n\n🚨 ${type.toUpperCase()}!\n\nAll video frames, audio, and movements are actively monitored by AI Proctoring.\n\n⚠️ IMPORTANT: A 2nd violation will IMMEDIATELY terminate your assessment and disqualify you.`, false);
+  }
+}
+
+async function runProctorAiVisionLoop() {
+  if (!securityMode || !proctorMediaStream) return;
+  const video = document.getElementById('proctorVideo');
+  if (!video || video.readyState < 2) {
+    proctorVisionTimer = setTimeout(runProctorAiVisionLoop, 800);
+    return;
+  }
+
+  try {
+    if (!proctorAiModel) {
+      await initProctorAiModel();
+    }
+    if (proctorAiModel && video.videoWidth > 0 && video.videoHeight > 0) {
+      const predictions = await proctorAiModel.detect(video);
+      
+      let personCount = 0;
+      let detectedForbiddenItems = [];
+
+      predictions.forEach(p => {
+        const cls = (p.class || '').toLowerCase();
+        const score = p.score || 0;
+        if (score >= 0.40) {
+          if (cls === 'person') {
+            personCount++;
+          } else if (cls === 'cell phone' || cls === 'phone' || cls === 'remote' || cls === 'keyboard' || cls === 'laptop' || cls === 'tv') {
+            detectedForbiddenItems.push(cls);
+          } else if (cls === 'book') {
+            detectedForbiddenItems.push('book/notes');
+          }
+        }
+      });
+
+      const warnBanner = document.getElementById('proctorWarningBanner');
+      const widget = document.getElementById('proctoringWidget');
+
+      // 1. Check Multiple Faces (>1 person)
+      if (personCount > 1) {
+        showProctorWarningBanner("⚠️ MULTIPLE PERSONS / FACES DETECTED");
+        handleProctorViolation("Multiple Persons / Faces in Camera View", "HIGH");
+      }
+      // 2. Check No Face (0 persons)
+      else if (personCount === 0) {
+        noFaceDetectionCounter++;
+        // Absent for ~3.5 seconds
+        if (noFaceDetectionCounter >= 3) {
+          showProctorWarningBanner("⚠️ NO CANDIDATE FACE DETECTED");
+          handleProctorViolation("No Candidate Face Detected (Candidate Looking Away / Absent)", "HIGH");
+        }
+      }
+      // 3. Normal Single Face (1 person)
+      else {
+        noFaceDetectionCounter = 0;
+        if (warnBanner && warnBanner.style.display !== 'none' && !warnBanner.dataset.lock) {
+          warnBanner.style.display = 'none';
+        }
+        if (widget && !isBlocked) widget.classList.add('good-standing');
+      }
+
+      // 4. Check Mobile Phone / Electronic Device
+      if (detectedForbiddenItems.length > 0) {
+        const forbiddenItemName = detectedForbiddenItems.includes('cell phone') || detectedForbiddenItems.includes('phone') ? 'Mobile Phone' : detectedForbiddenItems[0];
+        showProctorWarningBanner(`⚠️ ${forbiddenItemName.toUpperCase()} DETECTED`);
+        handleProctorViolation(`Unauthorized Device / ${forbiddenItemName} Detected`, "HIGH");
+      }
+    }
+  } catch (err) {
+    console.warn("Proctor vision tick error:", err);
+  }
+
+  if (securityMode) {
+    proctorVisionTimer = setTimeout(runProctorAiVisionLoop, 1200);
+  }
+}
+
+async function startProctoringMedia(userTriggered = false) {
   const widget = document.getElementById('proctoringWidget');
   const video = document.getElementById('proctorVideo');
   const placeholder = document.getElementById('proctorCamPlaceholder');
@@ -1738,7 +1958,7 @@ async function startProctoringMedia() {
       try { await video.play(); } catch(e){}
     }
 
-    // Initialize Web Audio API for Real-time Mic Activity Visualizer
+    // Initialize Web Audio API for Real-time Mic Activity Visualizer and Voice Detection
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (AudioContextClass) {
@@ -1754,6 +1974,7 @@ async function startProctoringMedia() {
         const dataArray = new Uint8Array(proctorAudioAnalyser.frequencyBinCount);
         const audioBar = document.getElementById('proctorAudioBar');
 
+        let lastVoiceTick = Date.now();
         function updateAudioLevel() {
           if (!proctorAudioAnalyser || !securityMode) return;
           proctorAudioAnalyser.getByteFrequencyData(dataArray);
@@ -1766,8 +1987,26 @@ async function startProctoringMedia() {
           if (audioBar) {
             audioBar.style.width = `${percent}%`;
           }
+
+          // Voice / Talking Detection Analysis
+          const now = Date.now();
+          const elapsed = now - lastVoiceTick;
+          lastVoiceTick = now;
+
+          if (percent >= 38) {
+            sustainedVoiceDuration += elapsed;
+            if (sustainedVoiceDuration >= 1800) { // sustained speech for > 1.8s
+              sustainedVoiceDuration = 0;
+              showProctorWarningBanner("🎙️ VOICE / TALKING DETECTED");
+              handleProctorViolation("Voice / Speech / Talking Detected", "HIGH");
+            }
+          } else {
+            sustainedVoiceDuration = Math.max(0, sustainedVoiceDuration - elapsed * 0.8);
+          }
+
           proctorAudioAnimFrame = requestAnimationFrame(updateAudioLevel);
         }
+        lastVoiceTick = Date.now();
         updateAudioLevel();
       }
     } catch(audioErr) {
@@ -1778,14 +2017,24 @@ async function startProctoringMedia() {
     logToTerminal("📹 Camera and 🎙️ Microphone initialized for Secure Sandbox", "success");
     showToast("📹 Camera & Microphone connected for Proctoring", "success");
 
+    // Initialize AI Vision Model & Start Loops
+    initProctorAiModel().then(() => {
+      runProctorAiVisionLoop();
+    });
+
+    // Start background frame sync to backend
+    if (proctorFrameStreamTimer) clearInterval(proctorFrameStreamTimer);
+    proctorFrameStreamTimer = setInterval(sendFrameToProctorBackend, 4000);
+
   } catch (err) {
     console.error("Proctoring media access failed:", err);
     if (placeholder) {
       placeholder.style.display = 'flex';
       placeholder.innerHTML = `
         <div style="font-size:22px; margin-bottom:2px;">⚠️</div>
-        <div style="font-size:10.5px; color:#ef4444; font-weight:700;">Camera/Mic Denied</div>
-        <div style="font-size:9px; color:#94a3b8; margin-top:2px;">Please allow permissions in browser</div>
+        <div style="font-size:10.5px; color:#ef4444; font-weight:700;">Camera/Mic Blocked</div>
+        <div style="font-size:9px; color:#94a3b8; margin:2px 0 6px 0;">Please allow camera & mic access</div>
+        <button onclick="startProctoringMedia(true)" style="background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; border:none; padding:4px 10px; font-size:10px; font-weight:700; border-radius:4px; cursor:pointer;">▶ Allow Camera & Mic</button>
       `;
     }
     showToast("⚠️ Camera & Microphone permission required for Secure Mode!", "error");
@@ -1799,6 +2048,14 @@ function stopProctoringMedia() {
       try { track.stop(); } catch(e){}
     });
     proctorMediaStream = null;
+  }
+  if (proctorVisionTimer) {
+    clearTimeout(proctorVisionTimer);
+    proctorVisionTimer = null;
+  }
+  if (proctorFrameStreamTimer) {
+    clearInterval(proctorFrameStreamTimer);
+    proctorFrameStreamTimer = null;
   }
   if (proctorAudioAnimFrame) {
     cancelAnimationFrame(proctorAudioAnimFrame);
