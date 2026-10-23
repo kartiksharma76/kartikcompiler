@@ -119,7 +119,11 @@ public class CompilerService {
         Path workDir = null;
 
         try {
-            workDir = Files.createTempDirectory(Path.of(tempDir), "run_" + sessionId + "_");
+            Path baseDir = Path.of(tempDir);
+            if (!Files.exists(baseDir)) {
+                Files.createDirectories(baseDir);
+            }
+            workDir = Files.createTempDirectory(baseDir, "run_" + sessionId + "_");
             workDir.toFile().setWritable(true);
 
             ExecutionResult res = switch (language != null ? language.toLowerCase() : "java") {
@@ -189,8 +193,9 @@ public class CompilerService {
     private ExecutionResult runPython(Path dir, String code, String input) throws IOException {
         Path srcFile = dir.resolve("main.py");
         Files.writeString(srcFile, code);
+        String pyCmd = System.getProperty("os.name", "").toLowerCase().contains("win") ? "python" : "python3";
         return runProcess(
-                new String[]{"python3", srcFile.toString()},
+                new String[]{pyCmd, srcFile.toString()},
                 dir, input, timeoutSeconds
         );
     }

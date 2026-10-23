@@ -6563,8 +6563,6 @@ async function fetchAdminProblems() {
     let total = adminProblemsData.length;
     let global = adminProblemsData.filter(p => p.isGlobal).length;
     let college = total - global;
-    let hiddenCases = adminProblemsData.reduce((acc, p) => acc + (p.hiddenTestCasesCount || 4), 0);
-
     const elTotal = document.getElementById('statTotalProblems');
     if (elTotal) elTotal.textContent = total;
     const elGlobal = document.getElementById('statGlobalProblems');
@@ -6572,7 +6570,7 @@ async function fetchAdminProblems() {
     const elCollege = document.getElementById('statCollegeProblems');
     if (elCollege) elCollege.textContent = college;
     const elHidden = document.getElementById('statHiddenTestCases');
-    if (elHidden) elHidden.textContent = hiddenCases;
+    if (elHidden) elHidden.textContent = 'Active';
     const elBadge = document.getElementById('problemsCountBadge');
     if (elBadge) elBadge.textContent = `${total} Problem${total === 1 ? '' : 's'}`;
 
@@ -6629,7 +6627,7 @@ function renderAdminProblems(list) {
 
         <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-dim); margin-bottom:10px;">
-            <span>🛡️ ${p.totalTestCasesCount || 5} Tests (${p.hiddenTestCasesCount || 4} Hidden)</span>
+            <span style="color:#34d399; font-weight:600;">⚡ Output Verification (${p.totalTestCasesCount || 1} Sample)</span>
             <span>By @${p.createdByUsername || 'Admin'}</span>
           </div>
 

@@ -2407,7 +2407,7 @@ function showErrorEffect() {
 }
 
 // ─────────────────────────────────────────────────────────
-// ✅ runCode — Auto-runs Problem Test Cases (Sample + 4 Hidden) in Problem/Secure Mode
+// ✅ runCode — Auto-runs Problem Solution & Verifies Final Output
 // ─────────────────────────────────────────────────────────
 function isCodeIncomplete(code, lang) {
   if (!code || code.trim().length < 20) return true;
@@ -2480,31 +2480,6 @@ async function runCode() {
 
   const term = document.getElementById('terminal');
   const btn = document.getElementById("runBtn");
-
-  // 1. Validation: Block execution if code is incomplete / unwritten default template when problem statement is active
-  if (currentProblem) {
-    if (isCodeIncomplete(code, lang)) {
-      showErrorEffect();
-      showToast("❌ Code is incomplete! Please write your solution logic.", "error");
-      term.innerHTML += `
-        <div class="term-line" style="margin-top:4px; color:#f87171; font-weight:700;">
-          ❌ [EXECUTION BLOCKED] Incomplete Code / Default Template Detected!
-        </div>
-        <div class="term-line" style="color:#fca5a5;">
-          You must write your solution implementation for the problem statement before executing. Default template cannot be executed in proctored grading.
-        </div>
-      `;
-      term.scrollTop = term.scrollHeight;
-      
-      const pBadge = document.getElementById('problemsBadge');
-      const pList = document.getElementById('problemsList');
-      if (pBadge) { pBadge.textContent = '1'; pBadge.classList.add('error'); }
-      if (pList) {
-        pList.innerHTML = `<div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:10px; border-radius:6px; color:#fca5a5;">❌ Incomplete Solution: Write actual solution algorithm to pass problem test cases.</div>`;
-      }
-      return;
-    }
-  }
 
   const stdinVal = (stdin ? stdin.value : '');
   const inputKeywords = {java:['Scanner','System.in'],python:['input('],cpp:['cin >>','scanf'],c:['scanf','gets'],go:['fmt.Scan']};

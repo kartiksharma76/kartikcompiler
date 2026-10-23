@@ -126,22 +126,27 @@ public class ProblemService {
         String prompt = String.format(
             "You are an expert Competitive Programming and Coding Assessment problem creator.\n" +
             "Generate a complete coding problem statement about topic: '%s' with difficulty: '%s' for target language: '%s'.\n" +
+            "CRITICAL REQUIREMENTS:\n" +
+            "1. The problem statement MUST explicitly specify the EXACT target value, exact formula, condition, or mathematical rule to compute. Do NOT leave rules or target values ambiguous.\n" +
+            "2. The description MUST include formatted sections: '### Problem Statement', '### Exact Rule & Target Value', '### Input Format', '### Output Format', '### Constraints', and '### Example Walkthrough' with Explanation.\n" +
+            "3. Sample Input and Sample Output MUST be provided, fully matching the exact rule.\n" +
+            "4. For Java, starterCode MUST use 'public class Main'. For C/C++, use 'int main()'. For Python, use standard clean script.\n" +
+            "5. Do NOT include ANY hidden test cases. Only provide 1 public sample test case matching the problem statement and final output.\n" +
             "You MUST return ONLY a valid JSON object without markdown fences, with these EXACT keys:\n" +
             "{\n" +
             "  \"title\": \"Title of problem\",\n" +
-            "  \"description\": \"Detailed problem description with constraints, input/output formats, and explanation\",\n" +
+            "  \"description\": \"Detailed problem description with exact rules, target value, input/output formats, constraints, and explanation\",\n" +
             "  \"difficulty\": \"%s\",\n" +
             "  \"points\": 50,\n" +
-            "  \"tags\": \"Algorithms, Data Structures\",\n" +
-            "  \"sampleInput\": \"Sample input provided to student\",\n" +
-            "  \"sampleOutput\": \"Sample expected output\",\n" +
-            "  \"starterCode\": \"Starter boilerplate code template in %s with class Solution or Main\",\n" +
+            "  \"tags\": \"%s, DSA\",\n" +
+            "  \"sampleInput\": \"Sample input matching input format\",\n" +
+            "  \"sampleOutput\": \"Expected sample output matching exact rule\",\n" +
+            "  \"starterCode\": \"Starter boilerplate code template in %s with public class Main\",\n" +
             "  \"testCases\": [\n" +
-            "    {\"inputData\": \"Sample input 1\", \"expectedOutput\": \"Sample output 1\", \"isHidden\": false}\n" +
+            "    {\"inputData\": \"Sample input matching sampleInput\", \"expectedOutput\": \"Sample output matching sampleOutput\", \"isHidden\": false}\n" +
             "  ]\n" +
-            "}\n" +
-            "CRITICAL: Do NOT generate hidden test cases. Only provide 1 public sample test case matching the problem statement and expected final output.",
-            topic, difficulty, language, difficulty, language
+            "}",
+            topic, difficulty, language, difficulty, topic, language
         );
 
         String aiResponse = aiService.callNvidiaAI(prompt);
@@ -154,6 +159,12 @@ public class ProblemService {
             JsonNode root = objectMapper.readTree(json);
             if (root.isObject() && root.has("title") && root.has("description")) {
                 Map<String, Object> map = objectMapper.convertValue(root, Map.class);
+                if (map.get("starterCode") instanceof String) {
+                    String sc = (String) map.get("starterCode");
+                    sc = sc.replace("public class Solution", "public class Main")
+                           .replace("class Solution", "public class Main");
+                    map.put("starterCode", sc);
+                }
                 if (map.get("testCases") instanceof List) {
                     List<?> list = (List<?>) map.get("testCases");
                     List<Map<String, Object>> sanitized = new ArrayList<>();
@@ -166,6 +177,11 @@ public class ProblemService {
                     }
                     map.put("testCases", sanitized);
                 }
+                if (map.get("testCases") == null || ((List<?>) map.get("testCases")).isEmpty()) {
+                    String sIn = map.get("sampleInput") != null ? map.get("sampleInput").toString() : "";
+                    String sOut = map.get("sampleOutput") != null ? map.get("sampleOutput").toString() : "";
+                    map.put("testCases", List.of(Map.of("inputData", sIn, "expectedOutput", sOut, "isHidden", false)));
+                }
                 return map;
             }
         } catch (Exception e) {
@@ -173,7 +189,7 @@ public class ProblemService {
                 raw != null ? raw.length() : 0, e.getMessage());
         }
 
-        // Diverse dynamic problem generator covering multiple algorithms to prevent repetition
+        // Diverse dynamic problem generator with explicit rules and target values
         long seed = System.currentTimeMillis() % 6;
         String title;
         String desc;
@@ -183,7 +199,7 @@ public class ProblemService {
 
         if (seed == 0 || topic.toLowerCase().contains("array") || topic.toLowerCase().contains("sum")) {
             title = "Two Sum Target Finder";
-            desc = "### Problem Statement\nGiven an array of integers `nums` and an integer `target`, find whether two distinct numbers add up to `target`. Print `YES` if such a pair exists, otherwise print `NO`.\n\n### Constraints\n- 2 <= N <= 10^5\n- -10^9 <= nums[i], target <= 10^9\n\n### Input Format\n- First line: integer `N` (number of elements) and integer `target`\n- Second line: `N` space-separated integers\n\n### Output Format\nPrint `YES` or `NO`.";
+            desc = "### Problem Statement\nGiven an array of `N` integers and an explicit target value `target`, determine whether there exist two distinct indices `i` and `j` (i != j) such that `nums[i] + nums[j] == target`.\n\n### Exact Rule & Target Value\n- Target Value: `target` is provided on the first line after `N`.\n- Condition: Find if any two distinct elements add up to exactly `target`.\n- Rule: If such a pair exists, print `YES`. If no two numbers add up to `target`, print `NO`.\n\n### Input Format\nFirst line contains two space-separated integers: `N` (array length) and `target` (target sum).\nSecond line contains `N` space-separated integers: `nums[0] nums[1] ... nums[N-1]`.\n\n### Output Format\nPrint a single line containing `YES` or `NO`.\n\n### Constraints\n- 2 <= N <= 10^5\n- -10^9 <= nums[i], target <= 10^9\n\n### Example Walkthrough\nInput:\n4 9\n2 7 11 15\n\nExplanation:\nTarget is 9. The elements at index 0 (2) and index 1 (7) sum to 2 + 7 = 9. Rule satisfied! Output: YES";
             sampleIn = "4 9\n2 7 11 15";
             sampleOut = "YES";
             tcs = List.of(
@@ -191,7 +207,7 @@ public class ProblemService {
             );
         } else if (seed == 1 || topic.toLowerCase().contains("string") || topic.toLowerCase().contains("palindrome")) {
             title = "Palindrome String Verifier";
-            desc = "### Problem Statement\nGiven a string `S`, determine if it is a palindrome considering only alphanumeric characters and ignoring cases. Print `true` if it is a palindrome, else `false`.\n\n### Constraints\n- 1 <= |S| <= 10^5\n\n### Input Format\nSingle line containing string `S`.\n\n### Output Format\nPrint `true` or `false`.";
+            desc = "### Problem Statement\nGiven a string `S`, verify whether it is a valid palindrome by reading it forwards and backwards.\n\n### Exact Rule\n- Rule: A string is a palindrome if it reads the exact same from left to right as it does from right to left (ignoring uppercase/lowercase differences).\n- Output: Print `true` if `S` is a palindrome, otherwise print `false`.\n\n### Input Format\nA single line containing the string `S`.\n\n### Output Format\nPrint `true` or `false`.\n\n### Constraints\n- 1 <= length(S) <= 10^5\n\n### Example Walkthrough\nInput:\nracecar\n\nExplanation:\nReversing \"racecar\" gives \"racecar\". Since it matches the original string, the exact rule condition is met.\nOutput: true";
             sampleIn = "racecar";
             sampleOut = "true";
             tcs = List.of(
@@ -199,7 +215,7 @@ public class ProblemService {
             );
         } else if (seed == 2 || topic.toLowerCase().contains("max") || topic.toLowerCase().contains("subarray")) {
             title = "Maximum Subarray Sum (Kadane)";
-            desc = "### Problem Statement\nGiven an integer array `nums`, find the contiguous subarray which has the largest sum and return its sum.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^4 <= nums[i] <= 10^4\n\n### Input Format\nFirst line contains integer `N`. Second line contains `N` integers.\n\n### Output Format\nPrint the maximum subarray sum.";
+            desc = "### Problem Statement\nGiven an integer array `nums` of `N` numbers, find the contiguous subarray which has the largest sum and return its sum.\n\n### Exact Rule\n- Rule: Find contiguous elements `nums[i...j]` that maximize the sum `nums[i] + ... + nums[j]`.\n- Output: Print the maximum integer sum.\n\n### Input Format\nFirst line contains integer `N` (number of elements).\nSecond line contains `N` space-separated integers.\n\n### Output Format\nPrint the maximum subarray sum.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^4 <= nums[i] <= 10^4\n\n### Example Walkthrough\nInput:\n5\n-2 1 -3 4 -1\n\nExplanation:\nThe contiguous subarray [4] gives maximum sum of 4.\nOutput: 4";
             sampleIn = "5\n-2 1 -3 4 -1";
             sampleOut = "4";
             tcs = List.of(
@@ -207,7 +223,7 @@ public class ProblemService {
             );
         } else if (seed == 3 || topic.toLowerCase().contains("search") || topic.toLowerCase().contains("binary")) {
             title = "Binary Search Index Locator";
-            desc = "### Problem Statement\nGiven a sorted array of `N` distinct integers and a target value `K`, return the 0-based index if the target is found. If not, return `-1`.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^9 <= nums[i], K <= 10^9\n\n### Input Format\nFirst line: `N` and `K`\nSecond line: `N` sorted integers\n\n### Output Format\nPrint target index or -1.";
+            desc = "### Problem Statement\nGiven a sorted array of `N` distinct integers and an explicit target value `K`, return the 0-based index if `K` is found in the array. If not found, return `-1`.\n\n### Exact Rule & Target Value\n- Target Value: `K` is explicitly specified on the first line after `N`.\n- Rule: Search for `K` in the sorted array. If `K` exists at index `i`, print `i`. If `K` does not exist in the array, print `-1`.\n\n### Input Format\nFirst line contains two space-separated integers: `N` and `K`.\nSecond line contains `N` sorted space-separated integers.\n\n### Output Format\nPrint the 0-based index of target value `K`, or `-1` if not found.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^9 <= nums[i], K <= 10^9\n\n### Example Walkthrough\nInput:\n5 9\n-1 0 3 5 9\n\nExplanation:\nTarget value K is 9. In the array [-1, 0, 3, 5, 9], the number 9 is located at 0-based index 4.\nOutput: 4";
             sampleIn = "5 9\n-1 0 3 5 9";
             sampleOut = "4";
             tcs = List.of(
@@ -215,7 +231,7 @@ public class ProblemService {
             );
         } else if (seed == 4 || topic.toLowerCase().contains("hash") || topic.toLowerCase().contains("duplicate")) {
             title = "Find Duplicate Number in Array";
-            desc = "### Problem Statement\nGiven an array containing `N` numbers, determine if any value appears at least twice in the array. Print `true` if any value appears at least twice, and `false` if every element is distinct.\n\n### Constraints\n- 1 <= N <= 10^5\n\n### Input Format\nFirst line contains integer `N`, second line contains `N` integers.\n\n### Output Format\nPrint `true` or `false`.";
+            desc = "### Problem Statement\nGiven an array containing `N` numbers, determine if any value appears at least twice in the array.\n\n### Exact Rule\n- Rule: If any integer occurs 2 or more times, print `true`. If every element in the array is distinct, print `false`.\n- Output: Print `true` or `false`.\n\n### Input Format\nFirst line contains integer `N`.\nSecond line contains `N` space-separated integers.\n\n### Output Format\nPrint `true` or `false`.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^9 <= nums[i] <= 10^9\n\n### Example Walkthrough\nInput:\n4\n1 2 3 1\n\nExplanation:\nThe number 1 appears twice (at index 0 and index 3). Rule matched!\nOutput: true";
             sampleIn = "4\n1 2 3 1";
             sampleOut = "true";
             tcs = List.of(
@@ -223,7 +239,7 @@ public class ProblemService {
             );
         } else {
             title = "Reverse Array In-Place";
-            desc = "### Problem Statement\nGiven an array of `N` integers, print the elements in reversed order separated by spaces.\n\n### Constraints\n- 1 <= N <= 10^5\n\n### Input Format\nFirst line: integer `N`\nSecond line: `N` integers\n\n### Output Format\nPrint reversed integers on a single line.";
+            desc = "### Problem Statement\nGiven an array of `N` integers, print the elements in reversed order separated by spaces.\n\n### Exact Rule\n- Rule: The last element becomes the first, the second-to-last becomes the second, and so on.\n- Output: Print reversed integers on a single line separated by space.\n\n### Input Format\nFirst line: integer `N`\nSecond line: `N` integers\n\n### Output Format\nPrint reversed integers on a single line separated by space.\n\n### Constraints\n- 1 <= N <= 10^5\n- -10^9 <= nums[i] <= 10^9\n\n### Example Walkthrough\nInput:\n4\n1 2 3 4\n\nExplanation:\nReversing the array [1, 2, 3, 4] produces [4, 3, 2, 1].\nOutput: 4 3 2 1";
             sampleIn = "4\n1 2 3 4";
             sampleOut = "4 3 2 1";
             tcs = List.of(
@@ -231,9 +247,16 @@ public class ProblemService {
             );
         }
 
-        String starter = "java".equalsIgnoreCase(lang) ?
-                "import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n            // Complete your solution logic below:\n            System.out.println(n);\n        }\n    }\n}" :
-                "# Write your optimal solution here\nimport sys\n\ndef solve():\n    lines = sys.stdin.read().split()\n    if not lines: return\n    n = int(lines[0])\n    print(n)\n\nif __name__ == '__main__':\n    solve()\n";
+        String starter;
+        if ("java".equalsIgnoreCase(lang)) {
+            starter = "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNext()) {\n            // Read input and implement your solution logic below:\n            String line = sc.nextLine();\n            System.out.println(line);\n        }\n    }\n}";
+        } else if ("cpp".equalsIgnoreCase(lang) || "c++".equalsIgnoreCase(lang)) {
+            starter = "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Implement your solution logic below:\n    int n;\n    if (cin >> n) {\n        cout << n << endl;\n    }\n    return 0;\n}";
+        } else if ("c".equalsIgnoreCase(lang)) {
+            starter = "#include <stdio.h>\n\nint main() {\n    // Implement your solution logic below:\n    int n;\n    if (scanf(\"%d\", &n) == 1) {\n        printf(\"%d\\n\", n);\n    }\n    return 0;\n}";
+        } else {
+            starter = "# Write your optimal solution here\nimport sys\n\ndef main():\n    lines = sys.stdin.read().split()\n    if not lines:\n        return\n    # Implement your solution logic below:\n    print(lines[0])\n\nif __name__ == '__main__':\n    main()\n";
+        }
 
         return Map.of(
             "title", title,
@@ -319,22 +342,50 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new IllegalArgumentException("Problem not found with ID: " + problemId));
 
-        // Evaluate ONLY public / non-hidden test cases (no hidden test cases)
-        List<TestCase> testCases = testCaseRepository.findByProblemOrderByIdAsc(problem)
-                .stream()
-                .filter(tc -> !Boolean.TRUE.equals(tc.getIsHidden()))
-                .collect(Collectors.toList());
+        // Evaluate ONLY public sample verification test cases (strictly no hidden test cases)
+        List<TestCase> testCases = new ArrayList<>();
+        String sIn = problem.getSampleInput() != null ? problem.getSampleInput().trim() : "";
+        String sOut = problem.getSampleOutput() != null ? problem.getSampleOutput().trim() : "";
 
-        if (testCases == null || testCases.isEmpty()) {
-            testCases = problem.getTestCases() != null ? problem.getTestCases().stream().filter(tc -> !Boolean.TRUE.equals(tc.getIsHidden())).collect(Collectors.toList()) : null;
+        if (!sOut.isBlank()) {
+            testCases.add(TestCase.builder()
+                    .problem(problem)
+                    .inputData(sIn)
+                    .expectedOutput(sOut)
+                    .isHidden(false)
+                    .build());
         }
 
-        // If no test cases exist, use sample input & expected output directly
-        if (testCases == null || testCases.isEmpty()) {
-            testCases = new ArrayList<>();
-            String sIn = problem.getSampleInput() != null && !problem.getSampleInput().isBlank() ? problem.getSampleInput().trim() : "";
-            String sOut = problem.getSampleOutput() != null && !problem.getSampleOutput().isBlank() ? problem.getSampleOutput().trim() : "";
-            testCases.add(TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
+        List<TestCase> dbCases = testCaseRepository.findByProblemOrderByIdAsc(problem);
+        if (dbCases != null) {
+            for (TestCase tc : dbCases) {
+                // Ignore any legacy dummy test cases
+                if (tc.getInputData() != null && (tc.getInputData().contains("test_") || tc.getInputData().equals("3\n10 20 30") || tc.getInputData().equals("4\n-5 5 -10 10"))) {
+                    continue;
+                }
+                // Avoid duplicating the sample case
+                if (tc.getInputData() != null && tc.getInputData().trim().equals(sIn) && tc.getExpectedOutput() != null && tc.getExpectedOutput().trim().equals(sOut)) {
+                    continue;
+                }
+                if (tc.getExpectedOutput() != null && !tc.getExpectedOutput().isBlank()) {
+                    testCases.add(TestCase.builder()
+                            .id(tc.getId())
+                            .problem(problem)
+                            .inputData(tc.getInputData() != null ? tc.getInputData().trim() : "")
+                            .expectedOutput(tc.getExpectedOutput().trim())
+                            .isHidden(false)
+                            .build());
+                }
+            }
+        }
+
+        if (testCases.isEmpty()) {
+            testCases.add(TestCase.builder()
+                    .problem(problem)
+                    .inputData(sIn)
+                    .expectedOutput(sOut)
+                    .isHidden(false)
+                    .build());
         }
 
         int totalCases = testCases.size();
