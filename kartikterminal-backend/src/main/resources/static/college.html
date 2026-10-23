@@ -1965,6 +1965,10 @@ async function renderTab() {
   // 4B. PROBLEM STATEMENTS & ASSIGNMENTS STUDIO (ADMIN & COLLEGE SCOPED)
   // ==============================================================
   else if (currentTab === 'assignments') {
+    const canGenAiProblem = (typeof KTAuth !== 'undefined' && KTAuth.canGenerateProblem)
+      ? KTAuth.canGenerateProblem()
+      : ['ADMIN', 'SUPER_ADMIN', 'COLLEGE_ADMIN'].includes((localStorage.getItem('kt_role') || '').toUpperCase());
+
     main.innerHTML = `
       <div class="tab-header">
         <div class="tab-header-left">
@@ -1975,7 +1979,7 @@ async function renderTab() {
           </div>
         </div>
         <div style="display:flex; gap:10px;">
-          <button class="btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#6366f1); border:none;" onclick="openAiProblemModal()">✨ AI Problem Generator</button>
+          ${canGenAiProblem ? '<button class="btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#6366f1); border:none;" onclick="openAiProblemModal()">✨ AI Problem Generator</button>' : ''}
           <button class="btn-primary" onclick="openAssignProblemModal()">+ Assign New Problem</button>
         </div>
       </div>
@@ -6583,12 +6587,16 @@ function renderAdminProblems(list) {
   if (!grid) return;
 
   if (!list || list.length === 0) {
+    const canGenAiProblem = (typeof KTAuth !== 'undefined' && KTAuth.canGenerateProblem)
+      ? KTAuth.canGenerateProblem()
+      : ['ADMIN', 'SUPER_ADMIN', 'COLLEGE_ADMIN'].includes((localStorage.getItem('kt_role') || '').toUpperCase());
+
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 40px; text-align:center; background:rgba(255,255,255,0.02); border:1px dashed var(--border); border-radius:14px;">
         <div style="font-size:32px; margin-bottom:10px;">📋</div>
         <div style="font-size:15px; font-weight:700; color:#fff;">No problem statements assigned yet.</div>
         <div style="font-size:12px; color:var(--text-dim); margin-top:4px; max-width:400px; margin-left:auto; margin-right:auto;">
-          Click "+ Assign New Problem" or "✨ AI Problem Generator" above to assign problem statements with 4 hidden test cases.
+          Click "+ Assign New Problem"${canGenAiProblem ? ' or "✨ AI Problem Generator"' : ''} above to assign problem statements with 4 hidden test cases.
         </div>
       </div>
     `;
@@ -6795,6 +6803,13 @@ async function deleteAdminProblem(id) {
 
 // AI Problem Generator
 function openAiProblemModal() {
+  const allowed = (typeof KTAuth !== 'undefined' && KTAuth.canGenerateProblem)
+    ? KTAuth.canGenerateProblem()
+    : ['ADMIN', 'SUPER_ADMIN', 'COLLEGE_ADMIN'].includes((localStorage.getItem('kt_role') || '').toUpperCase());
+  if (!allowed) {
+    alert('Access Denied: Only Admin and College Admin are authorized to generate problem statements.');
+    return;
+  }
   document.getElementById('aiProbTopic').value = '';
   document.getElementById('aiProblemModal').style.display = 'flex';
 }
@@ -6804,6 +6819,14 @@ function closeAiProblemModal() {
 }
 
 async function generateAiProblemForForm() {
+  const allowed = (typeof KTAuth !== 'undefined' && KTAuth.canGenerateProblem)
+    ? KTAuth.canGenerateProblem()
+    : ['ADMIN', 'SUPER_ADMIN', 'COLLEGE_ADMIN'].includes((localStorage.getItem('kt_role') || '').toUpperCase());
+  if (!allowed) {
+    alert('Access Denied: Only Admin and College Admin are authorized to generate problem statements.');
+    return;
+  }
+
   const topic = document.getElementById('aiProbTopic').value.trim();
   const diff = document.getElementById('aiProbDifficulty').value;
   const lang = document.getElementById('aiProbLang').value;

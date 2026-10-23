@@ -64,11 +64,17 @@ public class ProblemController {
 
     // ──────────────────────────────────────────────────────────
     // AI Problem Generator (NVIDIA NIM / Llama AI)
+    // Only Platform Admin and College Admin are authorized
     // ──────────────────────────────────────────────────────────
     @PostMapping("/ai-generate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'COLLEGE_ADMIN', 'FACULTY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'COLLEGE_ADMIN')")
     public ResponseEntity<?> generateAiProblem(@RequestBody AiGenerateProblemRequest request) {
         try {
+            User user = authService.getCurrentUser();
+            if (user == null || (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.SUPER_ADMIN && user.getRole() != User.Role.COLLEGE_ADMIN)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false, "message", "Access denied: Only Admin and College Admin can generate problem statements."));
+            }
             Map<String, Object> generated = problemService.generateAiProblem(request);
             return ResponseEntity.ok(generated);
         } catch (Exception e) {

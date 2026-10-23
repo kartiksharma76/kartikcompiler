@@ -282,7 +282,13 @@ const KTAuth = (() => {
     getFullName:  () => localStorage.getItem(FULLNAME_KEY) || 'User',
     getRole:      () => localStorage.getItem(ROLE_KEY)     || 'USER',
     getUserId:    () => localStorage.getItem(USERID_KEY)   || null,
-    isAdmin:      () => localStorage.getItem(ROLE_KEY) === 'ADMIN',
+    isAdmin:      () => localStorage.getItem(ROLE_KEY) === 'ADMIN' || localStorage.getItem(ROLE_KEY) === 'SUPER_ADMIN',
+    isCollegeAdmin: () => localStorage.getItem(ROLE_KEY) === 'COLLEGE_ADMIN',
+    canGenerateProblem: () => {
+      const r = (localStorage.getItem(ROLE_KEY) || '').toUpperCase();
+      const email = (localStorage.getItem(EMAIL_KEY) || '').toLowerCase();
+      return r === 'ADMIN' || r === 'SUPER_ADMIN' || r === 'COLLEGE_ADMIN' || email === 'kartiksharma768976@gmail.com';
+    },
     updateNavbar: updateNavbarUI,
   };
 })();
