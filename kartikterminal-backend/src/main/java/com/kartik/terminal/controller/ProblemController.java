@@ -84,7 +84,7 @@ public class ProblemController {
     }
 
     // ──────────────────────────────────────────────────────────
-    // Submit Problem Solution & Grade against 4 Hidden Test Cases
+    // Submit Problem Solution & Verify Final Output
     // ──────────────────────────────────────────────────────────
     @PostMapping("/{id}/submit")
     @PreAuthorize("isAuthenticated()")

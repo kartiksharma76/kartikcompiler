@@ -1975,7 +1975,7 @@ async function renderTab() {
           <div class="tab-icon-box">📋</div>
           <div>
             <div class="tab-title">Problem Statements & Assignments Studio</div>
-            <div class="tab-subtitle">Assign challenges to students with AI auto-generation, secure proctoring & 4 hidden test cases.</div>
+            <div class="tab-subtitle">Assign challenges to students with AI auto-generation, secure proctoring & final output verification.</div>
           </div>
         </div>
         <div style="display:flex; gap:10px;">
@@ -2011,11 +2011,11 @@ async function renderTab() {
           </div>
         </div>
         <div class="bento-card col-3" style="display:flex; align-items:center; gap:12px;">
-          <div class="tab-icon-box" style="width:38px; height:38px; font-size:16px; background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3);">🛡️</div>
+          <div class="tab-icon-box" style="width:38px; height:38px; font-size:16px; background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.3);">⚡</div>
           <div>
-            <div style="font-size:10px; color:var(--text-dim);">Hidden Test Suite</div>
-            <div style="font-size:18px; font-weight:800; color:#f87171; font-family:var(--font-mono);" id="statHiddenTestCases">0</div>
-            <div style="font-size:9.5px; color:var(--text-dim);">4 Hidden Cases / problem</div>
+            <div style="font-size:10px; color:var(--text-dim);">Output Verification</div>
+            <div style="font-size:18px; font-weight:800; color:#34d399; font-family:var(--font-mono);" id="statHiddenTestCases">Active</div>
+            <div style="font-size:9.5px; color:var(--text-dim);">Final Output Matching</div>
           </div>
         </div>
       </div>
@@ -6596,7 +6596,7 @@ function renderAdminProblems(list) {
         <div style="font-size:32px; margin-bottom:10px;">📋</div>
         <div style="font-size:15px; font-weight:700; color:#fff;">No problem statements assigned yet.</div>
         <div style="font-size:12px; color:var(--text-dim); margin-top:4px; max-width:400px; margin-left:auto; margin-right:auto;">
-          Click "+ Assign New Problem"${canGenAiProblem ? ' or "✨ AI Problem Generator"' : ''} above to assign problem statements with 4 hidden test cases.
+          Click "+ Assign New Problem"${canGenAiProblem ? ' or "✨ AI Problem Generator"' : ''} above to assign problem statements with final output verification.
         </div>
       </div>
     `;
@@ -6671,12 +6671,10 @@ function openAssignProblemModal() {
   document.getElementById('paSampleOutput').value = '';
   document.getElementById('paStarterCode').value = '';
   
-  // Seed default 1 public + 2 hidden test case rows
+  // Seed default 1 public sample test case row (no hidden test cases)
   const tbody = document.getElementById('paTestCasesBody');
   tbody.innerHTML = '';
-  addTestCaseRow('', '', false); // Sample public
-  addTestCaseRow('', '', true);  // Hidden 1
-  addTestCaseRow('', '', true);  // Hidden 2
+  addTestCaseRow('', '', false);
 
   document.getElementById('problemAssignmentModal').style.display = 'flex';
 }
@@ -6685,7 +6683,7 @@ function closeAssignProblemModal() {
   document.getElementById('problemAssignmentModal').style.display = 'none';
 }
 
-function addTestCaseRow(inputVal = '', outputVal = '', isHiddenVal = true) {
+function addTestCaseRow(inputVal = '', outputVal = '', isHiddenVal = false) {
   const tbody = document.getElementById('paTestCasesBody');
   if (!tbody) return;
   const count = tbody.children.length + 1;
@@ -6700,10 +6698,8 @@ function addTestCaseRow(inputVal = '', outputVal = '', isHiddenVal = true) {
       <textarea class="form-input tc-output" style="width:100%; box-sizing:border-box; padding:6px; font-size:11.5px; font-family:var(--font-mono); height:46px; resize:none;" placeholder="Expected output...">${outputVal}</textarea>
     </td>
     <td style="padding:8px 6px; text-align:center;">
-      <select class="form-input tc-hidden" style="padding:4px 6px; font-size:11px;">
-        <option value="true" ${isHiddenVal ? 'selected' : ''}>🔒 Hidden (Grading)</option>
-        <option value="false" ${!isHiddenVal ? 'selected' : ''}>👁️ Public (Sample)</option>
-      </select>
+      <span style="font-size:11px; color:#34d399; font-weight:700;">👁️ Public Test</span>
+      <input type="hidden" class="tc-hidden" value="false">
     </td>
     <td style="padding:8px 6px; text-align:center;">
       <button type="button" onclick="removeTestCaseRow(this)" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px;">✕</button>
@@ -6771,7 +6767,7 @@ async function submitAssignProblemForm(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to save problem');
 
-    alert('🎉 Problem Statement assigned successfully with 2 hidden test cases!');
+    alert('🎉 Problem Statement assigned successfully with final output verification!');
     closeAssignProblemModal();
     fetchAdminProblems();
   } catch (err) {
@@ -6867,18 +6863,15 @@ async function generateAiProblemForForm() {
     document.getElementById('paSampleOutput').value = data.sampleOutput || '';
     document.getElementById('paStarterCode').value = data.starterCode || '';
 
-    // Fill test cases
+    // Fill test cases (only public sample test cases, no hidden test cases)
     const tbody = document.getElementById('paTestCasesBody');
     tbody.innerHTML = '';
     if (data.testCases && data.testCases.length > 0) {
       data.testCases.forEach(tc => {
-        addTestCaseRow(tc.inputData || '', tc.expectedOutput || '', Boolean(tc.isHidden));
+        addTestCaseRow(tc.inputData || '', tc.expectedOutput || '', false);
       });
     } else {
       addTestCaseRow(data.sampleInput || '', data.sampleOutput || '', false);
-      for (let i = 1; i <= 2; i++) {
-        addTestCaseRow('test_' + i, 'out_' + i, true);
-      }
     }
   } catch (e) {
     alert('❌ AI Generation failed: ' + e.message);
@@ -6913,7 +6906,7 @@ window.onload = () => {
         <span style="font-size:20px;">📋</span>
         <div>
           <div style="font-size:15px; font-weight:800; color:#fff;">Assign Problem Statement</div>
-          <div style="font-size:11px; color:#cbd5e1;">Configure problem description, constraints, and 4 hidden test cases for secure sandbox grading.</div>
+          <div style="font-size:11px; color:#cbd5e1;">Configure problem description, constraints, and sample output for secure sandbox grading.</div>
         </div>
       </div>
       <button onclick="closeAssignProblemModal()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">✕</button>
@@ -6977,7 +6970,7 @@ window.onload = () => {
       <!-- Test Cases Manager Table -->
       <div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <label style="font-size:11px; font-weight:700; color:#34d399;">🛡️ TEST CASES (Public Sample + 4 Hidden Test Cases Required)</label>
+          <label style="font-size:11px; font-weight:700; color:#34d399;">🛡️ TEST CASES (Public Sample & Expected Output Verification)</label>
           <button type="button" onclick="addTestCaseRow()" class="btn-secondary" style="padding:3px 8px; font-size:11px;">+ Add Test Case</button>
         </div>
         <table style="width:100%; border-collapse:collapse; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
@@ -7012,7 +7005,7 @@ window.onload = () => {
         <span style="font-size:22px;">✨</span>
         <div>
           <div style="font-size:15px; font-weight:800; color:#fff;">AI Problem Generator (Llama / Gemini)</div>
-          <div style="font-size:11px; color:#cbd5e1;">Auto-craft problem statements, constraints, and 4 hidden edge-case tests.</div>
+          <div style="font-size:11px; color:#cbd5e1;">Auto-craft problem statements, constraints, and sample output tests.</div>
         </div>
       </div>
       <button onclick="closeAiProblemModal()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">✕</button>
@@ -7045,7 +7038,7 @@ window.onload = () => {
       </div>
 
       <div id="aiProbSpinner" style="display:none; text-align:center; padding:10px; color:#a78bfa; font-size:12px;">
-        <div class="spinner" style="display:inline-block; margin-right:6px;"></div> Generating problem statement & 4 hidden test cases with AI...
+        <div class="spinner" style="display:inline-block; margin-right:6px;"></div> Generating problem statement & sample test cases with AI...
       </div>
 
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,7 +79,7 @@ public class ProblemService {
                 .createdBy(currentUser)
                 .build();
 
-        // Process Test Cases (1 public sample + 2 hidden test cases)
+        // Process Test Cases (Public sample & validation test cases only - no hidden test cases)
         List<TestCase> testCases = new ArrayList<>();
         if (request.getTestCases() != null && !request.getTestCases().isEmpty()) {
             for (TestCaseDTO tcDTO : request.getTestCases()) {
@@ -89,19 +90,17 @@ public class ProblemService {
                             .problem(problem)
                             .inputData(in)
                             .expectedOutput(out)
-                            .isHidden(Boolean.TRUE.equals(tcDTO.getIsHidden()))
+                            .isHidden(false)
                             .build());
                 }
             }
         }
 
-        // If no test cases were provided, seed 1 public sample and 2 hidden test cases
+        // If no test cases were provided, seed 1 public sample test case
         if (testCases.isEmpty()) {
-            String sIn = request.getSampleInput() != null && !request.getSampleInput().isBlank() ? request.getSampleInput().trim() : "5\n1 2 3 4 5";
-            String sOut = request.getSampleOutput() != null && !request.getSampleOutput().isBlank() ? request.getSampleOutput().trim() : "15";
+            String sIn = request.getSampleInput() != null && !request.getSampleInput().isBlank() ? request.getSampleInput().trim() : "";
+            String sOut = request.getSampleOutput() != null && !request.getSampleOutput().isBlank() ? request.getSampleOutput().trim() : "";
             testCases.add(TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
-            testCases.add(TestCase.builder().problem(problem).inputData("3\n10 20 30").expectedOutput("60").isHidden(true).build());
-            testCases.add(TestCase.builder().problem(problem).inputData("4\n-5 5 -10 10").expectedOutput("0").isHidden(true).build());
         }
         problem.setTestCases(testCases);
 
@@ -116,7 +115,8 @@ public class ProblemService {
     }
 
     // ──────────────────────────────────────────────────────────
-    // 2. AI Problem & 2 Hidden Test Cases Generator
+    // ──────────────────────────────────────────────────────────
+    // 2. AI Problem & Output Verification Generator
     // ──────────────────────────────────────────────────────────
     public Map<String, Object> generateAiProblem(AiGenerateProblemRequest req) {
         String topic = req.getTopic() != null && !req.getTopic().isBlank() ? req.getTopic() : "Array & Hashing Optimization";
@@ -137,12 +137,10 @@ public class ProblemService {
             "  \"sampleOutput\": \"Sample expected output\",\n" +
             "  \"starterCode\": \"Starter boilerplate code template in %s with class Solution or Main\",\n" +
             "  \"testCases\": [\n" +
-            "    {\"inputData\": \"Sample input 1\", \"expectedOutput\": \"Sample output 1\", \"isHidden\": false},\n" +
-            "    {\"inputData\": \"Hidden edge case input 1\", \"expectedOutput\": \"Expected output 1\", \"isHidden\": true},\n" +
-            "    {\"inputData\": \"Hidden edge case input 2\", \"expectedOutput\": \"Expected output 2\", \"isHidden\": true}\n" +
+            "    {\"inputData\": \"Sample input 1\", \"expectedOutput\": \"Sample output 1\", \"isHidden\": false}\n" +
             "  ]\n" +
             "}\n" +
-            "CRITICAL: Ensure exactly 1 public sample test case (isHidden: false) and 2 robust hidden test cases (isHidden: true) covering edge cases and boundary conditions.",
+            "CRITICAL: Do NOT generate hidden test cases. Only provide 1 public sample test case matching the problem statement and expected final output.",
             topic, difficulty, language, difficulty, language
         );
 
@@ -156,9 +154,19 @@ public class ProblemService {
             JsonNode root = objectMapper.readTree(json);
             if (root.isObject() && root.has("title") && root.has("description")) {
                 Map<String, Object> map = objectMapper.convertValue(root, Map.class);
-                if (map.get("testCases") != null) {
-                    return map;
+                if (map.get("testCases") instanceof List) {
+                    List<?> list = (List<?>) map.get("testCases");
+                    List<Map<String, Object>> sanitized = new ArrayList<>();
+                    for (Object item : list) {
+                        if (item instanceof Map) {
+                            Map<String, Object> tc = new HashMap<>((Map<String, Object>) item);
+                            tc.put("isHidden", false);
+                            sanitized.add(tc);
+                        }
+                    }
+                    map.put("testCases", sanitized);
                 }
+                return map;
             }
         } catch (Exception e) {
             log.warn("Failed to parse AI JSON response for problem generation (raw length={}), using diverse dynamic generator: {}", 
@@ -179,9 +187,7 @@ public class ProblemService {
             sampleIn = "4 9\n2 7 11 15";
             sampleOut = "YES";
             tcs = List.of(
-                Map.of("inputData", "4 9\n2 7 11 15", "expectedOutput", "YES", "isHidden", false),
-                Map.of("inputData", "3 6\n3 2 4", "expectedOutput", "YES", "isHidden", true),
-                Map.of("inputData", "4 20\n1 2 3 4", "expectedOutput", "NO", "isHidden", true)
+                Map.of("inputData", sampleIn, "expectedOutput", sampleOut, "isHidden", false)
             );
         } else if (seed == 1 || topic.toLowerCase().contains("string") || topic.toLowerCase().contains("palindrome")) {
             title = "Palindrome String Verifier";
@@ -189,9 +195,7 @@ public class ProblemService {
             sampleIn = "racecar";
             sampleOut = "true";
             tcs = List.of(
-                Map.of("inputData", "racecar", "expectedOutput", "true", "isHidden", false),
-                Map.of("inputData", "hello", "expectedOutput", "false", "isHidden", true),
-                Map.of("inputData", "madam", "expectedOutput", "true", "isHidden", true)
+                Map.of("inputData", sampleIn, "expectedOutput", sampleOut, "isHidden", false)
             );
         } else if (seed == 2 || topic.toLowerCase().contains("max") || topic.toLowerCase().contains("subarray")) {
             title = "Maximum Subarray Sum (Kadane)";
@@ -199,9 +203,7 @@ public class ProblemService {
             sampleIn = "5\n-2 1 -3 4 -1";
             sampleOut = "4";
             tcs = List.of(
-                Map.of("inputData", "5\n-2 1 -3 4 -1", "expectedOutput", "4", "isHidden", false),
-                Map.of("inputData", "4\n1 2 3 4", "expectedOutput", "10", "isHidden", true),
-                Map.of("inputData", "3\n-5 -2 -3", "expectedOutput", "-2", "isHidden", true)
+                Map.of("inputData", sampleIn, "expectedOutput", sampleOut, "isHidden", false)
             );
         } else if (seed == 3 || topic.toLowerCase().contains("search") || topic.toLowerCase().contains("binary")) {
             title = "Binary Search Index Locator";
@@ -209,9 +211,7 @@ public class ProblemService {
             sampleIn = "5 9\n-1 0 3 5 9";
             sampleOut = "4";
             tcs = List.of(
-                Map.of("inputData", "5 9\n-1 0 3 5 9", "expectedOutput", "4", "isHidden", false),
-                Map.of("inputData", "4 2\n1 3 5 6", "expectedOutput", "-1", "isHidden", true),
-                Map.of("inputData", "1 10\n10", "expectedOutput", "0", "isHidden", true)
+                Map.of("inputData", sampleIn, "expectedOutput", sampleOut, "isHidden", false)
             );
         } else if (seed == 4 || topic.toLowerCase().contains("hash") || topic.toLowerCase().contains("duplicate")) {
             title = "Find Duplicate Number in Array";
@@ -219,9 +219,7 @@ public class ProblemService {
             sampleIn = "4\n1 2 3 1";
             sampleOut = "true";
             tcs = List.of(
-                Map.of("inputData", "4\n1 2 3 1", "expectedOutput", "true", "isHidden", false),
-                Map.of("inputData", "4\n1 2 3 4", "expectedOutput", "false", "isHidden", true),
-                Map.of("inputData", "3\n5 5 5", "expectedOutput", "true", "isHidden", true)
+                Map.of("inputData", sampleIn, "expectedOutput", sampleOut, "isHidden", false)
             );
         } else {
             title = "Reverse Array In-Place";
@@ -229,9 +227,7 @@ public class ProblemService {
             sampleIn = "4\n1 2 3 4";
             sampleOut = "4 3 2 1";
             tcs = List.of(
-                Map.of("inputData", "4\n1 2 3 4", "expectedOutput", "4 3 2 1", "isHidden", false),
-                Map.of("inputData", "3\n10 20 30", "expectedOutput", "30 20 10", "isHidden", true),
-                Map.of("inputData", "1\n99", "expectedOutput", "99", "isHidden", true)
+                Map.of("inputData", sampleIn, "expectedOutput", sampleOut, "isHidden", false)
             );
         }
 
@@ -309,7 +305,7 @@ public class ProblemService {
     }
 
     // ──────────────────────────────────────────────────────────
-    // 5. Submit Problem Solution & Grade against 2 Hidden Test Cases
+    // 5. Submit Problem Solution & Verify Final Output
     // ──────────────────────────────────────────────────────────
     @Transactional
     public ProblemSubmissionResponse submitSolution(Long problemId, ProblemSubmissionRequest request, User user) {
@@ -323,34 +319,31 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new IllegalArgumentException("Problem not found with ID: " + problemId));
 
-        List<TestCase> testCases = testCaseRepository.findByProblemOrderByIdAsc(problem);
+        // Evaluate ONLY public / non-hidden test cases (no hidden test cases)
+        List<TestCase> testCases = testCaseRepository.findByProblemOrderByIdAsc(problem)
+                .stream()
+                .filter(tc -> !Boolean.TRUE.equals(tc.getIsHidden()))
+                .collect(Collectors.toList());
+
         if (testCases == null || testCases.isEmpty()) {
-            testCases = problem.getTestCases();
+            testCases = problem.getTestCases() != null ? problem.getTestCases().stream().filter(tc -> !Boolean.TRUE.equals(tc.getIsHidden())).collect(Collectors.toList()) : null;
         }
 
-        // If no test cases exist, auto-create 1 sample + 2 hidden test cases
+        // If no test cases exist, use sample input & expected output directly
         if (testCases == null || testCases.isEmpty()) {
             testCases = new ArrayList<>();
-            String sIn = problem.getSampleInput() != null && !problem.getSampleInput().isBlank() ? problem.getSampleInput().trim() : "5\n1 2 3 4 5";
-            String sOut = problem.getSampleOutput() != null && !problem.getSampleOutput().isBlank() ? problem.getSampleOutput().trim() : "15";
+            String sIn = problem.getSampleInput() != null && !problem.getSampleInput().isBlank() ? problem.getSampleInput().trim() : "";
+            String sOut = problem.getSampleOutput() != null && !problem.getSampleOutput().isBlank() ? problem.getSampleOutput().trim() : "";
             testCases.add(TestCase.builder().problem(problem).inputData(sIn).expectedOutput(sOut).isHidden(false).build());
-            testCases.add(TestCase.builder().problem(problem).inputData("3\n10 20 30").expectedOutput("60").isHidden(true).build());
-            testCases.add(TestCase.builder().problem(problem).inputData("4\n-5 5 -10 10").expectedOutput("0").isHidden(true).build());
-            testCaseRepository.saveAll(testCases);
         }
 
         int totalCases = testCases.size();
         int passedCount = 0;
-        int hiddenTotal = 0;
-        int hiddenPassed = 0;
         long totalExecTime = 0L;
         List<TestCaseResultDTO> results = new ArrayList<>();
 
         int testIndex = 1;
         for (TestCase tc : testCases) {
-            boolean isHidden = Boolean.TRUE.equals(tc.getIsHidden());
-            if (isHidden) hiddenTotal++;
-
             CompilerService.RawExecutionResult execResult = compilerService.runRawSandbox(
                     request.getLanguage(),
                     request.getCode(),
@@ -366,33 +359,48 @@ public class ProblemService {
             expectedClean = expectedClean.lines().map(String::stripTrailing).collect(Collectors.joining("\n")).trim();
             actualClean = actualClean.lines().map(String::stripTrailing).collect(Collectors.joining("\n")).trim();
 
-            // Strict validation: Must exit code 0, have NO error, have non-empty expected, and match exactly
+            // Match output flexibly so formatting / greeting / case differences don't fail valid solutions
+            boolean outputMatches = false;
+            if (expectedClean.isEmpty()) {
+                outputMatches = true;
+            } else if (actualClean.equals(expectedClean) || actualClean.equalsIgnoreCase(expectedClean)) {
+                outputMatches = true;
+            } else {
+                String expectedLower = expectedClean.toLowerCase();
+                String actualLower = actualClean.toLowerCase();
+                if (actualLower.contains(expectedLower)) {
+                    outputMatches = true;
+                } else {
+                    List<String> actualLines = actualClean.lines().map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+                    if (!actualLines.isEmpty() && actualLines.get(actualLines.size() - 1).equalsIgnoreCase(expectedClean)) {
+                        outputMatches = true;
+                    }
+                }
+            }
+
             boolean passed = execResult.exitCode() == 0 &&
                              (execResult.error() == null || execResult.error().trim().isEmpty()) &&
-                             !expectedClean.isEmpty() &&
-                             expectedClean.equals(actualClean);
+                             outputMatches;
 
             if (passed) {
                 passedCount++;
-                if (isHidden) hiddenPassed++;
             }
 
-            // Prepare student view of result
             TestCaseResultDTO r = TestCaseResultDTO.builder()
                     .testIndex(testIndex++)
-                    .isHidden(isHidden)
+                    .isHidden(false)
                     .passed(passed)
                     .executionTimeMs(execResult.executionTimeMs())
                     .error(execResult.error())
-                    .input(isHidden ? "[Hidden Test Case]" : tc.getInputData())
-                    .expected(isHidden ? "[Hidden Expected Output]" : tc.getExpectedOutput())
-                    .actual(isHidden ? (passed ? "[Matched Expected Output]" : "[Output Mismatch]") : execResult.output())
+                    .input(tc.getInputData())
+                    .expected(tc.getExpectedOutput())
+                    .actual(execResult.output())
                     .build();
 
             results.add(r);
         }
 
-        // Verdict: Passed ONLY if ALL test cases pass
+        // Verdict: Passed if all public verification cases pass
         boolean isAllPassed = (totalCases > 0) && (passedCount == totalCases);
 
         int pointsToAward = 0;
@@ -424,11 +432,14 @@ public class ProblemService {
 
         String message;
         if (isAllPassed) {
-            message = String.format("🎉 ACCEPTED! All %d test cases (including %d hidden test cases) passed flawlessly! +%d Points credited.",
-                    totalCases, hiddenTotal, pointsToAward);
+            message = String.format("🎉 ACCEPTED! Final output verified successfully! +%d Points credited.", pointsToAward);
         } else {
-            message = String.format("❌ WRONG ANSWER: %d/%d test cases passed (%d/%d hidden test cases passed). Points will only be awarded when all 4 hidden test cases pass.",
-                    passedCount, totalCases, hiddenPassed, hiddenTotal);
+            String errDetail = results.stream()
+                    .filter(res -> !res.getPassed())
+                    .findFirst()
+                    .map(res -> res.getError() != null && !res.getError().isBlank() ? res.getError().trim() : "Expected '" + res.getExpected() + "', but received '" + (res.getActual() != null ? res.getActual().trim() : "") + "'")
+                    .orElse("Output did not match expected problem output.");
+            message = "❌ Execution Failed: " + errDetail;
         }
 
         return ProblemSubmissionResponse.builder()
@@ -437,8 +448,8 @@ public class ProblemService {
                 .totalPoints(user.getTotalPoints())
                 .totalTestCases(totalCases)
                 .passedTestCases(passedCount)
-                .hiddenTestCasesCount(hiddenTotal)
-                .hiddenTestCasesPassed(hiddenPassed)
+                .hiddenTestCasesCount(0)
+                .hiddenTestCasesPassed(0)
                 .totalExecutionTimeMs(totalExecTime)
                 .message(message)
                 .results(results)
@@ -473,9 +484,6 @@ public class ProblemService {
     // ──────────────────────────────────────────────────────────
     private ProblemResponse mapToResponse(Problem p, User currentUser) {
         List<TestCase> testCases = p.getTestCases() != null ? p.getTestCases() : List.of();
-        int total = testCases.size();
-        int hidden = (int) testCases.stream().filter(tc -> Boolean.TRUE.equals(tc.getIsHidden())).count();
-
         // Only expose non-hidden test cases to client
         List<TestCaseDTO> publicTests = testCases.stream()
                 .filter(tc -> !Boolean.TRUE.equals(tc.getIsHidden()))
@@ -508,8 +516,8 @@ public class ProblemService {
                 .createdByUsername(p.getCreatedBy() != null ? p.getCreatedBy().getUsername() : "Admin")
                 .createdAt(p.getCreatedAt())
                 .isSolved(isSolved)
-                .totalTestCasesCount(total)
-                .hiddenTestCasesCount(hidden)
+                .totalTestCasesCount(publicTests.size())
+                .hiddenTestCasesCount(0)
                 .publicTestCases(publicTests)
                 .build();
     }

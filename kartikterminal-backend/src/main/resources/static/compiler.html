@@ -968,11 +968,11 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
         <!-- Test Cases Suite Status -->
         <div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:8px; padding:10px;">
           <div style="font-size:11px; font-weight:700; color:#fff; display:flex; justify-content:space-between; align-items:center;">
-            <span>🛡️ Test Suite</span>
-            <span id="probTestsSummary" style="font-size:10.5px; color:#a5b4fc;">1 Public Sample + 2 Hidden Cases</span>
+            <span>🛡️ Verification Suite</span>
+            <span id="probTestsSummary" style="font-size:10.5px; color:#34d399;">Final Output Verification</span>
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
-            To be marked as Passed and earn points, your code must successfully pass all 2 hidden edge-case tests.
+            Your solution will be executed in a secure sandbox and its final output will be verified against the problem statement.
           </div>
         </div>
 
@@ -988,7 +988,7 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
           <span>▶️</span> Run Sample Tests
         </button>
         <button onclick="submitProblemGrader()" class="btn-primary" id="probSubmitGraderBtn" style="flex:1; padding:8px; font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; background:linear-gradient(135deg,#10b981,#059669);">
-          <span>🚀</span> Submit & Check 2 Hidden Tests
+          <span>🚀</span> Submit & Verify Solution
         </button>
       </div>
     </aside>
@@ -2428,14 +2428,15 @@ function isCodeIncomplete(code, lang) {
 
 function renderProblemTestResults(data, resultsArea) {
   if (!resultsArea) return;
+  const isSolved = data.isSolved || data.isPassed;
   let resultsHtml = `
-    <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${data.isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${data.isSolved ? '#10b981' : '#ef4444'};">
-      <div style="font-weight:800; font-size:13px; color:${data.isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
-        ${data.isSolved ? '🎉 ACCEPTED — ALL TEST CASES PASSED!' : '❌ NOT ACCEPTED — TEST CASES FAILED'}
+    <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${isSolved ? '#10b981' : '#ef4444'};">
+      <div style="font-weight:800; font-size:13px; color:${isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
+        ${isSolved ? '🎉 ACCEPTED — FINAL OUTPUT VERIFIED!' : '❌ NOT ACCEPTED — OUTPUT MISMATCH'}
       </div>
       <div style="font-size:11.5px; color:var(--text-main); line-height:1.5;">
         ${escapeHtml(data.message || '')}<br>
-        <strong>Total Passed:</strong> ${data.passedCount || 0} / ${data.totalCount || 5} (🔒 Hidden: ${data.hiddenPassed || 0}/${data.hiddenTotal || 4}) • <strong>Time:</strong> ${data.executionTimeMs || 0}ms
+        <strong>Status:</strong> ${isSolved ? 'Passed' : 'Failed'} • <strong>Execution Time:</strong> ${data.totalExecutionTimeMs || data.executionTimeMs || 0}ms
       </div>
     </div>
     <div style="display:flex; flex-direction:column; gap:6px;">
@@ -2443,14 +2444,13 @@ function renderProblemTestResults(data, resultsArea) {
 
   if (data.results && data.results.length > 0) {
     data.results.forEach((t) => {
-      const isHidden = t.isHidden;
       const passed = t.passed;
       resultsHtml += `
         <div style="background:rgba(0,0,0,0.3); border:1px solid ${passed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}; border-radius:6px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:8px;">
             <span>${passed ? '✅' : '❌'}</span>
             <span style="font-size:11.5px; font-weight:600; color:${passed ? '#10b981' : '#ef4444'};">
-              ${isHidden ? `🔒 Hidden Test Case #${t.testIndex}` : `Sample Test Case #${t.testIndex}`}
+              ${passed ? 'Final Output Matched' : 'Output Mismatch / Error'}
             </span>
             ${!passed ? `<span style="font-size:10px; color:#f87171; margin-left:6px;">(${t.error ? 'Error' : 'Output Mismatch'})</span>` : ''}
           </div>
@@ -2537,9 +2537,9 @@ async function runCode() {
   term.scrollTop = term.scrollHeight;
 
   try {
-    // 2. If problem statement is loaded, auto-run Sample + 2 Hidden Test Cases
+    // 2. If problem statement is loaded, auto-run against Problem Statement output
     if (currentProblem && currentProblem.id) {
-      term.innerHTML += `<div class="term-line" style="color:#60a5fa;">⚡ [AUTO-GRADER] Sandboxing code & executing against Sample + 2 Hidden Test Cases...</div>`;
+      term.innerHTML += `<div class="term-line" style="color:#60a5fa;">⚡ [AUTO-GRADER] Sandboxing code & evaluating final output against problem statement...</div>`;
       term.scrollTop = term.scrollHeight;
 
       let headers = { 'Content-Type': 'application/json' };
@@ -2566,43 +2566,31 @@ async function runCode() {
         showErrorEffect();
         addToExecutionHistory(lang, false, execTime, code.substring(0, 50) + '...');
 
-        let failedTestDetail = "";
-        if (gradeData.results && gradeData.results.length > 0) {
-          const firstFail = gradeData.results.find(r => !r.passed);
-          if (firstFail) {
-            failedTestDetail = firstFail.isHidden ? `🔒 Hidden Test Case #${firstFail.testIndex}` : `Sample Test Case #${firstFail.testIndex}`;
-          }
-        }
-
         term.innerHTML += `
           <div class="term-line term-output-err" style="font-weight:700; font-size:13px; margin-top:4px;">
-            ❌ TEST EXECUTION FAILED: Solution did NOT pass all test cases!
-          </div>
-          <div class="term-line" style="color:#fca5a5;">
-            • Total Passed: ${gradeData.passedCount || 0}/${gradeData.totalCount || 3} (${gradeData.hiddenPassed || 0}/${gradeData.hiddenTotal || 2} Hidden Cases Passed)
+            ❌ TEST EXECUTION FAILED: Solution output did not match expected output!
           </div>
           <div class="term-line" style="color:#f87171; font-weight:600;">
-            • ⚠️ Failed at: ${failedTestDetail || 'Output Mismatch / Execution Error'}
+            • ${escapeHtml(gradeData.message || 'Output Mismatch / Execution Error')}
           </div>
         `;
 
         if (gradeData.results && gradeData.results.length > 0) {
           gradeData.results.forEach((r) => {
             const tag = r.passed ? '<span style="color:#10b981;">✔ PASSED</span>' : '<span style="color:#ef4444;">✘ FAILED</span>';
-            const name = r.isHidden ? `Hidden Case #${r.testIndex}` : `Sample Case #${r.testIndex}`;
-            term.innerHTML += `<div class="term-line" style="margin-left:14px; color:${r.passed ? '#34d399' : '#f87171'}; font-size:11px;">${tag} &nbsp;${name} (${r.executionTimeMs || 0}ms) ${r.error ? `- ${escapeHtml(r.error)}` : ''}</div>`;
+            term.innerHTML += `<div class="term-line" style="margin-left:14px; color:${r.passed ? '#34d399' : '#f87171'}; font-size:11px;">${tag} &nbsp;Output Verification (${r.executionTimeMs || 0}ms) ${r.error ? `- ${escapeHtml(r.error)}` : ''}</div>`;
           });
         }
 
-        showToast(`❌ Test failed! ${failedTestDetail ? `Failed at ${failedTestDetail}` : 'Check logic and hidden cases'}`, "error");
+        showToast("❌ Output mismatch! Please verify solution against problem statement.", "error");
 
         const pBadge = document.getElementById('problemsBadge');
         const pList = document.getElementById('problemsList');
         if (pBadge) { pBadge.textContent = '1'; pBadge.classList.add('error'); }
         if (pList) {
           pList.innerHTML = `
-            <div style="color:#ef4444; font-weight:700; margin-bottom:6px;">❌ Test Case Failure:</div>
-            <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:10px 14px; border-radius:6px; color:#fca5a5; white-space:pre-wrap;">${escapeHtml(gradeData.message || 'Failed test cases.')}\nFailed Test: ${failedTestDetail}</div>
+            <div style="color:#ef4444; font-weight:700; margin-bottom:6px;">❌ Output Verification Failure:</div>
+            <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:10px 14px; border-radius:6px; color:#fca5a5; white-space:pre-wrap;">${escapeHtml(gradeData.message || 'Failed test cases.')}</div>
           `;
         }
 
@@ -2611,25 +2599,18 @@ async function runCode() {
         }
 
       } else {
-        // ALL TEST CASES PASSED
+        // SOLUTION PASSED
         showCelebration(gradeData.pointsAwarded || gradeData.pointsEarned || 50);
         addToExecutionHistory(lang, true, execTime, code.substring(0, 50) + '...');
 
         term.innerHTML += `
           <div class="term-line term-output-success" style="font-weight:700; font-size:13px; margin-top:4px;">
-            🎉 ACCEPTED — ALL TEST CASES PASSED!
+            🎉 ACCEPTED — FINAL OUTPUT VERIFIED!
           </div>
           <div class="term-line" style="color:#34d399;">
-            ✔ ${gradeData.passedCount}/${gradeData.totalCount} Cases Passed (All ${gradeData.hiddenTotal} Hidden Test Cases Verified) • ${execTime}ms
+            ✔ Solution verified successfully • ${execTime}ms
           </div>
         `;
-
-        if (gradeData.results && gradeData.results.length > 0) {
-          gradeData.results.forEach((r) => {
-            const name = r.isHidden ? `Hidden Case #${r.testIndex}` : `Sample Case #${r.testIndex}`;
-            term.innerHTML += `<div class="term-line" style="margin-left:14px; color:#34d399; font-size:11px;">✔ PASSED &nbsp;${name} (${r.executionTimeMs || 0}ms)</div>`;
-          });
-        }
 
         showToast(`🎉 Accepted! +${gradeData.pointsAwarded || gradeData.pointsEarned || 50} Points Credited!`, "success");
 
@@ -2637,7 +2618,7 @@ async function runCode() {
         const pList = document.getElementById('problemsList');
         if (pBadge) { pBadge.textContent = '0'; pBadge.classList.remove('error'); }
         if (pList) {
-          pList.innerHTML = `<div style="color: #10b981;">✓ All test cases passed successfully! Code is accepted.</div>`;
+          pList.innerHTML = `<div style="color: #10b981;">✓ Output verified successfully! Code is accepted.</div>`;
         }
 
         if (resultsArea) {
@@ -2919,7 +2900,7 @@ function handleAutoCutTermination(reason) {
 }
 
 // ─────────────────────────────────────────────────────────
-// ⚡ PROBLEM DRAWER, SAMPLE RUNNER & 4 HIDDEN TEST CASES GRADER
+// ⚡ PROBLEM DRAWER, SAMPLE RUNNER & FINAL OUTPUT VERIFICATION
 // ─────────────────────────────────────────────────────────
 let currentProblem = null;
 
@@ -3058,8 +3039,7 @@ async function loadProblemFromQuery() {
     // Tests summary
     const testsSumEl = document.getElementById('probTestsSummary');
     if (testsSumEl) {
-      const hiddenCount = prob.hiddenTestCasesCount || (prob.testCases ? prob.testCases.filter(t => t.isHidden).length : 2);
-      testsSumEl.innerText = `1 Sample + ${hiddenCount} Hidden Cases`;
+      testsSumEl.innerText = 'Final Output Verification';
     }
 
     // Load Starter Code into Monaco Editor
@@ -3139,7 +3119,7 @@ async function runProblemSampleTests() {
     }
 
     if (isPass) {
-      showToast("Sample tests passed! Ready to Submit & verify 2 Hidden Cases.", "success");
+      showToast("Sample tests passed! Ready to submit solution.", "success");
     } else {
       showToast("Sample test failed. Check your logic and output formatting.", "error");
     }
@@ -3161,11 +3141,11 @@ async function submitProblemGrader() {
   
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<span>⏳</span> Evaluating 2 Hidden Tests...`;
+    btn.innerHTML = `<span>⏳</span> Evaluating Output...`;
   }
   if (resultsArea) {
     resultsArea.style.display = 'block';
-    resultsArea.innerHTML = `<div style="color:#60a5fa; font-size:12px; font-weight:600;">🔒 Sandboxing code & executing against hidden test cases in parallel...</div>`;
+    resultsArea.innerHTML = `<div style="color:#60a5fa; font-size:12px; font-weight:600;">⚡ Sandboxing code & evaluating final output...</div>`;
   }
 
   try {
@@ -3185,7 +3165,7 @@ async function submitProblemGrader() {
 
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<span>🚀</span> Submit & Check 2 Hidden Tests`;
+      btn.innerHTML = `<span>🚀</span> Submit & Verify Solution`;
     }
 
     if (!res.ok) {
@@ -3197,11 +3177,11 @@ async function submitProblemGrader() {
     let resultsHtml = `
       <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${data.isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${data.isSolved ? '#10b981' : '#ef4444'};">
         <div style="font-weight:800; font-size:13px; color:${data.isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
-          ${data.isSolved ? '🎉 ACCEPTED — ALL TEST CASES PASSED!' : '❌ NOT ACCEPTED — TEST CASES FAILED'}
+          ${data.isSolved ? '🎉 ACCEPTED — FINAL OUTPUT VERIFIED!' : '❌ NOT ACCEPTED — OUTPUT MISMATCH'}
         </div>
         <div style="font-size:11.5px; color:var(--text-main); line-height:1.5;">
-          ${data.message || ''}<br>
-          <strong>Total Passed:</strong> ${data.passedCount} / ${data.totalCount} (🔒 Hidden: ${data.hiddenPassed}/${data.hiddenTotal}) • <strong>Time:</strong> ${data.executionTimeMs}ms
+          ${escapeHtml(data.message || '')}<br>
+          <strong>Status:</strong> ${data.isSolved ? 'Passed' : 'Failed'} • <strong>Time:</strong> ${data.totalExecutionTimeMs || data.executionTimeMs || 0}ms
         </div>
       </div>
       <div style="display:flex; flex-direction:column; gap:6px;">
@@ -3209,14 +3189,13 @@ async function submitProblemGrader() {
 
     if (data.results && data.results.length > 0) {
       data.results.forEach((t, i) => {
-        const isHidden = t.isHidden;
         const passed = t.passed;
         resultsHtml += `
           <div style="background:rgba(0,0,0,0.3); border:1px solid ${passed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}; border-radius:6px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:8px;">
               <span>${passed ? '✅' : '❌'}</span>
               <span style="font-size:11.5px; font-weight:600; color:${passed ? '#10b981' : '#ef4444'};">
-                ${isHidden ? `🔒 Hidden Test Case #${i + 1}` : `Sample Test Case #${i + 1}`}
+                ${passed ? 'Final Output Matched' : 'Output Mismatch / Error'}
               </span>
             </div>
             <span style="font-size:10px; color:var(--text-muted); font-family:monospace;">${t.executionTimeMs || 0}ms</span>
@@ -3233,13 +3212,12 @@ async function submitProblemGrader() {
       showToast(`🏆 Congratulations! +${data.pointsAwarded || data.pointsEarned || 50} Points Credited!`, "success");
       showPointsPopup(data.pointsAwarded || data.pointsEarned || 50);
       loadUserPoints();
-    } else {
     }
 
   } catch (err) {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<span>🚀</span> Submit & Check 4 Hidden Tests`;
+      btn.innerHTML = `<span>🚀</span> Submit & Verify Solution`;
     }
     if (resultsArea) resultsArea.innerHTML = `<div style="color:#ef4444; font-size:12px;">Grading exception: ${err.message}</div>`;
   }
