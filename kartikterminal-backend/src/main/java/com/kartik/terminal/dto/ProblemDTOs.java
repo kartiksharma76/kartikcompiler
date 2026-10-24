@@ -1,5 +1,6 @@
 package com.kartik.terminal.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -104,7 +105,10 @@ public class ProblemDTOs {
     @AllArgsConstructor
     @Builder
     public static class ProblemSubmissionResponse {
+        @JsonProperty("isPassed")
         private Boolean isPassed;
+        @JsonProperty("isSolved")
+        private Boolean isSolved;
         private Integer pointsAwarded;
         private Integer totalPoints;
         private Integer totalTestCases;
@@ -115,5 +119,15 @@ public class ProblemDTOs {
         private String message;
         @Builder.Default
         private List<TestCaseResultDTO> results = new ArrayList<>();
+
+        @JsonProperty("passed")
+        public Boolean getPassed() {
+            return isPassed != null ? isPassed : isSolved;
+        }
+
+        @JsonProperty("solved")
+        public Boolean getSolved() {
+            return isSolved != null ? isSolved : isPassed;
+        }
     }
 }

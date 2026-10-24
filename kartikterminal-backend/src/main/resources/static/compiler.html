@@ -2428,7 +2428,7 @@ function isCodeIncomplete(code, lang) {
 
 function renderProblemTestResults(data, resultsArea) {
   if (!resultsArea) return;
-  const isSolved = data.isSolved || data.isPassed;
+  const isSolved = Boolean(data && (data.isSolved ?? data.isPassed ?? data.passed ?? data.solved));
   let resultsHtml = `
     <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${isSolved ? '#10b981' : '#ef4444'};">
       <div style="font-weight:800; font-size:13px; color:${isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
@@ -2536,8 +2536,9 @@ async function runCode() {
       }
 
       const resultsArea = document.getElementById('probTestResultsArea') || document.getElementById('probResultsArea');
+      const isSolved = Boolean(gradeData && (gradeData.isSolved ?? gradeData.isPassed ?? gradeData.passed ?? gradeData.solved));
 
-      if (!gradeRes.ok || !gradeData.isSolved) {
+      if (!gradeRes.ok || !isSolved) {
         showErrorEffect();
         addToExecutionHistory(lang, false, execTime, code.substring(0, 50) + '...');
 
@@ -2585,7 +2586,17 @@ async function runCode() {
           <div class="term-line" style="color:#34d399;">
             ✔ Solution verified successfully • ${execTime}ms
           </div>
+          <div class="term-line" style="color:#a7f3d0; font-size:11.5px; font-weight:600; margin-top:2px;">
+            • ${escapeHtml(gradeData.message || 'Final output verified successfully!')}
+          </div>
         `;
+
+        if (gradeData.results && gradeData.results.length > 0) {
+          gradeData.results.forEach((r) => {
+            const tag = r.passed ? '<span style="color:#10b981;">✔ PASSED</span>' : '<span style="color:#ef4444;">✘ FAILED</span>';
+            term.innerHTML += `<div class="term-line" style="margin-left:14px; color:${r.passed ? '#34d399' : '#f87171'}; font-size:11px;">${tag} &nbsp;Output Verification (${r.executionTimeMs || 0}ms)</div>`;
+          });
+        }
 
         showToast(`🎉 Accepted! +${gradeData.pointsAwarded || gradeData.pointsEarned || 50} Points Credited!`, "success");
 
@@ -3149,14 +3160,16 @@ async function submitProblemGrader() {
       return;
     }
 
+    const isSolved = Boolean(data && (data.isSolved ?? data.isPassed ?? data.passed ?? data.solved));
+
     let resultsHtml = `
-      <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${data.isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${data.isSolved ? '#10b981' : '#ef4444'};">
-        <div style="font-weight:800; font-size:13px; color:${data.isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
-          ${data.isSolved ? '🎉 ACCEPTED — FINAL OUTPUT VERIFIED!' : '❌ NOT ACCEPTED — OUTPUT MISMATCH'}
+      <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${isSolved ? '#10b981' : '#ef4444'};">
+        <div style="font-weight:800; font-size:13px; color:${isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
+          ${isSolved ? '🎉 ACCEPTED — FINAL OUTPUT VERIFIED!' : '❌ NOT ACCEPTED — OUTPUT MISMATCH'}
         </div>
         <div style="font-size:11.5px; color:var(--text-main); line-height:1.5;">
           ${escapeHtml(data.message || '')}<br>
-          <strong>Status:</strong> ${data.isSolved ? 'Passed' : 'Failed'} • <strong>Time:</strong> ${data.totalExecutionTimeMs || data.executionTimeMs || 0}ms
+          <strong>Status:</strong> ${isSolved ? 'Passed' : 'Failed'} • <strong>Time:</strong> ${data.totalExecutionTimeMs || data.executionTimeMs || 0}ms
         </div>
       </div>
       <div style="display:flex; flex-direction:column; gap:6px;">
@@ -3182,7 +3195,7 @@ async function submitProblemGrader() {
     resultsHtml += `</div>`;
     if (resultsArea) resultsArea.innerHTML = resultsHtml;
 
-    if (data.isSolved) {
+    if (isSolved) {
       createConfetti();
       showToast(`🏆 Congratulations! +${data.pointsAwarded || data.pointsEarned || 50} Points Credited!`, "success");
       showPointsPopup(data.pointsAwarded || data.pointsEarned || 50);

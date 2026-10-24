@@ -495,6 +495,7 @@ public class ProblemService {
 
         return ProblemSubmissionResponse.builder()
                 .isPassed(isAllPassed)
+                .isSolved(isAllPassed)
                 .pointsAwarded(pointsToAward)
                 .totalPoints(user.getTotalPoints())
                 .totalTestCases(totalCases)
