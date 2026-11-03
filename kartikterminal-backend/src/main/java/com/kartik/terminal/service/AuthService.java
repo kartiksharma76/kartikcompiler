@@ -44,7 +44,6 @@ public class AuthService {
                 .email(request.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName() != null && !request.getFullName().isBlank() ? request.getFullName().trim() : request.getUsername())
-                .role(User.Role.USER)
                 .isActive(true)
                 .totalExecutions(0).successfulExecutions(0)
                 .totalPoints(0).totalExecutionTimeMs(0L)
@@ -52,38 +51,62 @@ public class AuthService {
 
         Institution registeredInst = null;
         boolean isNewPendingInstitution = false;
+        User.Role targetRole = User.Role.USER;
+        String reqRole = request.getRole() != null ? request.getRole().trim().toUpperCase() : "";
 
         if (request.getCompanyName() != null && !request.getCompanyName().isBlank()) {
             String compName = request.getCompanyName().trim();
             var existingInstOpt = institutionRepository.findByNameIgnoreCase(compName);
+            boolean wantsCollegeAdmin = "COLLEGE_ADMIN".equals(reqRole) || "FACULTY".equals(reqRole);
+
             if (existingInstOpt.isPresent()) {
                 registeredInst = existingInstOpt.get();
+                if (wantsCollegeAdmin) {
+                    targetRole = User.Role.COLLEGE_ADMIN;
+                } else {
+                    targetRole = User.Role.STUDENT;
+                }
                 if (registeredInst.getStatus() == Institution.Status.PENDING) {
                     userBuilder.isActive(false);
                 }
             } else {
+                // New institution
                 registeredInst = Institution.builder()
                         .name(compName)
                         .licenseKey(java.util.UUID.randomUUID().toString().toUpperCase())
                         .status(Institution.Status.PENDING)
                         .build();
                 registeredInst = institutionRepository.save(registeredInst);
-                userBuilder.role(User.Role.COLLEGE_ADMIN);
+                
+                if ("STUDENT".equals(reqRole)) {
+                    targetRole = User.Role.STUDENT;
+                } else {
+                    targetRole = User.Role.COLLEGE_ADMIN;
+                }
                 userBuilder.isActive(false);
                 isNewPendingInstitution = true;
             }
             userBuilder.institution(registeredInst);
+        } else {
+            if ("STUDENT".equals(reqRole)) {
+                targetRole = User.Role.STUDENT;
+            } else {
+                targetRole = User.Role.USER;
+            }
         }
+
+        userBuilder.role(targetRole);
 
         User user = userBuilder.build();
         User saved = userRepository.save(user);
 
-        if (isNewPendingInstitution && registeredInst != null) {
+        if (registeredInst != null && (isNewPendingInstitution || registeredInst.getSuperAdminId() == null) && targetRole == User.Role.COLLEGE_ADMIN) {
             registeredInst.setSuperAdminId(saved.getId());
             institutionRepository.save(registeredInst);
         }
 
         if (registeredInst != null && registeredInst.getStatus() == Institution.Status.PENDING) {
+            String roleName = targetRole == User.Role.COLLEGE_ADMIN ? "College Admin" : "Student";
             return AuthResponse.builder()
                     .token(null)
                     .tokenType("Bearer")
@@ -93,7 +116,7 @@ public class AuthService {
                     .role(saved.getRole().name())
                     .userId(saved.getId())
                     .success(true)
-                    .message("College registration request submitted! It is currently PENDING approval by Admin. Once approved, you can log in with your email/username and password.")
+                    .message("College registration request submitted for " + registeredInst.getName() + " as " + roleName + "! It is currently PENDING approval by Admin. Once approved, you can log in.")
                     .build();
         }
 

@@ -33,6 +33,9 @@ public class AuthDTOs {
 
         @Size(max = 100, message = "Company name too long")
         private String companyName;
+
+        // "STUDENT" or "COLLEGE_ADMIN"
+        private String role;
     }
 
     // --- Login Request ---

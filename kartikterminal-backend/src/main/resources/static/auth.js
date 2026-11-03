@@ -49,6 +49,8 @@ const KTAuth = (() => {
         localStorage.setItem(FULLNAME_KEY, data.fullName || data.username || '');
         localStorage.setItem(ROLE_KEY,     data.role     || 'USER');
         localStorage.setItem(USERID_KEY,   data.id       || '');
+        if (data.institutionName) localStorage.setItem('kt_institution_name', data.institutionName);
+        if (data.institutionId) localStorage.setItem('kt_institution_id', data.institutionId);
         updateNavbarUI();
       }
     } catch (e) {
@@ -284,6 +286,12 @@ const KTAuth = (() => {
     getUserId:    () => localStorage.getItem(USERID_KEY)   || null,
     isAdmin:      () => localStorage.getItem(ROLE_KEY) === 'ADMIN' || localStorage.getItem(ROLE_KEY) === 'SUPER_ADMIN',
     isCollegeAdmin: () => localStorage.getItem(ROLE_KEY) === 'COLLEGE_ADMIN',
+    isStudent: () => {
+      const r = (localStorage.getItem(ROLE_KEY) || '').toUpperCase();
+      return r === 'STUDENT' || r === 'USER';
+    },
+    getInstitutionName: () => localStorage.getItem('kt_institution_name') || '',
+    getInstitutionId: () => localStorage.getItem('kt_institution_id') || '',
     canGenerateProblem: () => {
       const r = (localStorage.getItem(ROLE_KEY) || '').toUpperCase();
       const email = (localStorage.getItem(EMAIL_KEY) || '').toLowerCase();

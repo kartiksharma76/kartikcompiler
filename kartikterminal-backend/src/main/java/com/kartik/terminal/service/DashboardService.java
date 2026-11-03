@@ -172,10 +172,13 @@ public class DashboardService {
             boolean hasCheated = totalViolations > 0 || copyPasteEvents > 0 || (u.getIsDisqualified() != null && u.getIsDisqualified());
 
             Map<String, Object> smap = new LinkedHashMap<>();
+            boolean isColAdmin = (u.getRole() == User.Role.COLLEGE_ADMIN || u.getRole() == User.Role.FACULTY || (inst.getSuperAdminId() != null && inst.getSuperAdminId().equals(u.getId())));
             smap.put("rank", i + 1);
             smap.put("id", u.getId());
             smap.put("username", u.getUsername());
             smap.put("fullName", u.getFullName() != null && !u.getFullName().isBlank() ? u.getFullName() : u.getUsername());
+            smap.put("role", u.getRole() != null ? u.getRole().name() : (isColAdmin ? "COLLEGE_ADMIN" : "STUDENT"));
+            smap.put("isCollegeAdmin", isColAdmin);
             smap.put("email", u.getEmail());
             smap.put("avatarUrl", u.getAvatarUrl());
             smap.put("totalPoints", u.getTotalPoints() != null ? u.getTotalPoints() : 0);
@@ -218,15 +221,42 @@ public class DashboardService {
             return rmap;
         }).collect(Collectors.toList());
 
+        String adminUsername = "—";
+        String adminFullName = "—";
+        String adminEmail = "—";
+        if (inst.getSuperAdminId() != null) {
+            var suOpt = userRepository.findById(inst.getSuperAdminId());
+            if (suOpt.isPresent()) {
+                adminUsername = suOpt.get().getUsername();
+                adminFullName = suOpt.get().getFullName() != null ? suOpt.get().getFullName() : adminUsername;
+                adminEmail = suOpt.get().getEmail();
+            }
+        }
+        if ("—".equals(adminUsername)) {
+            var colAdminOpt = students.stream().filter(u -> u.getRole() == User.Role.COLLEGE_ADMIN).findFirst();
+            if (colAdminOpt.isPresent()) {
+                adminUsername = colAdminOpt.get().getUsername();
+                adminFullName = colAdminOpt.get().getFullName() != null ? colAdminOpt.get().getFullName() : adminUsername;
+                adminEmail = colAdminOpt.get().getEmail();
+            }
+        }
+
         Map<String, Object> instMap = new LinkedHashMap<>();
         instMap.put("id", inst.getId());
         instMap.put("name", inst.getName() != null ? inst.getName() : "");
         instMap.put("licenseKey", inst.getLicenseKey() != null ? inst.getLicenseKey() : "");
         instMap.put("status", inst.getStatus() != null ? inst.getStatus().name() : "APPROVED");
+        instMap.put("adminUsername", adminUsername);
+        instMap.put("adminFullName", adminFullName);
+        instMap.put("adminEmail", adminEmail);
         instMap.put("createdAt", inst.getCreatedAt() != null ? inst.getCreatedAt().toString() : "");
 
+        long adminCount = students.stream().filter(u -> u.getRole() == User.Role.COLLEGE_ADMIN || u.getRole() == User.Role.FACULTY || (inst.getSuperAdminId() != null && inst.getSuperAdminId().equals(u.getId()))).count();
+        long studentCount = students.size() - adminCount;
+
         Map<String, Object> statsMap = new LinkedHashMap<>();
-        statsMap.put("totalStudents", totalStudents);
+        statsMap.put("totalStudents", studentCount >= 0 ? studentCount : students.size());
+        statsMap.put("totalCollegeAdmins", adminCount);
         statsMap.put("totalPoints", totalPoints);
         statsMap.put("totalExecutions", totalExecs);
         statsMap.put("avgSuccessRate", avgSuccess);

@@ -61,10 +61,10 @@ public class AIService {
         }
 
         List<String> modelsToTry = List.of(
-            modelName != null && !modelName.isBlank() ? modelName : "meta/llama-3.3-70b-instruct",
-            "meta/llama-3.1-8b-instruct",
-            "meta/llama-3.2-3b-instruct",
-            "meta/llama-3.2-11b-vision-instruct"
+            modelName != null && !modelName.isBlank() ? modelName : "poolside/laguna-xs-2.1",
+            "poolside/laguna-xs-2.1",
+            "minimaxai/minimax-m3.1-flash",
+            "nvidia/nemotron-3.5-lightning-30b-a3b"
         );
 
         for (String m : modelsToTry) {
@@ -80,18 +80,24 @@ public class AIService {
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("model", m);
                 requestBody.put("messages", List.of(message));
-                requestBody.put("max_tokens", 1024);
-                requestBody.put("temperature", 0.7);
+                requestBody.put("max_tokens", 2048);
+                requestBody.put("temperature", 0.8);
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
                 String response = restTemplate.postForObject(NVIDIA_API_URL, entity, String.class);
                 JsonNode rootNode = objectMapper.readTree(response);
                 
-                String content = rootNode.path("choices").get(0)
-                               .path("message")
-                               .path("content").asText();
-                if (content != null && !content.isBlank()) {
+                JsonNode choiceNode = rootNode.path("choices").path(0);
+                JsonNode messageNode = choiceNode.path("message");
+                String content = null;
+                if (messageNode.has("content") && !messageNode.path("content").isNull()) {
+                    content = messageNode.path("content").asText();
+                }
+                if ((content == null || content.isBlank() || "null".equalsIgnoreCase(content)) && messageNode.has("reasoning_content") && !messageNode.path("reasoning_content").isNull()) {
+                    content = messageNode.path("reasoning_content").asText();
+                }
+                if (content != null && !content.isBlank() && !"null".equalsIgnoreCase(content)) {
                     return content;
                 }
             } catch (Exception e) {

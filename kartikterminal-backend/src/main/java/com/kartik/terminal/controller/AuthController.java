@@ -51,18 +51,27 @@ public class AuthController {
     public ResponseEntity<?> getCurrentUser() {
         try {
             User user = authService.getCurrentUser();
-            return ResponseEntity.ok(Map.of(
-                    "id", user.getId(),
-                    "username", user.getUsername(),
-                    "email", user.getEmail(),
-                    "fullName", user.getFullName() != null ? user.getFullName() : "",
-                    "role", user.getRole().name(),
-                    "totalPoints", user.getTotalPoints(),
-                    "totalExecutions", user.getTotalExecutions(),
-                    "favoriteLanguage", user.getFavoriteLanguage(),
-                    "memberSince", user.getCreatedAt().toString(),
-                    "avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : ""
-            ));
+            boolean isCollegeAdmin = user.getRole() == User.Role.COLLEGE_ADMIN;
+            boolean isStudent = user.getRole() == User.Role.STUDENT || user.getRole() == User.Role.USER;
+            boolean isPlatformAdmin = user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.SUPER_ADMIN;
+
+            Map<String, Object> resp = new java.util.LinkedHashMap<>();
+            resp.put("id", user.getId());
+            resp.put("username", user.getUsername());
+            resp.put("email", user.getEmail());
+            resp.put("fullName", user.getFullName() != null ? user.getFullName() : "");
+            resp.put("role", user.getRole().name());
+            resp.put("totalPoints", user.getTotalPoints());
+            resp.put("totalExecutions", user.getTotalExecutions());
+            resp.put("favoriteLanguage", user.getFavoriteLanguage());
+            resp.put("memberSince", user.getCreatedAt() != null ? user.getCreatedAt().toString() : "");
+            resp.put("avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : "");
+            resp.put("institutionId", user.getInstitution() != null ? user.getInstitution().getId() : null);
+            resp.put("institutionName", user.getInstitution() != null ? user.getInstitution().getName() : null);
+            resp.put("isCollegeAdmin", isCollegeAdmin);
+            resp.put("isStudent", isStudent);
+            resp.put("isPlatformAdmin", isPlatformAdmin);
+            return ResponseEntity.ok(resp);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("success", false, "message", "Not authenticated"));

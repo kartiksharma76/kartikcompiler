@@ -1265,6 +1265,19 @@ body {
             <div class="field-input-wrapper">
               <input type="text" id="regCompany" class="field-input" placeholder="e.g. Google or MIT">
             </div>
+
+            <div style="margin-top: 12px;">
+              <label class="field-label" for="regRole">Select Account Type / Role</label>
+              <div class="field-input-wrapper">
+                <select id="regRole" class="field-input" style="background:#0f172a; color:#fff; border:1px solid #334155; padding:8px 12px; border-radius:8px; width:100%; font-size:12px;" onchange="updateRegRoleHelp()">
+                  <option value="STUDENT">🎓 Student (Join College as Learner / Coder)</option>
+                  <option value="COLLEGE_ADMIN">🏛️ College Admin / Faculty (Manage College & Students)</option>
+                </select>
+              </div>
+              <div id="regRoleHelp" style="font-size:11px; color:#38bdf8; margin-top:5px; line-height:1.4;">
+                🎓 <strong>Student Account:</strong> Enrolls you in this college to solve assigned problems, participate in college contests, and climb the student leaderboard.
+              </div>
+            </div>
           </div>
 
           <button class="auth-gradient-submit-btn" id="registerBtn" onclick="handleRegister()">
@@ -1583,6 +1596,19 @@ function toggleCompanyField() {
   }
 }
 
+function updateRegRoleHelp() {
+  const roleEl = document.getElementById('regRole');
+  const helpEl = document.getElementById('regRoleHelp');
+  if (!roleEl || !helpEl) return;
+  if (roleEl.value === 'COLLEGE_ADMIN') {
+    helpEl.innerHTML = '🏛️ <strong>College Admin / Faculty:</strong> Registers you as College Administrator with access to assign problem sets, conduct and proctor exams, inspect student executions, and manage enrolled college students.';
+    helpEl.style.color = '#fbbf24';
+  } else {
+    helpEl.innerHTML = '🎓 <strong>Student Account:</strong> Enrolls you in this college to solve assigned problems, participate in college contests, and climb the student leaderboard.';
+    helpEl.style.color = '#38bdf8';
+  }
+}
+
 // ── Register Handler ──
 async function handleRegister() {
   const fullName = document.getElementById('regName').value.trim();
@@ -1592,6 +1618,7 @@ async function handleRegister() {
   
   const isCompany = document.getElementById('regIsCompany').checked;
   const companyName = isCompany ? document.getElementById('regCompany').value.trim() : '';
+  const role = isCompany ? (document.getElementById('regRole') ? document.getElementById('regRole').value : 'STUDENT') : 'USER';
 
   if (!username || !email || !password) {
     showMsg('registerMsg', 'Please fill in all required fields.', 'error');
@@ -1611,7 +1638,7 @@ async function handleRegister() {
     const res = await fetch(`${API}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, fullName, companyName })
+      body: JSON.stringify({ username, email, password, fullName, companyName, role })
     });
     const data = await res.json();
 

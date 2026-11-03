@@ -51,8 +51,9 @@ public class AdminController {
                 instData.put("leaderboard", instLeaderboard.stream().map(u -> Map.of(
                     "username", u.getUsername(),
                     "fullName", u.getFullName() != null ? u.getFullName() : u.getUsername(),
-                    "points", u.getTotalPoints(),
-                    "executions", u.getTotalExecutions(),
+                    "role", u.getRole() != null ? u.getRole().name() : "STUDENT",
+                    "points", u.getTotalPoints() != null ? u.getTotalPoints() : 0,
+                    "executions", u.getTotalExecutions() != null ? u.getTotalExecutions() : 0,
                     "successRate", u.getSuccessRate()
                 )).collect(java.util.stream.Collectors.toList()));
                 collegeReports.add(instData);
@@ -289,18 +290,30 @@ public class AdminController {
         List<com.kartik.terminal.entity.Institution> institutions = institutionRepository.findAllByOrderByCreatedAtDesc();
         List<Map<String, Object>> list = new java.util.ArrayList<>();
         for (com.kartik.terminal.entity.Institution inst : institutions) {
-            List<User> students = userRepository.findTopUsersByPointsAndInstitution(inst);
-            long totalStudents = userRepository.countByInstitutionAndIsActiveTrue(inst);
-            int totalPoints = students.stream().mapToInt(u -> u.getTotalPoints() != null ? u.getTotalPoints() : 0).sum();
-            long totalRuns = students.stream().mapToLong(u -> u.getTotalExecutions() != null ? u.getTotalExecutions() : 0).sum();
+            List<User> users = userRepository.findTopUsersByPointsAndInstitution(inst);
+            long totalStudents = users.stream().filter(u -> u.getRole() != User.Role.COLLEGE_ADMIN && u.getRole() != User.Role.FACULTY).count();
+            long totalAdmins = users.stream().filter(u -> u.getRole() == User.Role.COLLEGE_ADMIN || u.getRole() == User.Role.FACULTY).count();
+            int totalPoints = users.stream().mapToInt(u -> u.getTotalPoints() != null ? u.getTotalPoints() : 0).sum();
+            long totalRuns = users.stream().mapToLong(u -> u.getTotalExecutions() != null ? u.getTotalExecutions() : 0).sum();
 
             String adminUser = "—";
+            String adminFullName = "—";
+            String adminEmail = "—";
             if (inst.getSuperAdminId() != null) {
-                adminUser = userRepository.findById(inst.getSuperAdminId())
-                        .map(User::getUsername)
-                        .orElse("—");
-            } else if (!students.isEmpty()) {
-                adminUser = students.get(0).getUsername();
+                var suOpt = userRepository.findById(inst.getSuperAdminId());
+                if (suOpt.isPresent()) {
+                    adminUser = suOpt.get().getUsername();
+                    adminFullName = suOpt.get().getFullName() != null ? suOpt.get().getFullName() : adminUser;
+                    adminEmail = suOpt.get().getEmail();
+                }
+            }
+            if ("—".equals(adminUser)) {
+                var colAdminOpt = users.stream().filter(u -> u.getRole() == User.Role.COLLEGE_ADMIN).findFirst();
+                if (colAdminOpt.isPresent()) {
+                    adminUser = colAdminOpt.get().getUsername();
+                    adminFullName = colAdminOpt.get().getFullName() != null ? colAdminOpt.get().getFullName() : adminUser;
+                    adminEmail = colAdminOpt.get().getEmail();
+                }
             }
 
             Map<String, Object> map = new java.util.HashMap<>();
@@ -309,10 +322,13 @@ public class AdminController {
             map.put("licenseKey", inst.getLicenseKey());
             map.put("status", inst.getStatus() != null ? inst.getStatus().name() : "PENDING");
             map.put("totalStudents", totalStudents);
-            map.put("totalUsers", students.size());
+            map.put("totalAdmins", totalAdmins);
+            map.put("totalUsers", users.size());
             map.put("totalPoints", totalPoints);
             map.put("totalRuns", totalRuns);
             map.put("adminUser", adminUser);
+            map.put("adminFullName", adminFullName);
+            map.put("adminEmail", adminEmail);
             map.put("createdAt", inst.getCreatedAt() != null ? inst.getCreatedAt().toString() : "");
             list.add(map);
         }
