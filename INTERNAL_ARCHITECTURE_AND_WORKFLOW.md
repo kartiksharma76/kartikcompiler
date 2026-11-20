@@ -91,6 +91,56 @@ graph TD
 * **Audio Telemetry (Web Audio API)**: Uses `AudioContext` and `AnalyserNode` to compute root-mean-square (RMS) acoustic decibels, flagging continuous whispers or unauthorized voice exchanges.
 * **Client-Side Auth Manager (`auth.js`)**: Intercepts outgoing `fetch` calls, dynamically injects `Authorization: Bearer <token>`, decodes JWT claims, and renders role-based interface elements.
 
+#### 📊 Client-Side Edge AI Proctoring Pipeline Diagram:
+```mermaid
+flowchart LR
+    subgraph Client_Hardware ["User Device Hardware"]
+        CAM["Webcam Stream (640x480)"]
+        MIC["Microphone Audio Stream"]
+    end
+
+    subgraph Browser_Edge_AI ["Browser Edge AI Engine (Client-Side)"]
+        TFJS["TensorFlow.js (WebGL Accelerated)"]
+        COCO["COCO-SSD MobileNet v2 Object Detector"]
+        AUDIO_CTX["Web Audio API (AudioContext)"]
+        ANALYSER["AnalyserNode (RMS Decibel Analysis)"]
+        
+        CAM --> TFJS --> COCO
+        MIC --> AUDIO_CTX --> ANALYSER
+    end
+
+    subgraph Edge_Rule_Engine ["Real-Time Edge Evaluation (Every 1000ms)"]
+        EVAL_PERSON{"Person Count == 1?"}
+        EVAL_PHONE{"Phone Detected?"}
+        EVAL_NOISE{"RMS Audio > Threshold?"}
+        
+        COCO --> EVAL_PERSON
+        COCO --> EVAL_PHONE
+        ANALYSER --> EVAL_NOISE
+    end
+
+    subgraph Client_Enforcement ["Immediate Local HUD Enforcement"]
+        WARN["Red Screen Alert & Warning Audio Buzzer"]
+        TAB_LOCK["Full-Screen & Tab-Switch Interceptor"]
+    end
+
+    subgraph Server_Audit ["Backend Telemetry (/api/proctor)"]
+        REST_LOG["ProctorController / AntiCheatService"]
+        DB_AUDIT[("MySQL: anti_cheat_logs")]
+        AUTO_CUT{"Violations >= 5?"}
+        TERMINATE["Auto-Cut Disqualification"]
+    end
+
+    EVAL_PERSON -- "Multiple or 0 Faces" --> WARN
+    EVAL_PHONE -- "Confidence > 80%" --> WARN
+    EVAL_NOISE -- "Sustained Speech" --> WARN
+    
+    WARN --> REST_LOG
+    TAB_LOCK --> REST_LOG
+    REST_LOG --> DB_AUDIT --> AUTO_CUT
+    AUTO_CUT -- "Yes" --> TERMINATE
+```
+
 ---
 
 ### 3.2 Security & Authentication Layer
@@ -102,6 +152,50 @@ graph TD
   * `COLLEGE_ADMIN` / `FACULTY`: College-scoped access (manage college students, view institution proctor feeds, assign problems, review exam submissions).
   * `STUDENT` / `USER`: Standard access (run compiler, solve assigned and public problems, view personalized dashboard and public leaderboards).
 * **Multi-Tenancy Security**: College admins and faculty are strictly isolated to their own college (`currentUser.getInstitution().getId().equals(targetStudent.getInstitution().getId())`). Actions on foreign colleges or global admins are rejected with HTTP 403 Forbidden.
+
+#### 📊 Security & Multi-Tenancy Request Filter Lifecycle:
+```mermaid
+flowchart TD
+    subgraph Incoming_Traffic ["Client HTTP/HTTPS Traffic"]
+        REQ["Incoming API Request (with Authorization: Bearer JWT)"]
+    end
+
+    subgraph Security_FilterChain ["Spring Security 6.x Filter Chain"]
+        CORS["CorsFilter (Allowed Origins & Headers)"]
+        CSRF["CSRF Disabled (Stateless API)"]
+        JWT_FILTER["JwtAuthenticationFilter"]
+        TOKEN_EXTRACT["Token Extraction & HMAC-SHA256 Secret Validation"]
+        CLAIMS_PARSE["Claims Extractor (username, role, institutionId)"]
+        USER_LOAD["UserDetailsService (Fetch User Principal)"]
+        SEC_CTX["SecurityContextHolder (Set Authentication)"]
+        
+        REQ --> CORS --> CSRF --> JWT_FILTER
+        JWT_FILTER --> TOKEN_EXTRACT --> CLAIMS_PARSE --> USER_LOAD --> SEC_CTX
+    end
+
+    subgraph Controller_Guard ["Authorization & Tenant Boundary Guard"]
+        RBAC_CHECK{"@PreAuthorize Role Check"}
+        TENANT_CHECK{"Multi-Tenant Boundary Check"}
+        EXECUTE_CTRL["Target Controller Method Executed"]
+        FORBIDDEN["HTTP 403 Forbidden"]
+        
+        SEC_CTX --> RBAC_CHECK
+        RBAC_CHECK -- "Unauthorized Role" --> FORBIDDEN
+        RBAC_CHECK -- "Authorized Role" --> TENANT_CHECK
+        TENANT_CHECK -- "Cross-Institution Tampering" --> FORBIDDEN
+        TENANT_CHECK -- "Valid Tenant / Global Admin" --> EXECUTE_CTRL
+    end
+
+    subgraph Multi_Tenancy_Model ["Multi-Tenant Data Scoping"]
+        SUPER_ROLE["SUPER_ADMIN / ADMIN (Global Platform Access)"]
+        COLLEGE_ROLE["COLLEGE_ADMIN / FACULTY (institution_id Scoped)"]
+        STUDENT_ROLE["STUDENT (Own Profile & Scoped Problems)"]
+        
+        EXECUTE_CTRL --> SUPER_ROLE
+        EXECUTE_CTRL --> COLLEGE_ROLE
+        EXECUTE_CTRL --> STUDENT_ROLE
+    end
+```
 
 ---
 
@@ -117,6 +211,70 @@ The compiler engine executes untrusted polyglot user code securely without compr
      * **Output Truncation**: Standard output stream buffers are capped at 50,000 characters (`app.compiler.max-output`) to eliminate infinite-loop buffer overflow attacks.
 4. **Cleanup Guarantee**: A `finally` block recursively deletes temporary source files and compiled binaries.
 
+#### 📊 Subprocess Sandbox & Watchdog Lifecycle Diagram:
+```mermaid
+flowchart TD
+    subgraph Compiler_Ingress ["Compiler Engine Ingress"]
+        REQ["Execution Request (Language, Source Code, Stdin)"]
+        TEMP_GEN["Temp Dir Allocator (/tmp/kartik_compiler/code_uuid/)"]
+        SRC_GEN["Write Source Code (Main.java / solution.cpp / script.py)"]
+        STDIN_GEN["Write Custom Input (stdin.txt)"]
+        
+        REQ --> TEMP_GEN --> SRC_GEN --> STDIN_GEN
+    end
+
+    subgraph Compilation_Stage ["Stage 1: Compilation (Java / C / C++)"]
+        CHECK_COMPILED{"Requires Compilation?"}
+        RUN_COMPILER["ProcessBuilder(javac / g++ / gcc)"]
+        COMP_RESULT{"Exit Code == 0?"}
+        COMP_ERR["Capture stderr -> Return COMPILATION_ERROR"]
+        
+        STDIN_GEN --> CHECK_COMPILED
+        CHECK_COMPILED -- "Yes (Java, C, C++)" --> RUN_COMPILER --> COMP_RESULT
+        COMP_RESULT -- "Non-Zero Exit" --> COMP_ERR
+    end
+
+    subgraph Runtime_Sandbox ["Stage 2: Sandboxed Runtime Subprocess"]
+        SPAWN["ProcessBuilder: Spawn Isolated Subprocess"]
+        MEM_LIMIT["Memory Ceiling (-Xmx128m on JVM)"]
+        REDIRECT_IN["Redirect stdin from stdin.txt"]
+        WATCHDOG["Async Watchdog Timer (10 Seconds Limit)"]
+        
+        CHECK_COMPILED -- "No (Python, JS)" --> SPAWN
+        COMP_RESULT -- "Zero Exit (Success)" --> SPAWN
+        SPAWN --> MEM_LIMIT
+        SPAWN --> REDIRECT_IN
+        SPAWN --> WATCHDOG
+    end
+
+    subgraph Execution_Monitoring ["Stage 3: Subprocess Monitoring & Safeguards"]
+        TIMER{"Process finishes within 10s?"}
+        KILL["Watchdog Triggers: process.destroyForcibly()"]
+        TLE_RESP["Return TIME_LIMIT_EXCEEDED"]
+        READ_STREAM["Capture stdout & stderr via BufferedReader"]
+        BUFF_LIMIT{"Output Length > 50,000 chars?"}
+        TRUNCATE["Truncate Buffer & Append Warning"]
+        
+        WATCHDOG --> TIMER
+        TIMER -- "Timeout Exceeded" --> KILL --> TLE_RESP
+        TIMER -- "Completed in Time" --> READ_STREAM --> BUFF_LIMIT
+        BUFF_LIMIT -- "Yes" --> TRUNCATE
+        BUFF_LIMIT -- "No" --> FINALIZE["Package Output, Latency (ms), Memory"]
+        TRUNCATE --> FINALIZE
+    end
+
+    subgraph Disk_Cleanup ["Stage 4: Post-Execution Disk Cleanup"]
+        FINALLY["Finally Block: FileSystemUtils.deleteRecursively()"]
+        DELETE_DIR["Delete /tmp/kartik_compiler/code_uuid/"]
+        RESP["Return JSON to Client with Points & Badges"]
+        
+        FINALIZE --> FINALLY
+        COMP_ERR --> FINALLY
+        TLE_RESP --> FINALLY
+        FINALLY --> DELETE_DIR --> RESP
+    end
+```
+
 ---
 
 ### 3.4 AI Intelligence & Problem Generation Pipeline (`AIService` & `ProblemService`)
@@ -127,6 +285,59 @@ The compiler engine executes untrusted polyglot user code securely without compr
   3. `nvidia/nemotron-3.5-lightning-30b-a3b`: NVIDIA's advanced reasoning model.
 * **Balanced-Brace JSON Parser (`cleanJson`)**: Robust scanner that filters markdown code fences (````json ... ````), skips reasoning tokens, tracks string escaping, and isolates the outer `{ ... }` object without failing on trailing commentary.
 * **Dynamic Topic Synthesizer**: If the external AI service encounters network dropouts, `ProblemService` automatically switches to an in-memory algorithmic problem generator covering 15+ DSA domains (Trees, Graphs, DP, Stacks, Queues, Linked Lists, Matrices, Bitwise, Greedy) and generates custom problems for any user-defined topic string.
+
+#### 📊 NVIDIA NIM AI Pipeline & Zero-Downtime Fallback Architecture:
+```mermaid
+flowchart TD
+    subgraph Prompt_Construction ["AI Problem Prompt Builder"]
+        USER_INPUT["Topic (e.g. 'Binary Search Tree'), Difficulty ('MEDIUM'), Lang ('Java')"]
+        SYSTEM_PROMPT["System Instruction: Strict JSON Schema with Problem, Starter Code & Tests"]
+        PROMPT_PKG["Packaged API Payload (temperature: 0.8, max_tokens: 2048)"]
+        
+        USER_INPUT --> SYSTEM_PROMPT --> PROMPT_PKG
+    end
+
+    subgraph Model_Failover_Pipeline ["NVIDIA NIM Multi-Model Failover"]
+        M1["Primary Model: poolside/laguna-xs-2.1 (Low-Latency Coding LLM)"]
+        M2["Secondary Model: minimaxai/minimax-m3.1-flash (High Throughput Backup)"]
+        M3["Tertiary Model: nvidia/nemotron-3.5-lightning-30b-a3b (Reasoning Fallback)"]
+        
+        PROMPT_PKG --> M1
+        M1 -- "HTTP 4xx / 5xx / Timeout" --> M2
+        M2 -- "HTTP 4xx / 5xx / Timeout" --> M3
+    end
+
+    subgraph Sanitization_Engine ["Robust Balanced-Brace JSON Parser (cleanJson)"]
+        RAW_TEXT["Raw LLM String Output"]
+        STRIP_FENCE["Strip Markdown Code Fences (```json ... ```)"]
+        SCANNER["Balanced-Brace Depth Counter: Tracks '{' and '}'"]
+        REASON_FILTER["Skip 'thinking' and 'reasoning_content' tokens"]
+        VALID_JSON["Extracted Clean Problem JSON"]
+        
+        M1 -- "Success" --> RAW_TEXT
+        M2 -- "Success" --> RAW_TEXT
+        M3 -- "Success" --> RAW_TEXT
+        RAW_TEXT --> STRIP_FENCE --> SCANNER --> REASON_FILTER --> VALID_JSON
+    end
+
+    subgraph Offline_Synthesizer ["Zero-Downtime Fallback: DSA Topic Synthesizer"]
+        OFFLINE_TRIGGER["All Cloud Endpoints Down / Offline"]
+        TOPIC_MAPPER{"Topic Matches 15+ Known DSA Domains?"}
+        DOMAIN_GEN["Domain Generator (Trees, Graphs, DP, Stacks, Queues, Matrices, etc.)"]
+        DYNAMIC_SYNTH["Dynamic Algorithmic Topic Synthesizer"]
+        
+        M3 -- "All AI Models Failed" --> OFFLINE_TRIGGER --> TOPIC_MAPPER
+        TOPIC_MAPPER -- "Matched Domain" --> DOMAIN_GEN --> VALID_JSON
+        TOPIC_MAPPER -- "Custom / Unknown Topic" --> DYNAMIC_SYNTH --> VALID_JSON
+    end
+
+    subgraph Client_Delivery ["UI Delivery & Instant Assignment"]
+        VALIDATE["Validate starterCode & sampleTestCases"]
+        DELIVER["Deliver to College Admin / Student Modal"]
+        
+        VALID_JSON --> VALIDATE --> DELIVER
+    end
+```
 
 ---
 
@@ -460,3 +671,4 @@ sequenceDiagram
 * **LLM Engine**: NVIDIA NIM Cloud API (`poolside/laguna-xs-2.1`, `nvidia/nemotron-3.5-lightning-30b-a3b`, `minimaxai/minimax-m3.1-flash`)
 * **Audio & Voice Processing**: Web Audio API (`AnalyserNode`), Web Speech API (SpeechRecognition & SpeechSynthesis)
 * **Build System**: Apache Maven 3.8+ with Maven Wrapper (`mvnw`)
+
