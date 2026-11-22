@@ -24,6 +24,7 @@ public class CompilerDTOs {
         private String language;
 
         @Size(max = 10000, message = "Input too large")
+        @com.fasterxml.jackson.annotation.JsonAlias({"stdin", "input"})
         private String input;
 
         // Optional: save with title

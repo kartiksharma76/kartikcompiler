@@ -3403,7 +3403,7 @@ async function runProblemSampleTests() {
     const res = await fetch('/api/compiler/run', {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({ code: code, language: lang, stdin: sampleIn, mode: currentMode })
+      body: JSON.stringify({ code: code, language: lang, input: sampleIn, stdin: sampleIn, mode: currentMode })
     });
 
     const text = await res.text();
