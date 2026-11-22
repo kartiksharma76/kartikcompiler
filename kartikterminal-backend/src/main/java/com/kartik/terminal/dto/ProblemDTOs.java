@@ -83,6 +83,7 @@ public class ProblemDTOs {
     public static class ProblemSubmissionRequest {
         private String language;
         private String code;
+        private String mode; // "NORMAL" or "SECURE"
     }
 
     @Data
@@ -117,6 +118,7 @@ public class ProblemDTOs {
         private Integer hiddenTestCasesPassed;
         private Long totalExecutionTimeMs;
         private String message;
+        private String mode;
         @Builder.Default
         private List<TestCaseResultDTO> results = new ArrayList<>();
 

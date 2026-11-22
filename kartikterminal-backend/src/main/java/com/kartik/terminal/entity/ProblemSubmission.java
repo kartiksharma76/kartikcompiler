@@ -44,6 +44,10 @@ public class ProblemSubmission {
     @Column(nullable = false)
     private Long executionTimeMs;
 
+    @Column(name = "execution_mode", length = 20)
+    @Builder.Default
+    private String executionMode = "NORMAL";
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime submittedAt;

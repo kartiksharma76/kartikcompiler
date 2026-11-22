@@ -28,6 +28,9 @@ public class CompilerDTOs {
 
         // Optional: save with title
         private String title;
+
+        // Execution mode: "NORMAL" or "SECURE"
+        private String mode;
     }
 
     // --- Execution Response ---
@@ -45,6 +48,7 @@ public class CompilerDTOs {
         private String status;
         private LocalDateTime executedAt;
         private Long recordId;
+        private String mode;
     }
 
     // --- Dashboard Response ---
@@ -83,6 +87,7 @@ public class CompilerDTOs {
         private int todayExecutions;
         private String role;
         private int cheatViolations;
+        private int normalViolations;
         @com.fasterxml.jackson.annotation.JsonProperty("isActive")
         private boolean isActive;
         @com.fasterxml.jackson.annotation.JsonProperty("isDisqualified")
@@ -103,6 +108,7 @@ public class CompilerDTOs {
         private LocalDateTime executedAt;
         private String codePreview;
         private String title;
+        private String mode;
     }
 
     @Data

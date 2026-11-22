@@ -68,6 +68,10 @@ public class CompilerService {
         ExecutionRecord.ExecutionStatus status = determineStatus(result, execTime);
         int points = ExecutionRecord.calculatePoints(success, execTime, request.getLanguage());
 
+        String executionMode = (request.getMode() != null && !request.getMode().isBlank())
+                ? request.getMode().trim().toUpperCase()
+                : "NORMAL";
+
         // Save execution record
         ExecutionRecord record = ExecutionRecord.builder()
                 .user(user)
@@ -81,6 +85,7 @@ public class CompilerService {
                 .status(status)
                 .points(success ? points : 0)
                 .title(request.getTitle())
+                .executionMode(executionMode)
                 .build();
 
         ExecutionRecord saved = executionRecordRepository.save(record);
@@ -94,8 +99,8 @@ public class CompilerService {
                 request.getLanguage()
         );
 
-        log.info("Code executed: user={}, lang={}, success={}, time={}ms",
-                user.getUsername(), request.getLanguage(), success, execTime);
+        log.info("Code executed: user={}, lang={}, mode={}, success={}, time={}ms",
+                user.getUsername(), request.getLanguage(), executionMode, success, execTime);
 
         return ExecutionResponse.builder()
                 .output(success ? result.output : "")
@@ -107,6 +112,7 @@ public class CompilerService {
                 .status(status.name())
                 .executedAt(LocalDateTime.now())
                 .recordId(saved.getId())
+                .mode(executionMode)
                 .build();
     }
 
@@ -322,7 +328,11 @@ public class CompilerService {
             // Write input
             if (input != null && !input.isEmpty()) {
                 try (OutputStream os = process.getOutputStream()) {
-                    os.write(input.getBytes());
+                    String sanitizedInput = input.replace("\r\n", "\n");
+                    if (!sanitizedInput.endsWith("\n")) {
+                        sanitizedInput += "\n";
+                    }
+                    os.write(sanitizedInput.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                     os.flush();
                 }
             } else {
@@ -337,11 +347,17 @@ public class CompilerService {
 
             if (!finished) {
                 process.destroyForcibly();
-                return new ExecutionResult("", "⏱️ Execution Timeout: Code exceeded " + timeoutSecs + " second limit.", 124);
+                String help = (input == null || input.isBlank())
+                        ? "⏱️ Execution Timeout: Program waited for user input (Scanner / System.in), but no input was provided."
+                        : "⏱️ Execution Timeout: Code exceeded " + timeoutSecs + " second limit.";
+                return new ExecutionResult("", help, 124);
             }
 
             String stdout = stdoutFuture.get(5, TimeUnit.SECONDS);
             String stderr = stderrFuture.get(5, TimeUnit.SECONDS);
+            if (stderr.contains("NoSuchElementException") && (input == null || input.isBlank())) {
+                stderr += "\n[Hint: Java Scanner expected more user input than was provided. Please enter all required inputs.]";
+            }
             int exitCode = process.exitValue();
 
             return new ExecutionResult(
@@ -358,7 +374,7 @@ public class CompilerService {
     }
 
     private String readStream(InputStream is) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {

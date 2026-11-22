@@ -1321,6 +1321,7 @@ function renderHistory(records) {
         <tr>
           <th>#</th>
           <th>Language</th>
+          <th>Mode</th>
           <th>Status</th>
           <th>Execution Time</th>
           <th>Points</th>
@@ -1333,6 +1334,11 @@ function renderHistory(records) {
           <tr>
             <td style="color:var(--text-muted); font-family:var(--font-mono); font-size:12px;">#${r.id}</td>
             <td><span class="lang-badge lang-${r.language ? r.language.toLowerCase() : 'java'}">${(r.language || 'N/A').toUpperCase()}</span></td>
+            <td>
+              <span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:10.5px; font-weight:700; ${r.mode === 'SECURE' ? 'background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.3);' : 'background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.3);'}">
+                ${r.mode === 'SECURE' ? '🔒 Secure Mode' : '🟢 Normal Mode'}
+              </span>
+            </td>
             <td>
               <div class="status-badge ${r.success ? 'status-ok' : 'status-err'}">
                 <span style="font-size:14px;">${r.success ? '●' : '●'}</span>
@@ -1489,9 +1495,14 @@ async function loadAssignedProblems() {
               ${solvedBadge}
               <span style="font-size: 11px; color: #34d399; font-weight: 600;">⚡ Output Verification (${p.totalTestCasesCount || 1} Sample)</span>
             </div>
-            <a href="/compiler.html?problemId=${p.id}&secure=true" class="btn-card-action" style="padding: 6px 14px; font-size: 12px; border-color: rgba(59,130,246,0.5); color: #60a5fa; background: rgba(59,130,246,0.1); text-decoration: none; display: flex; align-items: center; gap: 5px;" title="Solve in Secure Sandbox with Camera & Microphone Proctoring">
-              <span>⚡</span> Solve
-            </a>
+            <div style="display:flex; gap:6px;">
+              <a href="/compiler.html?problemId=${p.id}&secure=false" class="btn-card-action" style="padding: 6px 12px; font-size: 11.5px; border-color: rgba(16,185,129,0.5); color: #34d399; background: rgba(16,185,129,0.1); text-decoration: none; display: flex; align-items: center; gap: 4px;" title="Solve in Normal Mode without proctoring or restrictions">
+                <span>▶</span> Normal Mode
+              </a>
+              <a href="/compiler.html?problemId=${p.id}&secure=true" class="btn-card-action" style="padding: 6px 12px; font-size: 11.5px; border-color: rgba(59,130,246,0.5); color: #60a5fa; background: rgba(59,130,246,0.1); text-decoration: none; display: flex; align-items: center; gap: 4px;" title="Solve in Secure Sandbox with Camera & Microphone Proctoring">
+                <span>🔒</span> Secure Mode
+              </a>
+            </div>
           </div>
         </div>
       `;

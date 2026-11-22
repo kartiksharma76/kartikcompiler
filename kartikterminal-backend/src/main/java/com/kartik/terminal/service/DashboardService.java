@@ -74,6 +74,7 @@ public class DashboardService {
                 .todayExecutions((int) todayCount)
                 .role(user.getRole().name())
                 .cheatViolations(user.getCheatViolations() != null ? user.getCheatViolations() : 0)
+                .normalViolations(user.getNormalViolations() != null ? user.getNormalViolations() : 0)
                 .isActive(user.getIsActive() != null ? user.getIsActive() : true)
                 .isDisqualified(user.getIsDisqualified() != null ? user.getIsDisqualified() : false)
                 .build();
@@ -214,6 +215,7 @@ public class DashboardService {
             rmap.put("status", r.getStatus() != null ? r.getStatus().name() : "SUCCESS");
             rmap.put("executionTimeMs", r.getExecutionTimeMs());
             rmap.put("points", r.getPoints());
+            rmap.put("mode", r.getExecutionMode() != null ? r.getExecutionMode() : "NORMAL");
             rmap.put("executedAt", r.getExecutedAt() != null ? r.getExecutedAt().toString() : "");
             rmap.put("cheatViolations", rViolations);
             rmap.put("copyPasteEvents", rCopyPaste);
@@ -447,7 +449,24 @@ public class DashboardService {
     // ========== ANTI CHEAT ==========
     @Transactional
     public void logCheat() {
+        logCheat("NORMAL", "Unspecified Violation", "LOW");
+    }
+
+    @Transactional
+    public void logCheat(String mode, String reason, String severity) {
         User user = authService.getCurrentUser();
+        boolean isSecure = "SECURE".equalsIgnoreCase(mode);
+
+        if (!isSecure) {
+            // Normal mode violation: separate tracking, NEVER disqualify or deactivate account
+            int currentNormal = (user.getNormalViolations() != null ? user.getNormalViolations() : 0) + 1;
+            user.setNormalViolations(currentNormal);
+            userRepository.save(user);
+            log.info("Normal Mode violation recorded for user {}: {} (count: {})", user.getUsername(), reason, currentNormal);
+            return;
+        }
+
+        // Secure Mode violation: increment secure violations and enforce 3-strike permanent ban
         int currentViolations = (user.getCheatViolations() != null ? user.getCheatViolations() : 0) + 1;
         user.setCheatViolations(currentViolations);
         boolean isProtected = user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.SUPER_ADMIN ||
@@ -455,6 +474,7 @@ public class DashboardService {
         if (!isProtected && currentViolations >= 3) {
             user.setIsActive(false);
             user.setIsDisqualified(true);
+            log.warn("User {} permanently disqualified in SECURE mode after {} violations", user.getUsername(), currentViolations);
         }
         userRepository.save(user);
     }
@@ -474,6 +494,7 @@ public class DashboardService {
                 .executedAt(record.getExecutedAt())
                 .codePreview(preview)
                 .title(record.getTitle())
+                .mode(record.getExecutionMode() != null ? record.getExecutionMode() : "NORMAL")
                 .build();
     }
 

@@ -942,6 +942,19 @@ white-space: pre !important; margin: 0 !important; tab-size: 4 !important; outli
         <span id="probViewScope" style="background:rgba(16,185,129,0.15); color:#34d399; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;">🌍 Global Platform</span>
       </div>
 
+      <!-- Problem Mode Selector (Normal Mode vs Secure Mode) -->
+      <div style="padding:8px 16px; background:rgba(15,23,42,0.6); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Solving Mode:</span>
+        <div style="display:inline-flex; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:6px; padding:2px; gap:4px;">
+          <button id="probModeNormalBtn" onclick="setProblemMode(false)" style="padding:4px 10px; font-size:11px; font-weight:700; border:none; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;" title="Solve in Normal Mode without proctoring or restrictions">
+            <span>🟢</span> Normal Mode
+          </button>
+          <button id="probModeSecureBtn" onclick="setProblemMode(true)" style="padding:4px 10px; font-size:11px; font-weight:700; border:none; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;" title="Solve in Secure Mode with camera & proctoring enabled">
+            <span>🔒</span> Secure Mode
+          </button>
+        </div>
+      </div>
+
       <!-- Scrollable Problem Description & Inputs -->
       <div class="problem-drawer-content" id="probViewContent">
         <!-- Description -->
@@ -1512,13 +1525,27 @@ function showToast(message, type = 'info') {
   setTimeout(() => t.remove(), 3000);
 }
 
-function reportCheatToServer() {
-  if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
-    fetch('/api/dashboard/log-cheat', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${KTAuth.getToken()}`, 'Content-Type': 'application/json' }
-    }).catch(e => console.error(e));
-  }
+function reportCheatToServer(reason = 'General Security Violation', severity = 'HIGH', mode = null) {
+  try {
+    const activeMode = mode || (securityMode ? 'SECURE' : 'NORMAL');
+    let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+    logs.push({ 
+      time: new Date().toLocaleTimeString(), 
+      student: (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student', 
+      activity: reason, 
+      severity: severity,
+      mode: activeMode
+    });
+    localStorage.setItem('cheatLogs', JSON.stringify(logs));
+
+    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
+      fetch('/api/dashboard/log-cheat', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${KTAuth.getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason, severity: severity, mode: activeMode })
+      }).catch(e => console.error(e));
+    }
+  } catch(e) {}
 }
 
 // ── Points popup ──
@@ -2094,6 +2121,8 @@ function toggleSecurity(forceState) {
   const secStatus = document.getElementById('securityStatus');
   if (secStatus) secStatus.innerText = `STATUS: ${securityMode ? 'SECURE' : 'NORMAL'}`;
 
+  updateProblemModeUI();
+
   logToTerminal(`🔐 Security Mode: ${securityMode ? 'ON' : 'OFF'}`, "warning");
   showToast(`Security Mode ${securityMode ? 'Activated' : 'Deactivated'}`, securityMode ? 'security' : 'info');
   
@@ -2112,6 +2141,33 @@ function toggleSecurity(forceState) {
         document.exitFullscreen().catch(() => {}); 
       }
     } catch (e) {}
+  }
+}
+
+function setProblemMode(isSecure) {
+  toggleSecurity(isSecure);
+  updateProblemModeUI();
+}
+
+function updateProblemModeUI() {
+  const normBtn = document.getElementById('probModeNormalBtn');
+  const secBtn = document.getElementById('probModeSecureBtn');
+  if (normBtn && secBtn) {
+    if (securityMode) {
+      normBtn.style.background = 'transparent';
+      normBtn.style.color = '#94a3b8';
+      normBtn.style.boxShadow = 'none';
+      secBtn.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+      secBtn.style.color = '#fff';
+      secBtn.style.boxShadow = '0 0 10px rgba(59,130,246,0.4)';
+    } else {
+      normBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      normBtn.style.color = '#fff';
+      normBtn.style.boxShadow = '0 0 10px rgba(16,185,129,0.4)';
+      secBtn.style.background = 'transparent';
+      secBtn.style.color = '#94a3b8';
+      secBtn.style.boxShadow = 'none';
+    }
   }
 }
 
@@ -2206,15 +2262,15 @@ function handleInput() {
 }
 
 function handlePaste() {
-  let cheatLogs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-  cheatLogs.push({ time: new Date().toLocaleTimeString(), student: (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student', activity: 'Copy-Paste Attempt Detected', severity: 'HIGH' });
-  localStorage.setItem('cheatLogs', JSON.stringify(cheatLogs));
-  
   if (securityMode) {
+    let cheatLogs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
+    cheatLogs.push({ time: new Date().toLocaleTimeString(), student: (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student', activity: 'Copy-Paste Attempt Detected in Secure Mode', severity: 'HIGH', mode: 'SECURE' });
+    localStorage.setItem('cheatLogs', JSON.stringify(cheatLogs));
+
     playSecurityAlert();
     violations++;
     logToTerminal(`🚨 Security Violation: Code Paste Detected! (Infraction ${violations}/${MAX_VIOLATIONS})`, "warning");
-    reportCheatToServer(`Copy-Paste Violation Detected in Secure Mode (${violations}/${MAX_VIOLATIONS})`, "HIGH");
+    reportCheatToServer(`Copy-Paste Violation Detected in Secure Mode (${violations}/${MAX_VIOLATIONS})`, "HIGH", "SECURE");
     
     // Invert/revert the pasted code so candidate cannot keep unauthorized pasted code
     if (lastCodeBeforePaste !== undefined) {
@@ -2464,6 +2520,133 @@ function renderProblemTestResults(data, resultsArea) {
   resultsArea.innerHTML = resultsHtml;
 }
 
+function detectInputPrompts(code, lang) {
+  const inputs = [];
+  if (lang === 'java') {
+    const lines = code.split('\n');
+    let lastPrint = null;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      const printMatch = line.match(/System\.out\.print(?:ln)?\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (printMatch) {
+        lastPrint = printMatch[1];
+      }
+      const scanMatch = line.match(/\b\w+\.(next|nextInt|nextLine|nextDouble|nextFloat|nextLong|nextShort|nextByte|nextBoolean)\s*\(/);
+      if (scanMatch) {
+        inputs.push({
+          prompt: lastPrint || `Enter input #${inputs.length + 1} (${scanMatch[1]}):`,
+          method: scanMatch[1]
+        });
+        lastPrint = null;
+      }
+    }
+  } else if (lang === 'python' || lang === 'py') {
+    const matches = code.matchAll(/input\s*\(\s*(?:["']([^"']*)["'])?\s*\)/g);
+    for (const m of matches) {
+      inputs.push({
+        prompt: m[1] || `Enter input #${inputs.length + 1}:`,
+        method: 'input'
+      });
+    }
+  } else if (lang === 'cpp' || lang === 'c') {
+    const lines = code.split('\n');
+    let lastPrint = null;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      const coutMatch = line.match(/cout\s*<<\s*["']([^"']+)["']/);
+      const printfMatch = line.match(/printf\s*\(\s*["']([^"']+)["']/);
+      if (coutMatch) lastPrint = coutMatch[1];
+      else if (printfMatch) lastPrint = printfMatch[1];
+
+      if (line.includes('cin >>') || line.includes('cin>>') || line.includes('scanf(')) {
+        inputs.push({
+          prompt: lastPrint || `Enter input #${inputs.length + 1}:`,
+          method: 'cin'
+        });
+        lastPrint = null;
+      }
+    }
+  }
+  return inputs;
+}
+
+async function promptInteractiveUserInputs(prompts, lang, cmd, user, term) {
+  const inputsToPrompt = (prompts && prompts.length > 0)
+    ? prompts
+    : [{ prompt: "Enter program input (System.in):", method: "input" }];
+
+  const results = [];
+  for (let i = 0; i < inputsToPrompt.length; i++) {
+    const item = inputsToPrompt[i];
+    const userVal = await new Promise((resolve) => {
+      const pLine = document.createElement('div');
+      pLine.className = 'term-line';
+      pLine.style.cssText = 'color:#e2e8f0; font-weight:600; margin-top:4px;';
+      pLine.textContent = item.prompt;
+      term.appendChild(pLine);
+
+      const row = document.createElement('div');
+      row.className = 'term-line';
+      row.style.cssText = 'display:flex; align-items:center; gap:8px; margin:4px 0; background:rgba(30,41,59,0.7); padding:6px 10px; border-radius:6px; border:1px solid #3b82f6;';
+      row.innerHTML = `
+        <span style="color:#60a5fa; font-size:12px; font-weight:700;">⌨️ Input (${i+1}/${inputsToPrompt.length}):</span>
+        <input type="text" id="liveInp_${i}" style="background:#02040a; border:1px solid #3b82f6; color:#34d399; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; padding:4px 8px; border-radius:4px; flex:1; outline:none;" placeholder="Type value (e.g. 10) and press Enter..." autocomplete="off">
+        <button id="liveBtn_${i}" style="background:#2563eb; color:#fff; border:none; padding:4px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer;">Enter ↵</button>
+      `;
+      term.appendChild(row);
+      term.scrollTop = term.scrollHeight;
+
+      const inp = document.getElementById(`liveInp_${i}`);
+      const btn = document.getElementById(`liveBtn_${i}`);
+      const cli = document.getElementById('termCliInput');
+      if (cli) cli.placeholder = `Scanner Input (${item.prompt})...`;
+
+      let submitted = false;
+      function submitVal() {
+        if (submitted) return;
+        submitted = true;
+        const val = inp.value;
+        row.innerHTML = `<span style="color:#34d399; font-weight:700;">[User enters: ${escapeHtml(val)}]</span>`;
+        if (cli) cli.placeholder = "type command (e.g. run, clear, ls, help)...";
+        resolve(val);
+      }
+
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitVal();
+        }
+      });
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        submitVal();
+      });
+      setTimeout(() => { if (inp) inp.focus(); }, 50);
+    });
+    results.push(userVal);
+  }
+  return results.join('\n') + '\n';
+}
+
+function formatOutputWithInputs(rawOutput, inputVal, prompts) {
+  if (!rawOutput) return rawOutput;
+  const tokens = inputVal ? inputVal.trim().split(/\s+/).filter(Boolean) : [];
+  if (tokens.length === 0 || !prompts || prompts.length === 0) return rawOutput;
+
+  let lines = rawOutput.split('\n');
+  let tokenIdx = 0;
+  let formatted = [];
+  for (let i = 0; i < lines.length; i++) {
+    formatted.push(lines[i]);
+    const trimmed = lines[i].trim();
+    const matched = prompts.find(p => p.prompt && (trimmed === p.prompt.trim() || trimmed.startsWith(p.prompt.trim())));
+    if (matched && tokenIdx < tokens.length) {
+      formatted.push(`[User enters: ${tokens[tokenIdx++]}]`);
+    }
+  }
+  return formatted.join('\n');
+}
+
 async function runCode() {
   if (isBlocked) { showErrorEffect(); return; }
   openTerminalPanel();
@@ -2482,15 +2665,12 @@ async function runCode() {
   const btn = document.getElementById("runBtn");
 
   const stdinVal = (stdin ? stdin.value : '');
-  const inputKeywords = {java:['Scanner','System.in'],python:['input('],cpp:['cin >>','scanf'],c:['scanf','gets'],go:['fmt.Scan']};
+  const inputKeywords = {java:['Scanner','System.in','BufferedReader'],python:['input('],cpp:['cin >>','cin>>','scanf'],c:['scanf','gets'],go:['fmt.Scan']};
   const needsInput = (inputKeywords[lang] || []).some(k => code.includes(k));
-  if (needsInput && stdinVal.trim() === "" && !currentProblem) {
-    switchVSTab('stdin');
-    showToast("Program expects input - please enter input in STDIN tab", "warning");
-    return;
-  }
-  
-  if (btn) { btn.disabled = true; btn.textContent = "RUNNING..."; }
+  const detectedPrompts = needsInput ? detectInputPrompts(code, lang) : [];
+
+  let activeInput = stdinVal;
+  let didPromptInteractively = false;
   
   const commands = {
     java: 'javac Main.java && java Main',
@@ -2511,10 +2691,27 @@ async function runCode() {
   term.innerHTML += `<div class="term-line" style="margin-top:2px;"><span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span> <span class="term-cmd">${cmd}</span></div>`;
   term.scrollTop = term.scrollHeight;
 
+  if (needsInput && activeInput.trim() === "" && !currentProblem) {
+    if (btn) { btn.disabled = true; btn.textContent = "WAITING FOR INPUT..."; }
+    didPromptInteractively = true;
+    activeInput = await promptInteractiveUserInputs(detectedPrompts, lang, cmd, user, term);
+    if (activeInput === null) {
+      if (btn) { btn.disabled = false; btn.textContent = "DEPLOY & RUN"; }
+      return;
+    }
+    if (stdin) stdin.value = activeInput.trim();
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = "RUNNING..."; }
+
   try {
+    const currentMode = securityMode ? 'SECURE' : 'NORMAL';
+    const modeLabel = securityMode ? 'Secure Mode' : 'Normal Mode';
+    const modeBadgeHtml = `<span style="font-size:10.5px; padding:2px 8px; border-radius:4px; font-weight:700; ${securityMode ? 'background:rgba(59,130,246,0.25); color:#93c5fd; border:1px solid #3b82f6;' : 'background:rgba(16,185,129,0.25); color:#a7f3d0; border:1px solid #10b981;'}">${securityMode ? '🔒 Secure Mode' : '🟢 Normal Mode'}</span>`;
+
     // 2. If problem statement is loaded, auto-run against Problem Statement output
     if (currentProblem && currentProblem.id) {
-      term.innerHTML += `<div class="term-line" style="color:#60a5fa;">⚡ [AUTO-GRADER] Sandboxing code & evaluating final output against problem statement...</div>`;
+      term.innerHTML += `<div class="term-line" style="color:#60a5fa;">⚡ [AUTO-GRADER] Sandboxing code & evaluating final output against problem statement (${modeLabel})...</div>`;
       term.scrollTop = term.scrollHeight;
 
       let headers = { 'Content-Type': 'application/json' };
@@ -2525,7 +2722,7 @@ async function runCode() {
       const gradeRes = await fetch(`/api/problems/${currentProblem.id}/submit`, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ code: code, language: lang })
+        body: JSON.stringify({ code: code, language: lang, mode: currentMode })
       });
 
       const gradeData = await gradeRes.json();
@@ -2540,11 +2737,12 @@ async function runCode() {
 
       if (!gradeRes.ok || !isSolved) {
         showErrorEffect();
-        addToExecutionHistory(lang, false, execTime, code.substring(0, 50) + '...');
+        addToExecutionHistory(lang, false, execTime, code.substring(0, 50) + '...', modeLabel);
 
         term.innerHTML += `
-          <div class="term-line term-output-err" style="font-weight:700; font-size:13px; margin-top:4px;">
-            ❌ TEST EXECUTION FAILED: Solution output did not match expected output!
+          <div class="term-line" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <span class="term-output-err" style="font-weight:700; font-size:13px;">❌ TEST EXECUTION FAILED: Solution output did not match expected output!</span>
+            ${modeBadgeHtml}
           </div>
           <div class="term-line" style="color:#f87171; font-weight:600;">
             • ${escapeHtml(gradeData.message || 'Output Mismatch / Execution Error')}
@@ -2577,11 +2775,12 @@ async function runCode() {
       } else {
         // SOLUTION PASSED
         showCelebration(gradeData.pointsAwarded || gradeData.pointsEarned || 50);
-        addToExecutionHistory(lang, true, execTime, code.substring(0, 50) + '...');
+        addToExecutionHistory(lang, true, execTime, code.substring(0, 50) + '...', modeLabel);
 
         term.innerHTML += `
-          <div class="term-line term-output-success" style="font-weight:700; font-size:13px; margin-top:4px;">
-            🎉 ACCEPTED — FINAL OUTPUT VERIFIED!
+          <div class="term-line" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <span class="term-output-success" style="font-weight:700; font-size:13px;">🎉 ACCEPTED — FINAL OUTPUT VERIFIED!</span>
+            ${modeBadgeHtml}
           </div>
           <div class="term-line" style="color:#34d399;">
             ✔ Solution verified successfully • ${execTime}ms
@@ -2617,7 +2816,7 @@ async function runCode() {
       const res = await fetch("/compiler/run", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Cache-Control": "no-cache" },
-        body: JSON.stringify({ code, input: stdinVal, language: lang })
+        body: JSON.stringify({ code, input: activeInput, language: lang, mode: currentMode })
       });
 
       if (res.status === 401) { KTAuth.logout(); return; }
@@ -2631,14 +2830,28 @@ async function runCode() {
         execTimeEl.innerText = `⏱️ ${execTime}ms`;
       }
       
-      addToExecutionHistory(lang, !isErr, execTime, code.substring(0, 50) + '...');
+      addToExecutionHistory(lang, !isErr, execTime, code.substring(0, 50) + '...', modeLabel);
+
+      let displayOutput = data.trim();
+      if (didPromptInteractively) {
+        let outLines = displayOutput.split('\n');
+        let remaining = outLines.filter(line => {
+          const trimmed = line.trim();
+          return !detectedPrompts.some(p => p.prompt && (trimmed === p.prompt.trim() || trimmed.startsWith(p.prompt.trim())));
+        });
+        displayOutput = remaining.join('\n').trim();
+      } else if (needsInput && activeInput.trim() !== "") {
+        displayOutput = formatOutputWithInputs(displayOutput, activeInput, detectedPrompts);
+      }
+
+      const modeBadgeSnippet = `<span style="font-size:10px; margin-left:8px; padding:2px 7px; border-radius:4px; font-weight:700; ${securityMode ? 'background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid #3b82f6;' : 'background:rgba(16,185,129,0.2); color:#a7f3d0; border:1px solid #10b981;'}">${securityMode ? '🔒 Secure Mode' : '🟢 Normal Mode'}</span>`;
       
       if (isErr) {
         showErrorEffect();
-        term.innerHTML += `<div class="term-line term-output-err">${escapeHtml(data.trim())}</div>`;
+        term.innerHTML += `<div class="term-line term-output-err">${escapeHtml(displayOutput)} ${modeBadgeSnippet}</div>`;
       } else {
         showCelebration();
-        term.innerHTML += `<div class="term-line term-output-text">${escapeHtml(data.trim() || "✔ Finished with exit code 0")}</div>`;
+        term.innerHTML += `<div class="term-line term-output-text">${escapeHtml(displayOutput || "✔ Finished with exit code 0")} ${modeBadgeSnippet}</div>`;
       }
     }
   } catch(err) {
@@ -2742,8 +2955,8 @@ function downloadCode(){const lang=document.getElementById('language').value,ext
 function toggleWordWrap(){wordWrap=!wordWrap;applyWordWrap();saveToLocalStorage();wrapBtn.innerText=wordWrap?'🔃':'🔤';}
 function applyWordWrap(){[editor,highlightLayer,highlightCode].forEach(el=>{wordWrap?el.classList.add('wrap'):el.classList.remove('wrap');});}
 function toggleZenMode(){zenMode=!zenMode;document.body.classList.toggle('zen-mode',zenMode);zenBtn.innerText=zenMode?'👁️':'🧘';saveAppState();logToTerminal(`🧘 Zen mode: ${zenMode?'ON':'OFF'}`,"info");}
-function addToExecutionHistory(language,success,execTime,preview){const entry={id:Date.now(),time:new Date().toLocaleTimeString(),language,success,execTime,preview};executionHistory.unshift(entry);if(executionHistory.length>MAX_HISTORY)executionHistory.pop();renderHistoryList();saveToLocalStorage();}
-function renderHistoryList(){if(!executionHistory.length){historyList.innerHTML='<div class="history-item" style="color:var(--text-muted);justify-content:center;">No executions yet</div>';return;}historyList.innerHTML=executionHistory.map(item=>`<div class="history-item" onclick="logToTerminal('📜 ${item.language.toUpperCase()} - ${item.success?'Success':'Failed'} (${item.execTime}ms)','info');historyList.classList.remove('active')"><span>${item.language.toUpperCase()}: ${item.preview}</span><div style="display:flex;align-items:center;gap:8px;"><span class="time">${item.time}</span><span class="status ${item.success?'':'error'}">${item.success?'✓':'✗'} ${item.execTime}ms</span></div></div>`).join('');}
+function addToExecutionHistory(language,success,execTime,preview,mode=null){const activeMode = mode || (securityMode ? 'Secure Mode' : 'Normal Mode');const entry={id:Date.now(),time:new Date().toLocaleTimeString(),language,success,execTime,preview,mode:activeMode};executionHistory.unshift(entry);if(executionHistory.length>MAX_HISTORY)executionHistory.pop();renderHistoryList();saveToLocalStorage();}
+function renderHistoryList(){if(!executionHistory.length){historyList.innerHTML='<div class="history-item" style="color:var(--text-muted);justify-content:center;">No executions yet</div>';return;}historyList.innerHTML=executionHistory.map(item=>`<div class="history-item" onclick="logToTerminal('📜 ${item.language.toUpperCase()} [${item.mode||'Normal Mode'}] - ${item.success?'Success':'Failed'} (${item.execTime}ms)','info');historyList.classList.remove('active')"><span>${item.language.toUpperCase()}: ${item.preview}</span><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:10px; padding:1px 5px; border-radius:3px; ${item.mode==='Secure Mode'?'background:rgba(59,130,246,0.2);color:#93c5fd;':'background:rgba(16,185,129,0.2);color:#34d399;'}">${item.mode==='Secure Mode'?'🔒 Secure':'🟢 Normal'}</span><span class="time">${item.time}</span><span class="status ${item.success?'':'error'}">${item.success?'✓':'✗'} ${item.execTime}ms</span></div></div>`).join('');}
 function toggleHistory(){historyList.classList.toggle('active');renderHistoryList();}
 document.addEventListener('click',(e)=>{if(!e.target.closest('.history-dropdown'))historyList.classList.remove('active');if(!e.target.closest('#snippetsBtn'))snippetsPanel.classList.remove('active');if(!e.target.closest('#statsBtn'))statsPanel.classList.remove('active');});
 function exportTerminalLog(){const log=terminal.innerText,blob=new Blob([log],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`terminal-log-${new Date().toISOString().slice(0,10)}.txt`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);logToTerminal("📤 Terminal log exported","info");}
@@ -2850,25 +3063,10 @@ Est. Space:      ${mockReport.spaceComplexity}
 }
 
 // ─────────────────────────────────────────────────────────
-// --- UNIFIED ANTI-CHEAT TERMINATION & CHEAT REPORTING ---
+// --- UNIFIED ANTI-CHEAT TERMINATION & AUTO-CUT ---
 // ─────────────────────────────────────────────────────────
-function reportCheatToServer(reason = 'General Security Violation', severity = 'HIGH') {
-  try {
-    let logs = JSON.parse(localStorage.getItem('cheatLogs') || '[]');
-    logs.push({ time: new Date().toLocaleTimeString(), student: (typeof KTAuth !== 'undefined' ? KTAuth.getUsername() : '') || 'Student', activity: reason, severity: severity });
-    localStorage.setItem('cheatLogs', JSON.stringify(logs));
-
-    if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
-      fetch('/api/dashboard/log-cheat', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${KTAuth.getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: reason, severity: severity })
-      }).catch(e => console.error(e));
-    }
-  } catch(e) {}
-}
-
 function handleAutoCutTermination(reason) {
+  if (!securityMode) return; // Strict safeguard: Auto-cut and ban apply ONLY in Secure Mode
   isBlocked = true;
   document.body.classList.add('locked');
   if (document.getElementById('runBtn')) document.getElementById('runBtn').disabled = true;
@@ -2876,7 +3074,7 @@ function handleAutoCutTermination(reason) {
   if (document.getElementById('probSubmitGraderBtn')) document.getElementById('probSubmitGraderBtn').disabled = true;
   
   playSecurityAlert();
-  reportCheatToServer(`AUTO-CUT: ${reason}`, 'CRITICAL');
+  reportCheatToServer(`AUTO-CUT: ${reason}`, 'CRITICAL', 'SECURE');
   
   openModal(`🚫 ASSESSMENT SESSION TERMINATED!\n\nReason: ${reason}\n\nYour code and submission have been frozen, and a critical violation has been logged to your college and platform admin dashboard.\nRedirecting to dashboard...`, false);
   
@@ -2931,9 +3129,9 @@ async function loadProblemFromQuery() {
   const problemId = params.get('problemId') || params.get('problem') || params.get('id');
   const requireSecure = params.get('secure') === 'true';
 
-  if (requireSecure) {
-    toggleSecurity(true);
-  }
+  // Explicitly set mode: Secure Mode only if secure === true; otherwise Normal Mode
+  toggleSecurity(requireSecure);
+  updateProblemModeUI();
 
   if (!problemId) return;
 
@@ -3069,10 +3267,11 @@ async function runProblemSampleTests() {
     if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
       headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
     }
+    const currentMode = securityMode ? 'SECURE' : 'NORMAL';
     const res = await fetch('/api/compiler/run', {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({ code: code, language: lang, stdin: sampleIn })
+      body: JSON.stringify({ code: code, language: lang, stdin: sampleIn, mode: currentMode })
     });
 
     const text = await res.text();
@@ -3139,10 +3338,11 @@ async function submitProblemGrader() {
     if (typeof KTAuth !== 'undefined' && KTAuth.getToken()) {
       headers['Authorization'] = `Bearer ${KTAuth.getToken()}`;
     }
+    const activeMode = securityMode ? 'SECURE' : 'NORMAL';
     const res = await fetch(`/api/problems/${currentProblem.id}/submit`, {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({ code: code, language: lang })
+      body: JSON.stringify({ code: code, language: lang, mode: activeMode })
     });
 
     const text = await res.text();
@@ -3161,13 +3361,21 @@ async function submitProblemGrader() {
     }
 
     const isSolved = Boolean(data && (data.isSolved ?? data.isPassed ?? data.passed ?? data.solved));
+    const modeBadge = `<span style="padding:2px 8px; border-radius:4px; font-size:10.5px; font-weight:800; ${securityMode ? 'background:rgba(59,130,246,0.25); color:#93c5fd; border:1px solid #3b82f6;' : 'background:rgba(16,185,129,0.25); color:#a7f3d0; border:1px solid #10b981;'}">${securityMode ? '🔒 Secure Mode' : '🟢 Normal Mode'}</span>`;
 
     let resultsHtml = `
       <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:${isSolved ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; border:1px solid ${isSolved ? '#10b981' : '#ef4444'};">
-        <div style="font-weight:800; font-size:13px; color:${isSolved ? '#10b981' : '#ef4444'}; margin-bottom:4px;">
-          ${isSolved ? '🎉 ACCEPTED — FINAL OUTPUT VERIFIED!' : '❌ NOT ACCEPTED — OUTPUT MISMATCH'}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-weight:800; font-size:13px; color:${isSolved ? '#10b981' : '#ef4444'};">
+            ${isSolved ? '🎉 ACCEPTED — FINAL OUTPUT VERIFIED!' : '❌ NOT ACCEPTED — OUTPUT MISMATCH'}
+          </span>
+          ${modeBadge}
         </div>
         <div style="font-size:11.5px; color:var(--text-main); line-height:1.5;">
+          ${escapeHtml(data.message || '')}<br>
+          <strong>Status:</strong> ${isSolved ? 'Passed' : 'Failed'} • <strong>Time:</strong> ${data.totalExecutionTimeMs || data.executionTimeMs || 0}ms • <strong>Mode:</strong> ${securityMode ? 'Secure Mode' : 'Normal Mode'}
+        </div>
+      </div>
           ${escapeHtml(data.message || '')}<br>
           <strong>Status:</strong> ${isSolved ? 'Passed' : 'Failed'} • <strong>Time:</strong> ${data.totalExecutionTimeMs || data.executionTimeMs || 0}ms
         </div>

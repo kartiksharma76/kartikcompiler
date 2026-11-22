@@ -585,6 +585,11 @@ public class ProblemService {
         user.setTotalExecutions((user.getTotalExecutions() != null ? user.getTotalExecutions() : 0) + 1);
         userRepository.save(user);
 
+        String subMode = (request.getMode() != null && !request.getMode().isBlank())
+                ? request.getMode().trim().toUpperCase()
+                : "NORMAL";
+        String modeLabel = "SECURE".equalsIgnoreCase(subMode) ? "Secure Mode" : "Normal Mode";
+
         // Record Submission
         ProblemSubmission submission = ProblemSubmission.builder()
                 .user(user)
@@ -595,19 +600,20 @@ public class ProblemService {
                 .testCasesPassed(passedCount)
                 .totalTestCases(totalCases)
                 .executionTimeMs(totalExecTime)
+                .executionMode(subMode)
                 .build();
         problemSubmissionRepository.save(submission);
 
         String message;
         if (isAllPassed) {
-            message = String.format("🎉 ACCEPTED! Final output verified successfully! +%d Points credited.", pointsToAward);
+            message = String.format("🎉 ACCEPTED [%s]! Final output verified successfully! +%d Points credited.", modeLabel, pointsToAward);
         } else {
             String errDetail = results.stream()
                     .filter(res -> !res.getPassed())
                     .findFirst()
                     .map(res -> res.getError() != null && !res.getError().isBlank() ? res.getError().trim() : "Expected '" + res.getExpected() + "', but received '" + (res.getActual() != null ? res.getActual().trim() : "") + "'")
                     .orElse("Output did not match expected problem output.");
-            message = "❌ Execution Failed: " + errDetail;
+            message = String.format("❌ Execution Failed [%s]: %s", modeLabel, errDetail);
         }
 
         return ProblemSubmissionResponse.builder()
@@ -621,6 +627,7 @@ public class ProblemService {
                 .hiddenTestCasesPassed(0)
                 .totalExecutionTimeMs(totalExecTime)
                 .message(message)
+                .mode(subMode)
                 .results(results)
                 .build();
     }

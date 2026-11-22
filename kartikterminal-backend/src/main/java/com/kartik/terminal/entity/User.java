@@ -70,6 +70,10 @@ public class User {
 
     @Column(nullable = false)
     @Builder.Default
+    private Integer normalViolations = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
     private Integer totalPoints = 0;
 
     @Column(nullable = false)

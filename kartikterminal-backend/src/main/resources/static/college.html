@@ -6269,6 +6269,9 @@ function renderModalRunsTab(runs) {
                 <span style="padding:3px 8px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); border-radius:6px; font-family:var(--font-mono); font-size:11px; color:#60a5fa; font-weight:700;">
                   ${(r.language||'CODE').toUpperCase()}
                 </span>
+                <div style="font-size:10px; margin-top:3px; font-weight:700; color:${r.mode === 'SECURE' ? '#60a5fa' : '#34d399'};">
+                  ${r.mode === 'SECURE' ? '🔒 Secure Mode' : '🟢 Normal Mode'}
+                </div>
               </td>
               <td>
                 ${r.success
@@ -6664,9 +6667,12 @@ function renderAdminProblems(list) {
             <span>By @${p.createdByUsername || 'Admin'}</span>
           </div>
 
-          <div style="display:flex; gap:8px;">
-            <a href="/compiler.html?problemId=${p.id}&secure=true" target="_blank" class="btn-primary" style="flex:1; text-align:center; text-decoration:none; padding:6px 10px; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:5px; background:linear-gradient(135deg,#3b82f6,#2563eb);">
-              <span>⚡</span> Open in Secure Editor
+          <div style="display:flex; gap:6px;">
+            <a href="/compiler.html?problemId=${p.id}&secure=false" target="_blank" class="btn-secondary" style="flex:1; text-align:center; text-decoration:none; padding:6px 8px; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:4px; color:#34d399; border-color:rgba(16,185,129,0.4); background:rgba(16,185,129,0.08);">
+              <span>▶</span> Normal Mode
+            </a>
+            <a href="/compiler.html?problemId=${p.id}&secure=true" target="_blank" class="btn-primary" style="flex:1; text-align:center; text-decoration:none; padding:6px 8px; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:4px; background:linear-gradient(135deg,#3b82f6,#2563eb);">
+              <span>🔒</span> Secure Mode
             </a>
             <button onclick="deleteAdminProblem(${p.id})" class="btn-secondary" style="padding:6px 10px; font-size:12px; color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Delete Problem">🗑️</button>
           </div>

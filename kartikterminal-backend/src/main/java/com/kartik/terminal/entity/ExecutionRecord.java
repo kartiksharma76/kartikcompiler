@@ -51,6 +51,10 @@ public class ExecutionRecord {
     @Column(length = 100)
     private String title;
 
+    @Column(name = "execution_mode", length = 20)
+    @Builder.Default
+    private String executionMode = "NORMAL";
+
     @Column(nullable = false)
     @Builder.Default
     private Integer points = 0;

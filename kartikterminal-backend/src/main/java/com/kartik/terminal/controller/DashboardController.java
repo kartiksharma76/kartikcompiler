@@ -64,10 +64,18 @@ public class DashboardController {
 
     // ── Log anti-cheat violation ──
     @PostMapping("/log-cheat")
-    public ResponseEntity<?> logCheat() {
+    public ResponseEntity<?> logCheat(@RequestBody(required = false) Map<String, Object> payload) {
         try {
-            dashboardService.logCheat();
-            return ResponseEntity.ok(Map.of("success", true));
+            String mode = "NORMAL";
+            String reason = "General Security Violation";
+            String severity = "LOW";
+            if (payload != null) {
+                if (payload.get("mode") != null) mode = payload.get("mode").toString();
+                if (payload.get("reason") != null) reason = payload.get("reason").toString();
+                if (payload.get("severity") != null) severity = payload.get("severity").toString();
+            }
+            dashboardService.logCheat(mode, reason, severity);
+            return ResponseEntity.ok(Map.of("success", true, "mode", mode));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", e.getMessage()));
