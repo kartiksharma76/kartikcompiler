@@ -2386,6 +2386,15 @@ function handleTermCliKey(e) {
   if (!input) return;
   
   if (e.key === 'Enter') {
+    const liveInp = document.querySelector('input[id^="liveInp_"]');
+    if (liveInp) {
+      liveInp.value = input.value;
+      input.value = '';
+      const enterEvt = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+      liveInp.dispatchEvent(enterEvt);
+      return;
+    }
+
     const cmd = input.value.trim();
     if (!cmd) return;
     
@@ -2520,53 +2529,173 @@ function renderProblemTestResults(data, resultsArea) {
   resultsArea.innerHTML = resultsHtml;
 }
 
+function codeRequiresInput(code, lang) {
+  if (!code) return false;
+  const clean = code
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*/g, '')
+    .replace(/#.*/g, '')
+    .replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '');
+
+  const l = (lang || '').toLowerCase();
+  if (l === 'java') {
+    return /\b(?:nextInt|nextLine|nextDouble|nextFloat|nextLong|nextShort|nextByte|nextBoolean|next)\s*\(|\.readLine\s*\(|\bSystem\.in\.read\s*\(/.test(clean);
+  } else if (l === 'python' || l === 'py') {
+    return /\binput\s*\(|\bsys\.stdin\.(?:read|readline|readlines)\s*\(/.test(clean);
+  } else if (l === 'cpp' || l === 'c++') {
+    return /\bcin\s*>>|\bgetline\s*\(\s*cin\b|\bscanf\s*\(/.test(clean);
+  } else if (l === 'c') {
+    return /\bscanf\s*\(|\bfgets\s*\([^)]*stdin|\bgetchar\s*\(|\bgets\s*\(/.test(clean);
+  } else if (l === 'go' || l === 'golang') {
+    return /\bfmt\.(?:Scan|Scanln|Scanf)\s*\(/.test(clean);
+  } else if (l === 'rust' || l === 'rs') {
+    return /\bread_line\s*\(/.test(clean);
+  } else if (l === 'php') {
+    return /\bfgets\s*\(\s*STDIN\b|\breadline\s*\(/.test(clean);
+  } else if (l === 'ruby' || l === 'rb') {
+    return /\bgets\b/.test(clean);
+  } else if (l === 'js' || l === 'node' || l === 'ts') {
+    return /\breadline\b|\breadFileSync\s*\(\s*0\b/.test(clean);
+  }
+  return false;
+}
+
 function detectInputPrompts(code, lang) {
   const inputs = [];
-  if (lang === 'java') {
+  const l = (lang || '').toLowerCase();
+
+  if (l === 'java') {
     const lines = code.split('\n');
     let lastPrint = null;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      const printMatch = line.match(/System\.out\.print(?:ln)?\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue;
+
+      const printMatch = line.match(/System\.out\.(?:println|print|printf)\s*\(\s*(?:"([^"]*)"|'([^']*)')/);
       if (printMatch) {
-        lastPrint = printMatch[1];
+        lastPrint = printMatch[1] || printMatch[2] || '';
       }
-      const scanMatch = line.match(/\b\w+\.(next|nextInt|nextLine|nextDouble|nextFloat|nextLong|nextShort|nextByte|nextBoolean)\s*\(/);
-      if (scanMatch) {
+
+      // Check if it's a standalone consumer: sc.nextLine(); without assignment
+      const isStandaloneConsumer = /^\s*(?:\w+\.)?nextLine\s*\(\s*\)\s*;/.test(line);
+      if (isStandaloneConsumer) {
+        continue;
+      }
+
+      const scanMatches = [...line.matchAll(/\b\w+\.(nextInt|nextLine|nextDouble|nextFloat|nextLong|nextShort|nextByte|nextBoolean|next)\s*\(/g)];
+      for (const sm of scanMatches) {
+        const method = sm[1];
         inputs.push({
-          prompt: lastPrint || `Enter input #${inputs.length + 1} (${scanMatch[1]}):`,
-          method: scanMatch[1]
+          prompt: lastPrint ? lastPrint.trim() : `Enter input #${inputs.length + 1} (${method}):`,
+          method: method
         });
         lastPrint = null;
       }
     }
-  } else if (lang === 'python' || lang === 'py') {
-    const matches = code.matchAll(/input\s*\(\s*(?:["']([^"']*)["'])?\s*\)/g);
-    for (const m of matches) {
-      inputs.push({
-        prompt: m[1] || `Enter input #${inputs.length + 1}:`,
-        method: 'input'
-      });
-    }
-  } else if (lang === 'cpp' || lang === 'c') {
+  } else if (l === 'python' || l === 'py') {
     const lines = code.split('\n');
     let lastPrint = null;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      const coutMatch = line.match(/cout\s*<<\s*["']([^"']+)["']/);
-      const printfMatch = line.match(/printf\s*\(\s*["']([^"']+)["']/);
-      if (coutMatch) lastPrint = coutMatch[1];
-      else if (printfMatch) lastPrint = printfMatch[1];
-
-      if (line.includes('cin >>') || line.includes('cin>>') || line.includes('scanf(')) {
+      if (line.startsWith('#')) continue;
+      const printMatch = line.match(/print\s*\(\s*(?:"([^"]*)"|'([^']*)')/);
+      if (printMatch) {
+        lastPrint = printMatch[1] || printMatch[2] || '';
+      }
+      const inputMatches = [...line.matchAll(/input\s*\(\s*(?:(["'])(.*?)\1)?\s*\)/g)];
+      for (const m of inputMatches) {
+        const promptText = (m[2] !== undefined && m[2] !== '') ? m[2] : lastPrint;
         inputs.push({
-          prompt: lastPrint || `Enter input #${inputs.length + 1}:`,
-          method: 'cin'
+          prompt: promptText ? promptText.trim() : `Enter input #${inputs.length + 1}:`,
+          method: 'input'
+        });
+        lastPrint = null;
+      }
+    }
+  } else if (l === 'cpp' || l === 'c++') {
+    const lines = code.split('\n');
+    let lastPrint = null;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue;
+      const coutMatch = line.match(/cout\s*<<\s*(?:"([^"]*)"|'([^']*)')/);
+      const printfMatch = line.match(/printf\s*\(\s*(?:"([^"]*)"|'([^']*)')/);
+      if (coutMatch) lastPrint = coutMatch[1] || coutMatch[2] || '';
+      else if (printfMatch) lastPrint = printfMatch[1] || printfMatch[2] || '';
+
+      const getlineMatches = [...line.matchAll(/getline\s*\(\s*cin\s*,\s*(\w+)\s*\)/g)];
+      for (const gm of getlineMatches) {
+        inputs.push({
+          prompt: lastPrint ? lastPrint.trim() : `Enter line for ${gm[1]}:`,
+          method: 'getline'
+        });
+        lastPrint = null;
+      }
+
+      const cinMatches = [...line.matchAll(/>>\s*([a-zA-Z_]\w*)/g)];
+      if (line.includes('cin') && cinMatches.length > 0) {
+        for (const cm of cinMatches) {
+          inputs.push({
+            prompt: lastPrint ? lastPrint.trim() : `Enter value for ${cm[1]}:`,
+            method: 'cin'
+          });
+          lastPrint = null;
+        }
+      }
+
+      const scanfMatches = [...line.matchAll(/scanf\s*\(\s*"([^"]*)"\s*,\s*([^)]+)\)/g)];
+      for (const sm of scanfMatches) {
+        const args = sm[2].split(',').map(s => s.trim().replace(/^&/, ''));
+        for (const arg of args) {
+          inputs.push({
+            prompt: lastPrint ? lastPrint.trim() : `Enter value for ${arg}:`,
+            method: 'scanf'
+          });
+          lastPrint = null;
+        }
+      }
+    }
+  } else if (l === 'c') {
+    const lines = code.split('\n');
+    let lastPrint = null;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue;
+      const printfMatch = line.match(/printf\s*\(\s*(?:"([^"]*)"|'([^']*)')/);
+      const putsMatch = line.match(/puts\s*\(\s*(?:"([^"]*)"|'([^']*)')/);
+      if (printfMatch) lastPrint = printfMatch[1] || printfMatch[2] || '';
+      else if (putsMatch) lastPrint = putsMatch[1] || putsMatch[2] || '';
+
+      const scanfMatches = [...line.matchAll(/scanf\s*\(\s*"([^"]*)"\s*,\s*([^)]+)\)/g)];
+      for (const sm of scanfMatches) {
+        const args = sm[2].split(',').map(s => s.trim().replace(/^&/, ''));
+        for (const arg of args) {
+          inputs.push({
+            prompt: lastPrint ? lastPrint.trim() : `Enter value for ${arg}:`,
+            method: 'scanf'
+          });
+          lastPrint = null;
+        }
+      }
+
+      const fgetsMatches = [...line.matchAll(/fgets\s*\(\s*(\w+)\s*,[^,]+,\s*stdin\s*\)/g)];
+      for (const fm of fgetsMatches) {
+        inputs.push({
+          prompt: lastPrint ? lastPrint.trim() : `Enter string for ${fm[1]}:`,
+          method: 'fgets'
         });
         lastPrint = null;
       }
     }
   }
+
+  if (inputs.length === 0 && codeRequiresInput(code, lang)) {
+    inputs.push({
+      prompt: "Enter program input (System.in):",
+      method: "input"
+    });
+  }
+
   return inputs;
 }
 
@@ -2581,7 +2710,7 @@ async function promptInteractiveUserInputs(prompts, lang, cmd, user, term) {
     const userVal = await new Promise((resolve) => {
       const pLine = document.createElement('div');
       pLine.className = 'term-line';
-      pLine.style.cssText = 'color:#e2e8f0; font-weight:600; margin-top:4px;';
+      pLine.style.cssText = 'color:#e2e8f0; font-weight:600; margin-top:6px;';
       pLine.textContent = item.prompt;
       term.appendChild(pLine);
 
@@ -2590,7 +2719,7 @@ async function promptInteractiveUserInputs(prompts, lang, cmd, user, term) {
       row.style.cssText = 'display:flex; align-items:center; gap:8px; margin:4px 0; background:rgba(30,41,59,0.7); padding:6px 10px; border-radius:6px; border:1px solid #3b82f6;';
       row.innerHTML = `
         <span style="color:#60a5fa; font-size:12px; font-weight:700;">⌨️ Input (${i+1}/${inputsToPrompt.length}):</span>
-        <input type="text" id="liveInp_${i}" style="background:#02040a; border:1px solid #3b82f6; color:#34d399; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; padding:4px 8px; border-radius:4px; flex:1; outline:none;" placeholder="Type value (e.g. 10) and press Enter..." autocomplete="off">
+        <input type="text" id="liveInp_${i}" style="background:#02040a; border:1px solid #3b82f6; color:#34d399; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; padding:4px 8px; border-radius:4px; flex:1; outline:none;" placeholder="Type value and press Enter..." autocomplete="off">
         <button id="liveBtn_${i}" style="background:#2563eb; color:#fff; border:none; padding:4px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer;">Enter ↵</button>
       `;
       term.appendChild(row);
@@ -2599,52 +2728,37 @@ async function promptInteractiveUserInputs(prompts, lang, cmd, user, term) {
       const inp = document.getElementById(`liveInp_${i}`);
       const btn = document.getElementById(`liveBtn_${i}`);
       const cli = document.getElementById('termCliInput');
-      if (cli) cli.placeholder = `Scanner Input (${item.prompt})...`;
+      if (cli) cli.placeholder = `Input (${item.prompt})...`;
 
       let submitted = false;
       function submitVal() {
         if (submitted) return;
         submitted = true;
-        const val = inp.value;
+        const val = inp ? inp.value : '';
         row.innerHTML = `<span style="color:#34d399; font-weight:700;">[User enters: ${escapeHtml(val)}]</span>`;
         if (cli) cli.placeholder = "type command (e.g. run, clear, ls, help)...";
         resolve(val);
       }
 
-      inp.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+      if (inp) {
+        inp.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submitVal();
+          }
+        });
+      }
+      if (btn) {
+        btn.addEventListener('click', (e) => {
           e.preventDefault();
           submitVal();
-        }
-      });
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        submitVal();
-      });
+        });
+      }
       setTimeout(() => { if (inp) inp.focus(); }, 50);
     });
     results.push(userVal);
   }
   return results.join('\n') + '\n';
-}
-
-function formatOutputWithInputs(rawOutput, inputVal, prompts) {
-  if (!rawOutput) return rawOutput;
-  const tokens = inputVal ? inputVal.trim().split(/\s+/).filter(Boolean) : [];
-  if (tokens.length === 0 || !prompts || prompts.length === 0) return rawOutput;
-
-  let lines = rawOutput.split('\n');
-  let tokenIdx = 0;
-  let formatted = [];
-  for (let i = 0; i < lines.length; i++) {
-    formatted.push(lines[i]);
-    const trimmed = lines[i].trim();
-    const matched = prompts.find(p => p.prompt && (trimmed === p.prompt.trim() || trimmed.startsWith(p.prompt.trim())));
-    if (matched && tokenIdx < tokens.length) {
-      formatted.push(`[User enters: ${tokens[tokenIdx++]}]`);
-    }
-  }
-  return formatted.join('\n');
 }
 
 async function runCode() {
@@ -2653,7 +2767,6 @@ async function runCode() {
   switchVSTab('terminal');
   executionStartTime = performance.now();
   const code = (window.monacoEditor ? window.monacoEditor.getValue() : editor.value) || '';
-  const stdin = document.getElementById('stdin');
   const lang = document.getElementById('language').value.trim();
   const user = KTAuth.getUsername() || 'kartik';
   
@@ -2664,12 +2777,18 @@ async function runCode() {
   const term = document.getElementById('terminal');
   const btn = document.getElementById("runBtn");
 
-  const stdinVal = (stdin ? stdin.value : '');
-  const inputKeywords = {java:['Scanner','System.in','BufferedReader'],python:['input('],cpp:['cin >>','cin>>','scanf'],c:['scanf','gets'],go:['fmt.Scan']};
-  const needsInput = (inputKeywords[lang] || []).some(k => code.includes(k));
-  const detectedPrompts = needsInput ? detectInputPrompts(code, lang) : [];
+  // Har execution ke liye fresh runtime input session:
+  // Stdin textarea ko tabhi use karo jab user explicitly STDIN tab par ho aur usne custom input likha ho
+  let activeInput = "";
+  if (activeVSTab === 'stdin') {
+    const stdinEl = document.getElementById('stdin');
+    if (stdinEl && stdinEl.value.trim() !== "") {
+      activeInput = stdinEl.value;
+    }
+  }
 
-  let activeInput = stdinVal;
+  const needsInput = codeRequiresInput(code, lang);
+  const detectedPrompts = needsInput ? detectInputPrompts(code, lang) : [];
   let didPromptInteractively = false;
   
   const commands = {
@@ -2691,6 +2810,7 @@ async function runCode() {
   term.innerHTML += `<div class="term-line" style="margin-top:2px;"><span class="term-prompt-user">${user}@cloud-node-04</span><span class="term-prompt-colon">:</span><span class="term-prompt-path">~/src/production/cloud-env</span><span class="term-prompt-dollar">$</span> <span class="term-cmd">${cmd}</span></div>`;
   term.scrollTop = term.scrollHeight;
 
+  // Agar runtime input required hai aur STDIN explicitly provided nahi hai toh interactive prompt lo
   if (needsInput && activeInput.trim() === "" && !currentProblem) {
     if (btn) { btn.disabled = true; btn.textContent = "WAITING FOR INPUT..."; }
     didPromptInteractively = true;
@@ -2699,7 +2819,7 @@ async function runCode() {
       if (btn) { btn.disabled = false; btn.textContent = "DEPLOY & RUN"; }
       return;
     }
-    if (stdin) stdin.value = activeInput.trim();
+    // Note: Stdin textarea ko intentionally overwrite nahi karte taaki next execution me stale input reuse na ho!
   }
 
   if (btn) { btn.disabled = true; btn.textContent = "RUNNING..."; }
@@ -2833,15 +2953,27 @@ async function runCode() {
       addToExecutionHistory(lang, !isErr, execTime, code.substring(0, 50) + '...', modeLabel);
 
       let displayOutput = data.trim();
-      if (didPromptInteractively) {
-        let outLines = displayOutput.split('\n');
-        let remaining = outLines.filter(line => {
-          const trimmed = line.trim();
-          return !detectedPrompts.some(p => p.prompt && (trimmed === p.prompt.trim() || trimmed.startsWith(p.prompt.trim())));
-        });
-        displayOutput = remaining.join('\n').trim();
-      } else if (needsInput && activeInput.trim() !== "") {
-        displayOutput = formatOutputWithInputs(displayOutput, activeInput, detectedPrompts);
+      if (didPromptInteractively && detectedPrompts && detectedPrompts.length > 0) {
+        let lines = displayOutput.split('\n');
+        let filteredLines = [];
+        for (let line of lines) {
+          let cur = line;
+          for (let p of detectedPrompts) {
+            if (p.prompt) {
+              const pTrim = p.prompt.trim();
+              if (cur.trim() === pTrim) {
+                cur = '';
+                break;
+              } else if (cur.trim().startsWith(pTrim)) {
+                cur = cur.trim().substring(pTrim.length).trim();
+              }
+            }
+          }
+          if (cur.length > 0) {
+            filteredLines.push(cur);
+          }
+        }
+        displayOutput = filteredLines.join('\n').trim();
       }
 
       const modeBadgeSnippet = `<span style="font-size:10px; margin-left:8px; padding:2px 7px; border-radius:4px; font-weight:700; ${securityMode ? 'background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid #3b82f6;' : 'background:rgba(16,185,129,0.2); color:#a7f3d0; border:1px solid #10b981;'}">${securityMode ? '🔒 Secure Mode' : '🟢 Normal Mode'}</span>`;

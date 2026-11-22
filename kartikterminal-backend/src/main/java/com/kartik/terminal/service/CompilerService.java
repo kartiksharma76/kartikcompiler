@@ -168,10 +168,12 @@ public class CompilerService {
 
     // ========== JAVA ==========
     private ExecutionResult runJava(Path dir, String code, String input) throws IOException {
+        String preparedCode = preprocessJavaScanner(code);
+
         // Extract class name
-        String className = extractJavaClassName(code);
+        String className = extractJavaClassName(preparedCode);
         Path srcFile = dir.resolve(className + ".java");
-        Files.writeString(srcFile, code);
+        Files.writeString(srcFile, preparedCode);
 
         // Compile
         ExecutionResult compileResult = runProcess(
@@ -317,7 +319,7 @@ public class CompilerService {
 
     // ========== PROCESS RUNNER ==========
     private ExecutionResult runProcess(String[] cmd, Path workDir, String input, int timeoutSecs) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.directory(workDir.toFile());
@@ -391,9 +393,64 @@ public class CompilerService {
     }
 
     // ========== HELPER METHODS ==========
+    private String preprocessJavaScanner(String code) {
+        if (code == null || !code.contains("Scanner") || !code.contains("nextLine")) {
+            return code;
+        }
+
+        // Find scanner variable names (e.g. Scanner sc =, Scanner scanner =, etc.)
+        java.util.regex.Matcher sm = java.util.regex.Pattern
+                .compile("\\b(?:Scanner|java\\.util\\.Scanner)\\s+(\\w+)\\s*=")
+                .matcher(code);
+        java.util.Set<String> scannerVars = new java.util.HashSet<>();
+        while (sm.find()) {
+            scannerVars.add(sm.group(1));
+        }
+        if (scannerVars.isEmpty()) {
+            scannerVars.add("sc");
+            scannerVars.add("scanner");
+            scannerVars.add("in");
+            scannerVars.add("cin");
+        }
+
+        String[] lines = code.split("\n", -1);
+        StringBuilder sb = new StringBuilder();
+        boolean needConsume = false;
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            boolean isStandaloneConsume = false;
+            for (String var : scannerVars) {
+                if (trimmed.matches("^(?:" + var + "\\.)?nextLine\\s*\\(\\s*\\)\\s*;.*")) {
+                    isStandaloneConsume = true;
+                    needConsume = false;
+                    break;
+                }
+            }
+
+            if (!isStandaloneConsume) {
+                for (String var : scannerVars) {
+                    if (trimmed.matches(".*\\b" + var + "\\.(?:nextInt|nextDouble|nextFloat|nextLong|nextShort|nextByte)\\s*\\(.*")) {
+                        needConsume = true;
+                    } else if (needConsume && trimmed.matches(".*\\b" + var + "\\.nextLine\\s*\\(.*")) {
+                        int firstCharIdx = line.indexOf(trimmed.charAt(0));
+                        String indent = (firstCharIdx > 0) ? line.substring(0, firstCharIdx) : "        ";
+                        sb.append(indent).append(var).append(".nextLine();\n");
+                        needConsume = false;
+                    }
+                }
+            }
+            sb.append(line).append("\n");
+        }
+        if (!code.endsWith("\n") && sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
+            sb.setLength(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
     private String extractJavaClassName(String code) {
         java.util.regex.Matcher m = java.util.regex.Pattern
-                .compile("public\\s+class\\s+(\\w+)")
+                .compile("(?:public\\s+)?class\\s+(\\w+)")
                 .matcher(code);
         return m.find() ? m.group(1) : "Main";
     }
